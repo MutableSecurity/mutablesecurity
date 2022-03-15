@@ -1,0 +1,8 @@
+# Virtual environment
+.venv
+
+# Poetry lockfile
+poetry.lock
+
+# Python cache
+__pycache__
