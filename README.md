@@ -28,7 +28,7 @@ In today's fast-paced society, most people are unaware of the potential conseque
 
 ## Vision 📜
 
-**MutableSecurity** 🏗️ building construction is a solution for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
+**MutableSecurity** 🏗️ is a solution for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
 
 Despite the current lack of complex functionalities, we have a vision in mind that we hope to achieve in the near future. As we must begin somewhere, the first step in our progress is this command line interface for automatic management of cybersecurity solutions.
 

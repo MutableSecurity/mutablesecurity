@@ -15,7 +15,7 @@ class Leader:
         connect_all(state)
 
         state.config.SUDO = True
-        state.config.USE_SUDO_PASSWORD = "***REMOVED***"
+        state.config.USE_SUDO_PASSWORD = "password"
 
         return state
 
