@@ -29,9 +29,41 @@ The development environment consists in:
 - [isort](https://github.com/PyCQA/isort) for import sorting (automated via `.vscode/settings.json`); and
 - Git for version controlling.
 
-To set up the environment, only install Poetry as in its [documentation](https://python-poetry.org/docs/) and initialize the environment by running `poetry init`.
+After installing the [main requirements](README.md#requirements-) of the project, set up the development environment by following the [official Poetry installation guide](https://github.com/python-poetry/poetry#installation) and running `poetry install`.
+
+After installing the main requirements of the project, set up the development environment by following the official installation guide of Poetry. Run `poetry install` to download the required Python packages and `poetry shell` to enter the environment. By running `mutablesecurity`, you will be able to see the tool's banner and guide.
 
 ### Creating a New Module
+
+#### Reasearch
+
+Before you begin implementing a module, we recommend that you answer the following questions. They will help you understand what you need to automate and will make the development process easier:
+- What is the purpose of this security solution in an organization's infrastructure?
+- What are the solution's configurable features?
+- What is the current installation process like, and how can it be automated?
+- How can I check to see if the solution works as expected?
+- What statistics does the solution generate that are useful to the administrator (or a security analyst)?
+- Where does the solution generate its logs?
+
+<details>
+    <summary><b>Example of answers for Suricata</b></summary>
+
+- **Q**: What role does Suricata play in an organization's infrastructure?
+- **A**: Suricata is a system for detecting and preventing network intrusions. Essentially, you configure a middleware device or endpoint to generate alerts for (or directly block) suspicious traffic.
+- **Q**: What are the features that can be customized?
+- **A**: You can configure Suricata to generate alerts, block malicious traffic, and automatically update its rules.
+- **Q**: How does the current installation procedure work, and how can it be automated?
+- **A**: The [official installation guide](https://suricata.readthedocs.io/en/latest/install.html) must be followed.
+- **Q**: How can I tell if Suricata is working properly?
+- **A**: A request to a malicious endpoint will be detected and either alerted or completely blocked.
+- **Q**: What statistics does the solution generate that the administrator (or a security analyst) can use?
+- **A**: The logs contain useful information (for example, the number of generated alerts in the last day).
+- **Q**: Where does Suricata generates its logs?
+- **A**: `/var/log/suricata/fast.log`
+
+</details>
+
+#### Implementation
 
 A security solution is represented as a module in the MutableSecurity infrastructure.
 

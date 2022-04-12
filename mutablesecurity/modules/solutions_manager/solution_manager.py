@@ -16,7 +16,7 @@ class AbstractSolution(abc.ABC):
         raise NotImplemented()
 
     @abc.abstractstaticmethod
-    def verify_new_configuration(aspect=None, value=None):
+    def _verify_new_configuration(aspect=None, value=None):
         raise NotImplemented()
 
     @abc.abstractstaticmethod
@@ -25,6 +25,10 @@ class AbstractSolution(abc.ABC):
 
     @abc.abstractstaticmethod
     def _put_configuration(state=None, host=None):
+        raise NotImplemented()
+
+    @abc.abstractstaticmethod
+    def update(state=None, host=None):
         raise NotImplemented()
 
     @abc.abstractstaticmethod
@@ -37,6 +41,10 @@ class AbstractSolution(abc.ABC):
 
     @abc.abstractstaticmethod
     def get_stats(state=None, host=None):
+        raise NotImplemented()
+
+    @abc.abstractstaticmethod
+    def get_logs(state=None, host=None):
         raise NotImplemented()
 
     @abc.abstractstaticmethod

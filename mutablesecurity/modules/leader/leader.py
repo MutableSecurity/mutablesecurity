@@ -8,14 +8,14 @@ class Leader:
         return Inventory((hosts, {}), **kwargs)
 
     @staticmethod
-    def connect_to_local():
+    def connect_to_local(password):
         # Create the local connection with pyinfra
         inventory = Leader._make_inventory(hosts=("@local",))
         state = State(inventory, Config())
         connect_all(state)
 
         state.config.SUDO = True
-        state.config.USE_SUDO_PASSWORD = "password"
+        state.config.USE_SUDO_PASSWORD = password
 
         return state
 

@@ -6,7 +6,8 @@ from pyinfra.api.deploy import add_deploy
 from pyinfra.api.operations import run_ops
 
 from ..leader import Leader
-from ..solutions_manager import AbstractSolution, AvailableSolution, SolutionsManager
+from ..solutions_manager import (AbstractSolution, AvailableSolution,
+                                 SolutionsManager)
 
 
 class Main:
@@ -38,7 +39,8 @@ class Main:
                 host, ssh_port, ssh_user, ssh_password
             )
         else:
-            state = Leader.connect_to_local()
+            local_password = connection_details[3]
+            state = Leader.connect_to_local(local_password)
 
         # Get the module's method dealing with the provided operation
         solution_class = SolutionsManager.get_solution_by_name(solution_name)

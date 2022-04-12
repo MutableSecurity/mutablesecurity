@@ -1,10 +1,11 @@
+import os
 from enum import Enum
 
 import yaml
 from pyinfra import config
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import server
+from pyinfra.operations import apt, files, server
 
 from .. import AbstractSolution
 from ..facts import DefaultInterface
@@ -31,6 +32,13 @@ class AlertsCount(FactBase):
 
     def process(self, output):
         return int(output[0])
+
+
+class Alerts(FactBase):
+    command = "cat /var/log/suricata/eve.json"
+
+    def process(self, output):
+        return output.split()
 
 
 class ConfigurationState(FactBase):
@@ -103,7 +111,7 @@ class Suricata(AbstractSolution):
 
         Suricata.result = Suricata._configuration
 
-    def verify_new_configuration(aspect=None, value=None):
+    def _verify_new_configuration(aspect=None, value=None):
         real_value = None
         if aspect == "mode":
             real_value = FunctioningModes[value]
@@ -116,7 +124,7 @@ class Suricata(AbstractSolution):
 
     @deploy
     def set_configuration(state, host, aspect=None, value=None):
-        if not Suricata.verify_new_configuration(aspect, value):
+        if not Suricata._verify_new_configuration(aspect, value):
             Suricata.result = False
 
             return
@@ -324,6 +332,20 @@ class Suricata(AbstractSolution):
         Suricata.result = True
 
     @deploy
+    def update(state, host):
+        apt.packages(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Updates Suricata, jq and ufw",
+            packages=["suricata"],
+            latest=True,
+            present=True,
+        )
+
+        Suricata.result = True
+
+    @deploy
     def test(state, host):
         Suricata.get_configuration(state=state, host=host)
 
@@ -361,6 +383,12 @@ class Suricata(AbstractSolution):
         Suricata.get_configuration(state=state, host=host)
 
         Suricata.result = {"alerts_count": host.get_fact(AlertsCount)}
+
+    @deploy
+    def get_logs(state, host):
+        Suricata.get_configuration(state=state, host=host)
+
+        Suricata.result = host.get_fact(Alerts)
 
     @deploy
     def uninstall(state, host):

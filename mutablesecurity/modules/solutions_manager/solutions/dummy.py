@@ -73,7 +73,7 @@ class Dummy(AbstractSolution):
     # indicates a success.
     result = None
 
-    def verify_new_configuration(aspect=None, value=None):
+    def _verify_new_configuration(aspect=None, value=None):
         # Steps to verify the configuration. This is an example of working with
         # enumerations.
         if aspect != "state" or State[value] is None:
@@ -127,6 +127,21 @@ class Dummy(AbstractSolution):
         Suricata.result = True
 
     @deploy
+    def update(state, host):
+        # Steps to update the solution
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Updates a dummy file",
+            commands=["touch /tmp/dummy.txt"],
+        )
+        pass
+
+        # Set the result as a boolean indicating the status of the operation
+        Suricata.result = True
+
+    @deploy
     def test(state, host):
         # Ensure the configuration is synced.
         Suricata.get_configuration(state=state, host=host)
@@ -148,6 +163,17 @@ class Dummy(AbstractSolution):
         # Set the result as a boolean indicating the status of the operation.
         # This is an example of working with facts.
         Suricata.result = {"user": host.get_fact(UserCount)}
+
+    @deploy
+    def get_logs(state, host):
+        # Ensure the configuration is synced.
+        Suricata.get_configuration(state=state, host=host)
+
+        # Steps to get the solution's logs
+        pass
+
+        # Set the result as a boolean indicating the status of the operation.
+        Suricata.result = True
 
     @deploy
     def uninstall(state, host):
