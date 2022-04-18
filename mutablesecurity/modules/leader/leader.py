@@ -1,4 +1,4 @@
-from pyinfra.api import Config, Host, Inventory, State
+from pyinfra.api import Config, Inventory, State
 from pyinfra.api.connect import connect_all
 
 

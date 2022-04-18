@@ -1,1 +1,2 @@
-from .solution_manager import AbstractSolution, AvailableSolution, SolutionsManager
+from .solution_manager import SolutionsManager
+from .solutions import AbstractSolution, AvailableSolution

@@ -1,22 +1,35 @@
 [tool.poetry]
-version = "0.1.0"
 name = "mutablesecurity"
+version = "0.1.0.post5"
 description = "Seamlessly management of cybersecurity solutions"
 keywords = ["cybersecurity", "security-solutions", "hardening", "automatic-deployment"]
 license = "MIT"
 authors = [
-    "MutableSecurity <hello@mutablesecurity.ro>"
+    "MutableSecurity <hello@mutablesecurity.io>"
 ]
 repository = "https://github.com/MutableSecurity/mutablesecurity"
-homepage = "https://www.mutablesecurity.ro"
-readme = "README.md"
+homepage = "https://www.mutablesecurity.io"
+readme = "README.pypi.md"
+classifiers = [
+    "Topic :: Security",
+    "Topic :: System :: Installation/Setup",
+    "Topic :: System :: Software Distribution",
+    "Topic :: System :: Monitoring",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Environment :: Console",
+    "Operating System :: OS Independent"
+]
+include = [
+    "LICENSE",
+]
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pyinfra = "1.6.1"
+pyinfra = "^1.6.1"
 Click = "^8.0"
 PyYAML = "6.0"
 rich = "11.2.0"
+humanfriendly = "^10.0"
 
 [tool.poetry.scripts]
 mutablesecurity = "mutablesecurity.cli:main"
@@ -24,6 +37,7 @@ mutablesecurity = "mutablesecurity.cli:main"
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 isort = "^5.10.1"
+pylint = "^2.13.5"
 
 [tools.isort]
 known_local_folder= ["modules"]

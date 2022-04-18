@@ -25,13 +25,21 @@ The most important resources we use are [pyinfra](https://pyinfra.com/), for con
 
 The development environment consists in:
 - [Visual Studio Code](https://github.com/Microsoft/vscode) or [VSCodium](https://github.com/VSCodium/vscodium) as an IDE;
+- [pylint](https://pylint.pycqa.org/en/latest) for linting (automated via `.vscode/settings.json`);
 - [Black](https://github.com/psf/black) for code formatting (automated via `.vscode/settings.json`);
 - [isort](https://github.com/PyCQA/isort) for import sorting (automated via `.vscode/settings.json`); and
 - Git for version controlling.
 
-After installing the [main requirements](README.md#requirements-) of the project, set up the development environment by following the [official Poetry installation guide](https://github.com/python-poetry/poetry#installation) and running `poetry install`.
+After installing the [main requirements](README.md#requirements-) of the project, set up the development environment by following the [official installation guide](https://github.com/python-poetry/poetry#installation) of Poetry. Run `poetry install` to download the required Python packages and `poetry shell` to enter the environment. By running `mutablesecurity`, you will be able to see the tool's banner and guide.
 
-After installing the main requirements of the project, set up the development environment by following the official installation guide of Poetry. Run `poetry install` to download the required Python packages and `poetry shell` to enter the environment. By running `mutablesecurity`, you will be able to see the tool's banner and guide.
+### Publishing a New Version
+
+To upload a new version of the PyPi package, increase the version number in TOML file and use the Poetry commands below, where `<pypi_token>` is the PyPi token.
+
+```
+poetry config pypi-token.pypi <pypi_token>
+poetry publish --build --username mutablesecurity
+```
 
 ### Creating a New Module
 
@@ -70,9 +78,9 @@ A security solution is represented as a module in the MutableSecurity infrastruc
 Each module inherits a base class called `AbstractSolution` and overwrites multiple abstract methods that deal with security solution management, from installation to configuration settings.
 
 The process of creating a new module is divided into three major steps:
-1. If the solution requires some kind of files for proper management (for example, custom scripts to be run on a regular basis via crontab), create a new folder in `modules/solution_manager/solutions`.
-2. In the same folder, create a properly named Python 3 script (noted with `<script>`) containing a class (noted with `<class>`) that wraps up the solution management functionality. A [dummy module](mutablesecurity/modules/solutions_manager/solutions/dummy.py) can be used as a starting point because it contains many comments that will help you understand the internals better.
-3. In `modules/solution_manager/solution_manager.py`, create a new member in the `AvailableSolution` enumeration with a tuple `(<script>, <class>)`. For convenience, put the member's name be the uppercase transformation of `<class>`.
+1. If the solution requires some kind of files for proper management (for example, custom scripts to be run on a regular basis via crontab), create a new folder in `modules/solution_manager/files`.
+2. In the `modules/solution_manager/solutions` folder, create a properly named Python 3 script (noted with `<script>`) containing a class (noted with `<class>`) that wraps up the solution management functionality.
+3. In `mutablesecurity/modules/solutions_manager/solutions/__init__.py`, create a new member in the `AvailableSolution` enumeration with a tuple `(<script>, <class>)`. For convenience, put the member's name be the uppercase transformation of `<class>`.
 
 ## Useful Resources
 

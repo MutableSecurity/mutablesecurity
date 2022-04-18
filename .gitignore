@@ -1,8 +1,16 @@
-# Virtual environment
-.venv
+# Some documentation files
+docs/
 
-# Poetry lockfile
+# Backup files
+.bak/
+
+# Poetry
+.venv/
+dist/
 poetry.lock
 
-# Python cache
+# Python
 __pycache__
+
+# Pyinfra
+pyinfra-sudo-askpass

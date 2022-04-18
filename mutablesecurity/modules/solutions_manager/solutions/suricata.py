@@ -1,22 +1,15 @@
-import os
+from datetime import datetime
 from enum import Enum
 
-import yaml
-from pyinfra import config
+from humanfriendly import format_timespan
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
-from pyinfra.operations import apt, files, server
+from pyinfra.operations import apt, files, python, server
 
-from .. import AbstractSolution
-from ..facts import DefaultInterface
-
-
-class FunctioningModes(Enum):
-    IDS = "ids"
-    IPS = "ips"
-
-    def __str__(self):
-        return self.name
+from ..deployments.managed_stats import ManagedStats
+from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
+from ..facts.networking import DefaultInterface
+from . import AbstractSolution
 
 
 class AutomaticUpdates(Enum):
@@ -26,73 +19,90 @@ class AutomaticUpdates(Enum):
     def __str__(self):
         return self.name
 
+    @classmethod
+    def from_str(cls, name):
+        return cls[name]
+
 
 class AlertsCount(FactBase):
-    command = "cat /var/log/suricata/eve.json | jq 'select(.event_type==\"alert\")' | grep -c '^{$' || true"
+    command = "cat /var/log/suricata/fast.log | wc -l"
 
     def process(self, output):
         return int(output[0])
 
 
-class Alerts(FactBase):
-    command = "cat /var/log/suricata/eve.json"
+class TestAlertsCount(FactBase):
+    def command(self):
+        current_date = datetime.today().strftime("%m/%d/%Y-%H:%M")
+
+        return f"tail -n 1 /var/log/suricata/fast.log | grep '{current_date}' | grep -c '1:2100498:7' || true"
 
     def process(self, output):
-        return output.split()
+        return int(output[0])
 
 
-class ConfigurationState(FactBase):
-    command = "cat /opt/mutablesecurity/suricata/suricata.conf"
+class DailyAlertsCount(FactBase):
+    def command(self):
+        current_date = datetime.today().strftime("%m/%d/%Y")
+
+        return f"cat /var/log/suricata/fast.log | grep '{current_date}' | wc -l"
 
     def process(self, output):
-        # Join the returned lines
-        output = "\n".join(output)
+        return int(output[0])
 
-        # Load the YAML
-        config = yaml.safe_load(output)
 
-        # Convert the fields into enumerations
-        config["mode"] = FunctioningModes(config["mode"])
-        config["automatic_updates"] = AutomaticUpdates(config["automatic_updates"])
+class Uptime(FactBase):
+    command = "suricatasc -c uptime | jq '.message'"
 
-        return config
+    def process(self, output):
+        return format_timespan(int(output[0]))
+
+
+class Version(FactBase):
+    command = "suricatasc -c version | jq -r '.message'"
+
+    def process(self, output):
+        return output[0]
+
+
+class Logs(FactBase):
+    command = "cat /var/log/suricata/fast.log"
+
+    def process(self, output):
+        return output
 
 
 class Suricata(AbstractSolution):
-    _configuration = {
-        "mode": FunctioningModes.IDS,
-        "interface": None,
-        "automatic_updates": AutomaticUpdates.DISABLED,
-    }
     meta = {
+        "id": "suricata",
         "full_name": "Suricata Intrusion Detection and Prevention System",
         "description": "Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.",
         "references": ["https://suricata.io", "https://github.com/OISF/suricata"],
         "configuration": {
-            "mode": {"type": FunctioningModes, "help": "Mode in which Suricata works"},
-            "interface": {"type": str, "help": "Interface on which Suricata listens"},
+            "interface": {
+                "type": str,
+                "help": "Interface on which Suricata listens",
+                "default": "eth0",
+            },
             "automatic_updates": {
                 "type": AutomaticUpdates,
                 "help": "State of the automatic daily updates",
+                "default": AutomaticUpdates.DISABLED,
             },
         },
+        "metrics": {
+            "total_alerts": {
+                "description": "Total number of alerts",
+                "fact": AlertsCount,
+            },
+            "today_alerts": {
+                "description": "Total number of alerts generated today",
+                "fact": DailyAlertsCount,
+            },
+            "uptime": {"description": "Uptime", "fact": Uptime},
+            "version": {"description": "Current installed version", "fact": Version},
+        },
         "messages": {
-            "INSTALL": (
-                "Suricata is now installed on this machine.",
-                "There was an error on Suricata's installation.",
-            ),
-            "UNINSTALL": (
-                "Suricata is no longer installed on this machine.",
-                "There was an error on Suricata's uninstallation.",
-            ),
-            "TEST": (
-                "Suricata works as expected.",
-                "Suricata does not work as expected.",
-            ),
-            "GET_STATS": (
-                "The stats of Suricata were retrieved.",
-                "The stats of Suricata could not be retrieved.",
-            ),
             "GET_CONFIGURATION": (
                 "The configuration of Suricata was retrieved.",
                 "The configuration of Suricata could not be retrieved.",
@@ -101,132 +111,101 @@ class Suricata(AbstractSolution):
                 "The configuration of Suricata was set.",
                 "The configuration of Suricata could not be set. Check the provided aspect and value to be valid.",
             ),
+            "INSTALL": (
+                "Suricata is now installed on this machine.",
+                "There was an error on Suricata's installation.",
+            ),
+            "TEST": (
+                "Suricata works as expected.",
+                "Suricata does not work as expected.",
+            ),
+            "GET_LOGS": (
+                "The logs of Suricata were retrieved.",
+                "The logs of Suricata could not be retrieved.",
+            ),
+            "GET_STATS": (
+                "The stats of Suricata were retrieved.",
+                "The stats of Suricata could not be retrieved.",
+            ),
+            "UPDATE": (
+                "Suricata is now at its newest version.",
+                "There was an error on Suricata's update.",
+            ),
+            "UNINSTALL": (
+                "Suricata is no longer installed on this machine.",
+                "There was an error on Suricata's uninstallation.",
+            ),
         },
     }
     result = None
 
     @deploy
     def get_configuration(state, host):
-        Suricata._configuration = host.get_fact(ConfigurationState)
+        ManagedYAMLBackedConfig.get_configuration(
+            state=state, host=host, solution_class=Suricata
+        )
 
-        Suricata.result = Suricata._configuration
+    @deploy
+    def _set_default_configuration(state, host):
+        ManagedYAMLBackedConfig._set_default_configuration(
+            state=state, host=host, solution_class=Suricata
+        )
 
-    def _verify_new_configuration(aspect=None, value=None):
-        real_value = None
-        if aspect == "mode":
-            real_value = FunctioningModes[value]
-        elif aspect == "automatic_updates":
-            real_value = AutomaticUpdates[value]
-        elif aspect == "interface":
-            real_value = value
-
-        return real_value is not None
+    @deploy
+    def _verify_new_configuration(state, host, aspect, value):
+        ManagedYAMLBackedConfig._verify_new_configuration(
+            state=state, host=host, solution_class=Suricata, aspect=aspect, value=value
+        )
 
     @deploy
     def set_configuration(state, host, aspect=None, value=None):
-        if not Suricata._verify_new_configuration(aspect, value):
-            Suricata.result = False
+        ManagedYAMLBackedConfig.set_configuration(
+            state=state, host=host, solution_class=Suricata, aspect=aspect, value=value
+        )
 
-            return
-
-        Suricata.get_configuration(state=state, host=host)
-
-        if aspect == "mode":
-            value = FunctioningModes[value]
-
-            update_command = "suricata-update"
-            if (
-                value == FunctioningModes.IPS
-                and Suricata._configuration["mode"] == FunctioningModes.IDS
-            ):
-                files.put(
-                    state=state,
-                    host=host,
-                    sudo=True,
-                    name="Creates the Suricata's configuration file to modify the downloaded rules",
-                    src=os.path.dirname(__file__) + "/suricata/suricata-modify.conf",
-                    dest="/opt/mutablesecurity/suricata/suricata-modify.conf",
-                )
-
-                update_command += (
-                    " --modify-conf /opt/mutablesecurity/suricata/suricata-modify.conf"
-                )
-
-                Suricata._configuration["mode"] = FunctioningModes.IPS
-            elif (
-                FunctioningModes.IDS
-                and Suricata._configuration["mode"] == FunctioningModes.IPS
-            ):
-                Suricata._configuration["mode"] = FunctioningModes.IDS
-
-            server.shell(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Updates the Suricata's rules, optionally with the corresponding modifications",
-                commands=[update_command, "suricatasc -c reload-rules"],
-            )
-        elif aspect == "automatic_updates":
-            value = AutomaticUpdates[value]
-
-            files.put(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Puts the script that deals with the updates",
-                src=os.path.dirname(__file__) + "/suricata/suricata-update.sh",
-                dest="/opt/mutablesecurity/suricata/suricata-update.sh",
-            )
-
-            if (
-                value == AutomaticUpdates.DISABLED
-                and Suricata._configuration["automatic_updates"]
-                == AutomaticUpdates.ENABLED
-            ):
-                Suricata._configuration["automatic_updates"] = AutomaticUpdates.DISABLED
-            elif (
-                value == AutomaticUpdates.ENABLED
-                and Suricata._configuration["automatic_updates"]
-                == AutomaticUpdates.DISABLED
-            ):
-                Suricata._configuration["automatic_updates"] = AutomaticUpdates.ENABLED
-
+    @deploy
+    def _set_configuration_callback(state, host, aspect=None, value=None):
+        # Perform post-setting operations, based on the set configuration
+        if aspect == "automatic_updates":
             server.crontab(
                 state=state,
                 host=host,
                 sudo=True,
                 name="Adds a crontab to automatically update the Suricata's rules",
-                command="/opt/mutablesecurity/suricata/suricata-update.sh",
-                present=Suricata._configuration["automatic_updates"].value,
+                command="suricata-update",
+                present=Suricata._configuration["automatic_updates"],
                 hour=0,
                 minute=0,
             )
+        elif aspect == "interface":
+            files.replace(
+                state=state,
+                host=host,
+                sudo=True,
+                name="Replaces the default interface in the Suricata's configuration file",
+                path="/etc/suricata/suricata.yaml",
+                match=r"  - interface: [\"a-zA-Z0-9]*$",
+                replace=f"  - interface: {Suricata._configuration['interface']}",
+            )
 
-        Suricata._put_configuration(state=state, host=host)
-
-        Suricata.result = True
+            server.shell(
+                state=state,
+                host=host,
+                sudo=True,
+                name="Starts the Suricata service",
+                commands=["service suricata restart"],
+            )
 
     @deploy
     def _put_configuration(state, host):
-        configuration = Suricata._configuration
-        for key, value in configuration.items():
-            if isinstance(value, Enum):
-                configuration[key] = value.value
-
-        files.template(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Dumps the Suricata's configuration file",
-            src=os.path.dirname(__file__) + "/suricata/suricata.conf.j2",
-            dest="/opt/mutablesecurity/suricata/suricata.conf",
-            configuration=Suricata._configuration,
+        ManagedYAMLBackedConfig._put_configuration(
+            state=state, host=host, solution_class=Suricata
         )
-
-        Suricata.result = True
 
     @deploy
     def install(state, host):
+        Suricata._set_default_configuration(state=state, host=host)
+
         apt.update(
             state=state,
             host=host,
@@ -234,6 +213,16 @@ class Suricata(AbstractSolution):
             name="Updates the apt reporisoties",
             env={"LC_TIME": "en_US.UTF-8"},
             cache_time=3600,
+            success_exit_codes=[0, 100],
+        )
+
+        apt.packages(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Installs the requirements",
+            packages=["software-properties-common", "jq", "tmux", "moreutils"],
+            latest=True,
         )
 
         apt.ppa(
@@ -250,15 +239,17 @@ class Suricata(AbstractSolution):
             sudo=True,
             name="Updates the apt reporisoties",
             cache_time=3600,
+            success_exit_codes=[0, 100],
         )
 
         apt.packages(
             state=state,
             host=host,
             sudo=True,
-            name="Installs Suricata, jq and ufw",
-            packages=["suricata", "jq", "ufw", "tmux", "moreutils"],
+            name="Installs Suricata",
+            packages=["suricata"],
             latest=True,
+            success_exit_codes=[0, 100],
         )
 
         Suricata._configuration["interface"] = host.get_fact(DefaultInterface)
@@ -273,34 +264,14 @@ class Suricata(AbstractSolution):
             replace=f"  - interface: {Suricata._configuration['interface']}",
         )
 
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Enables ufw",
-            commands=["ufw --force enable"],
-        )
-
-        paths = ["/etc/ufw/before.rules", "/etc/ufw/before6.rules"]
-        for path in paths:
-            files.replace(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Adds the ufw rules required to proxy the traffic",
-                path=path,
-                match=r"# End required lines",
-                replace=f"# End required lines\\n\\n# Suricata\\n-I INPUT -j NFQUEUE\\n-I OUTPUT -j NFQUEUE\\n\\n",
-            )
-
         files.replace(
             state=state,
             host=host,
             sudo=True,
-            name="Modifies the listening mode of Suricata",
-            path="/etc/default/suricata",
-            match=r"LISTENMODE=.*",
-            replace=f"LISTENMODE=nfqueue",
+            name="Replaces the default rules location in the Suricata's configuration file",
+            path="/etc/suricata/suricata.yaml",
+            match=r"^default-rule-path: /etc/suricata/rules$",
+            replace="default-rule-path: /var/lib/suricata/rules",
         )
 
         server.shell(
@@ -311,20 +282,14 @@ class Suricata(AbstractSolution):
             commands=["suricata-update"],
         )
 
+        # Restart the Suricata service as it starts at install but fails if the
+        # default interface is not eth0.
         server.shell(
             state=state,
             host=host,
             sudo=True,
-            name="Starts the Suricata service",
-            commands=["service suricata start"],
-        )
-
-        files.directory(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Creates the MutableSecurity directory",
-            path="/opt/mutablesecurity/suricata/",
+            name="Restart the Suricata service",
+            commands=["service suricata restart"],
         )
 
         Suricata._put_configuration(state=state, host=host)
@@ -332,12 +297,44 @@ class Suricata(AbstractSolution):
         Suricata.result = True
 
     @deploy
+    def test(state, host):
+        Suricata.get_configuration(state=state, host=host)
+
+        curl_command = "wget -O /tmp/index.html http://testmynids.org/uid/index.html"
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Requests a malicious-marked URL",
+            commands=[curl_command],
+        )
+
+        def stage(state, host):
+            # This verification will check if the last alert is one related to the
+            # request above.
+            alerts = host.get_fact(TestAlertsCount)
+
+            Suricata.result = alerts != 0
+
+        python.call(state=state, host=host, sudo=True, function=stage)
+
+    @deploy
+    def get_stats(state, host):
+        ManagedStats.get_stats(state=state, host=host, solution_class=Suricata)
+
+    @deploy
+    def get_logs(state, host):
+        Suricata.get_configuration(state=state, host=host)
+
+        Suricata.result = host.get_fact(Logs)
+
+    @deploy
     def update(state, host):
         apt.packages(
             state=state,
             host=host,
             sudo=True,
-            name="Updates Suricata, jq and ufw",
+            name="Updates Suricata",
             packages=["suricata"],
             latest=True,
             present=True,
@@ -346,73 +343,8 @@ class Suricata(AbstractSolution):
         Suricata.result = True
 
     @deploy
-    def test(state, host):
-        Suricata.get_configuration(state=state, host=host)
-
-        curl_command = "curl --max-time 3 http://testmynids.org/uid/index.html"
-        if Suricata._configuration["mode"] == FunctioningModes.IPS:
-            curl_command += " || true"
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Updates the Suricata's rules",
-            commands=[curl_command],
-        )
-
-        # This verification will return a non-zero exit code if the error was
-        # not found.
-        result = True
-        try:
-            server.shell(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Verifies the Suricata's alerts file",
-                commands=[
-                    "tail -n 100 /var/log/suricata/fast.log | grep -c '1:2100498:7'"
-                ],
-            )
-        except:
-            result = False
-
-        Suricata.result = result
-
-    @deploy
-    def get_stats(state, host):
-        Suricata.get_configuration(state=state, host=host)
-
-        Suricata.result = {"alerts_count": host.get_fact(AlertsCount)}
-
-    @deploy
-    def get_logs(state, host):
-        Suricata.get_configuration(state=state, host=host)
-
-        Suricata.result = host.get_fact(Alerts)
-
-    @deploy
     def uninstall(state, host):
         Suricata.get_configuration(state=state, host=host)
-
-        paths = ["/etc/ufw/before.rules", "/etc/ufw/before6.rules"]
-        for path in paths:
-            server.shell(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Removes the ufw rules required to proxy the traffic",
-                commands=[
-                    f"cat {path} | tr '\\n' '\\r' | sed 's/# End required lines\\r\\r# Suricata\\r-I INPUT -j NFQUEUE\\r-I OUTPUT -j NFQUEUE\\r\\r/# End required lines/' | tr '\\r' '\\n' | sponge {path}"
-                ],
-            )
-
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Reloads ufw",
-            commands=["ufw reload"],
-        )
 
         server.shell(
             state=state,

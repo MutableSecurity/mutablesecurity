@@ -2,14 +2,13 @@
 
 import logging
 import re
-import textwrap
+import time
 from enum import Enum
 
 import click
 from rich.console import Console
 from rich.emoji import Emoji
 from rich.logging import RichHandler
-from rich.padding import Padding
 from rich.table import Table
 from rich.text import Text
 
@@ -25,6 +24,7 @@ BANNER_FORMAT = """
                   {} |___/ 
 """
 MOTTO = "Seamlessly management of cybersecurity solutions"
+SLEEP_SECONDS_BEFORE_LOGS = 2
 
 console = Console()
 
@@ -130,7 +130,9 @@ def _setup_logging(verbose):
         level=logging.DEBUG,
         format=FORMAT,
         datefmt="[%X]",
-        handlers=[RichHandler(console=Console(file=open("/tmp/debug.log", "w")))],
+        handlers=[
+            RichHandler(console=Console(file=open("/tmp/mutablesecurity.log", "w")))
+        ],
     )
 
     # Set the logging level according to the options
@@ -158,18 +160,25 @@ def _print_response(response):
 
     # If there are additional data, print it (only dicts by now)
     additonal_data = response["raw_result"]
-    if additonal_data and isinstance(additonal_data, dict):
-        # Create the table
-        table = Table()
-        table.add_column("Attribute", justify="left", style="bold")
-        table.add_column("Value", justify="left")
+    if additonal_data:
+        if isinstance(additonal_data, list):
+            time.sleep(SLEEP_SECONDS_BEFORE_LOGS)
 
-        # Iterate through dict
-        for key, value in additonal_data.items():
-            table.add_row(key, str(value))
+            with console.pager():
+                for line in additonal_data:
+                    console.print(line)
+        elif isinstance(additonal_data, dict):
+            # Create the table
+            table = Table()
+            table.add_column("Attribute", justify="left", style="bold")
+            table.add_column("Value", justify="left")
 
-        console.print("")
-        console.print(table)
+            # Iterate through dict
+            for key, value in additonal_data.items():
+                table.add_row(key, str(value))
+
+            console.print("")
+            console.print(table)
 
 
 @click.command(cls=CommandWithBanner)
