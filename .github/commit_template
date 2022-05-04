@@ -1,0 +1,21 @@
+# The title is single-line, imperative, begins
+# with an uppercase letter, ends without a
+# period, and is fewer than 50 characters long
+#
+# A body that is fewer than 70 characters long. Explain here what and
+# why, not how. It can contain multiple paragraphs separated by empty
+# lines
+# 
+# For further information, read these two resources used for creating
+# this standard:
+# - https://gist.github.com/lisawolderiksen
+# - https://cbea.ms/git-commit
+#
+# Provide in this section details about the issues that this commit
+# fixes or those that are relevant (optional). Make use of the two
+# new lines below:
+# Resolves: #<issue_number>
+# See also: #<relevant_issue_number>
+# 
+# Signed-off-by: <full_name> <<email>>
+#

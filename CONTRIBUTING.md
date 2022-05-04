@@ -6,8 +6,10 @@ Thank you for taking the time to contribute to this project 🎊!
 
 We've created workflows to help you through the contribution process:
 - [Understanding the Infrastructure](#understanding-the-infrastructure);
-- [Configuring the Development Environment](#configuring-the-development-environment); and
-- [Creating a New Module](#creating-a-new-module).
+- [Configuring the Development Environment](#configuring-the-development-environment);
+- [Creating a New Module](#creating-a-new-module);
+- [Using Git and GitHub to Contribute](#using-git-and-github-to-contribute); and
+- [Publishing a New Version](#publishing-a-new-version).
 
 If you believe there are any missing ones, create an issue and the core team will create a draft to be discussed with the entire community.
 
@@ -32,14 +34,7 @@ The development environment consists in:
 
 After installing the [main requirements](README.md#requirements-) of the project, set up the development environment by following the [official installation guide](https://github.com/python-poetry/poetry#installation) of Poetry. Run `poetry install` to download the required Python packages and `poetry shell` to enter the environment. By running `mutablesecurity`, you will be able to see the tool's banner and guide.
 
-### Publishing a New Version
-
-To upload a new version of the PyPi package, increase the version number in TOML file and use the Poetry commands below, where `<pypi_token>` is the PyPi token.
-
-```
-poetry config pypi-token.pypi <pypi_token>
-poetry publish --build --username mutablesecurity
-```
+The last step is configuring the commit template by running `git config commit.template .github/commit_template`.
 
 ### Creating a New Module
 
@@ -81,6 +76,23 @@ The process of creating a new module is divided into three major steps:
 1. If the solution requires some kind of files for proper management (for example, custom scripts to be run on a regular basis via crontab), create a new folder in `modules/solution_manager/files`.
 2. In the `modules/solution_manager/solutions` folder, create a properly named Python 3 script (noted with `<script>`) containing a class (noted with `<class>`) that wraps up the solution management functionality.
 3. In `mutablesecurity/modules/solutions_manager/solutions/__init__.py`, create a new member in the `AvailableSolution` enumeration with a tuple `(<script>, <class>)`. For convenience, put the member's name be the uppercase transformation of `<class>`.
+
+### Using Git and GitHub to Contribute
+
+1. Open an issue, take over one you are assigned to, or assign yourself to one that hasn't been processed yet.
+2. Create a branch named `issue-<issue_numer>`, where `<issue_numer>` is the identifier of the issue.
+3. Fix a bug or implements a new feature.
+4. Commit the changed files by respecting the commit format.
+5. Create a pull request from your branch to `main` by respecting the corresponding format.
+
+### Publishing a New Version
+
+To upload a new version of the PyPi package, increase the version number in TOML file and use the Poetry commands below, where `<pypi_token>` is the PyPi token.
+
+```
+poetry config pypi-token.pypi <pypi_token>
+poetry publish --build --username mutablesecurity
+```
 
 ## Useful Resources
 
