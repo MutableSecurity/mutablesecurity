@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "mutablesecurity"
-version = "0.1.0.post5"
-description = "Seamlessly management of cybersecurity solutions"
+version = "0.1.0.post6"
+description = "Seamless deployment and management of cybersecurity solutions"
 keywords = ["cybersecurity", "security-solutions", "hardening", "automatic-deployment"]
 license = "MIT"
 authors = [

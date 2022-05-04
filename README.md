@@ -163,7 +163,7 @@ To avoid warnings when using pip to install Python scripts, add `/home/<username
  /    \| | | | __/ _` | '_ \| |/ _ \ \ / _ \/ __| | | | '__| | __| | | |
 / /\/\ | |_| | || (_| | |_) | |  ___\ |  __| (__| |_| | |  | | |_| |_| |
 \/    \/\__,_|\__\__,_|_.__/|_|\___\__/\___|\___|\__,_|_|  |_|\__|\__, |
-                  Seamlessly management of cybersecurity solutions |___/ 
+     Seamless deployment and management of cybersecurity solutions |___/ 
 
 Usage: mutablesecurity [OPTIONS]
 
@@ -191,7 +191,7 @@ Options:
  /    \| | | | __/ _` | '_ \| |/ _ \ \ / _ \/ __| | | | '__| | __| | | |
 / /\/\ | |_| | || (_| | |_) | |  ___\ |  __| (__| |_| | |  | | |_| |_| |
 \/    \/\__,_|\__\__,_|_.__/|_|\___\__/\___|\___|\__,_|_|  |_|\__|\__, |
-                  Seamlessly management of cybersecurity solutions |___/ 
+     Seamless deployment and management of cybersecurity solutions |___/  
 
 Full name: Suricata Intrusion Detection and Prevention System
 
