@@ -21,9 +21,9 @@ BANNER_FORMAT = """
  /    \| | | | __/ _` | '_ \| |/ _ \ \ / _ \/ __| | | | '__| | __| | | |
 / /\/\ | |_| | || (_| | |_) | |  ___\ |  __| (__| |_| | |  | | |_| |_| |
 \/    \/\__,_|\__\__,_|_.__/|_|\___\__/\___|\___|\__,_|_|  |_|\__|\__, |
-                  {} |___/ 
+     {} |___/ 
 """
-MOTTO = "Seamlessly management of cybersecurity solutions"
+MOTTO = "Seamless deployment and management of cybersecurity solutions"
 SLEEP_SECONDS_BEFORE_LOGS = 2
 
 console = Console()
