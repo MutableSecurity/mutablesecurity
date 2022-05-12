@@ -1,0 +1,49 @@
+log_format: {{ configuration["log_format"] }}
+
+rules:
+  cache: true
+  threat:
+    excludes:
+    whitelists:
+    customs:
+
+metrics:
+  prometheus:
+    active: false
+    host: "localhost"
+    port: 9099
+    endpoint: "/metrics"
+
+logs:
+  file:
+    active: true
+    json: true
+    path: "/var/log/teler.log"
+
+  zinc:
+    active: false
+    host: "localhost"
+    port: 4080
+    ssl: false
+    username: "admin"
+    password: "Complexpass#123"
+    index: "lorem-ipsum-index"
+
+alert:
+  active: false
+  provider: "slack"
+
+notifications:
+  slack:
+    token: "xoxo-...."
+    color: "#ffd21a"
+    channel: "G30SPKI"
+
+  telegram:
+    token: "123456:ABC-DEF1234...-..."
+    chat_id: "-111000"
+
+  discord:
+    token: "NkWkawkawkawkawka.X0xo.n-kmZwA8aWAA"
+    color: "16312092"
+    channel: "700000000000000..."

@@ -164,7 +164,9 @@ class Suricata(AbstractSolution):
         )
 
     @deploy
-    def _set_configuration_callback(state, host, aspect=None, value=None):
+    def _set_configuration_callback(
+        state, host, aspect=None, old_value=None, new_value=None
+    ):
         # Perform post-setting operations, based on the set configuration
         if aspect == "automatic_updates":
             server.crontab(
