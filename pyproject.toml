@@ -30,6 +30,8 @@ Click = "^8.0"
 PyYAML = "6.0"
 rich = "11.2.0"
 humanfriendly = "^10.0"
+packaging = "^21.3"
+requests = "^2.27.1"
 
 [tool.poetry.scripts]
 mutablesecurity = "mutablesecurity.cli:main"

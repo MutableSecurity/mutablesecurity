@@ -91,6 +91,7 @@ class ManagedYAMLBackedConfig:
             real_value = real_type(value)
         except:
             real_value = real_type[value]
+        old_value = solution_class._configuration[aspect]
         solution_class._configuration[aspect] = real_value
 
         # Upload the new configuration on the server
@@ -99,7 +100,11 @@ class ManagedYAMLBackedConfig:
         # Callback
         if solution_class._set_configuration_callback:
             solution_class._set_configuration_callback(
-                state=state, host=host, aspect=aspect, value=value
+                state=state,
+                host=host,
+                aspect=aspect,
+                old_value=old_value,
+                new_value=value,
             )
 
         solution_class.result = True
