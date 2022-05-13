@@ -450,4 +450,13 @@ class Teler(AbstractSolution):
             present=False,
         )
 
+        files.file(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Removes the teler log file",
+            path="/var/log/teler.log",
+            present=False,
+        )
+
         Teler.result = True
