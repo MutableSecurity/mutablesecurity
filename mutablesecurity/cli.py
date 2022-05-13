@@ -2,6 +2,7 @@
 
 import logging
 import re
+import sys
 import time
 from enum import Enum
 
@@ -15,6 +16,7 @@ from rich.text import Text
 from .modules.main import Main
 from .modules.solutions_manager import SolutionsManager
 
+MIN_PYTHON_VERSION = (3, 9)
 BANNER_FORMAT = """
               _        _     _      __                      _ _         
   /\/\  _   _| |_ __ _| |__ | | ___/ _\ ___  ___ _   _ _ __(_| |_ _   _ 
@@ -51,6 +53,19 @@ def _prepare_long_text(text):
     wrapped_text = Text(text, justify="full")
 
     return wrapped_text
+
+
+def _print_version_error():
+    console.print(_create_banner())
+
+    major, minor = MIN_PYTHON_VERSION
+
+    text = Text()
+    text.append(str(Emoji("stop_sign")) + " ")
+    text.append(
+        f"Please make sure that your Python version is at least {major}.{minor} before executing MutableSecurity."
+    )
+    console.print(text)
 
 
 def _print_help(ctx, param, value):
@@ -266,6 +281,12 @@ def run_command(ctx, remote, solution, operation, aspect, value, verbose, help):
 
 
 def main():
+    # Check Python version
+    if sys.version_info < MIN_PYTHON_VERSION:
+        _print_version_error()
+
+        return
+
     run_command()
 
 
