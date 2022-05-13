@@ -1,15 +1,20 @@
 #!/usr/bin/env python3
 
 import logging
+import os
 import re
 import sys
 import time
 from enum import Enum
 
 import click
+import requests
+from rich import box
 from rich.console import Console
 from rich.emoji import Emoji
 from rich.logging import RichHandler
+from rich.panel import Panel
+from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
@@ -26,6 +31,25 @@ BANNER_FORMAT = """
      {} |___/ 
 """
 MOTTO = "Seamless deployment and management of cybersecurity solutions"
+FEEDBACK_TITLE = "[bold][blue]We'd Love To Hear From You "
+FEEDBACK_BODY = """
+We're all administrators, just like you. We deploy and manage security\
+ solutions in our infrastructure, but we're sick of repeating the same\
+ time-consuming procedures over and over again.
+
+Our goal is to make interacting with security solutions easier. Because we're\
+ starting from scratch, we'd like to get in touch with as many administrators\
+ as possible to see how they use our software in their daily operations and\
+ what features could be added to make their jobs easier.
+
+[bold]Please provide us your email address if you want to support us with the\
+ above.[/bold] If you'd rather send it later, simply press ENTER now and run\
+ [italic]mutablesecurity feedback[/italic] when you're ready.
+"""
+FEEDBACK_THANKS = "\n  [bold]Many thanks! One of our staff members will\
+ contact you as soon as possible."
+FEEDBACK_FILE = ".feedback"
+FEEDBACK_EMAIL_REQUEST = "\n  [bold][blue]Your Email Address"
 SLEEP_SECONDS_BEFORE_LOGS = 2
 
 console = Console()
@@ -72,9 +96,6 @@ def _print_help(ctx, param, value):
     if value is False:
         return
     console.print(ctx.get_help())
-
-    # Exit
-    ctx.exit()
 
 
 def _print_module_help(ctx, solution):
@@ -125,8 +146,50 @@ def _print_module_help(ctx, solution):
     console.print(help_text)
     console.print(table)
 
-    # Exit
-    ctx.exit()
+
+def _check_or_mark_shown_feedback():
+    if not (exists := os.path.isfile(FEEDBACK_FILE)):
+        # Create file if it does not exists
+        open(FEEDBACK_FILE, "w").close()
+
+    return exists
+
+
+def _print_feedback_form(check=True, before_empty_lines=1):
+    # Check if the feedback was already shown
+    if check and _check_or_mark_shown_feedback():
+        return
+
+    console.print(before_empty_lines * "\n", end="")
+
+    # Print the text and the prompt
+    console.print(
+        Panel(
+            FEEDBACK_BODY,
+            title=FEEDBACK_TITLE,
+            box=box.HORIZONTALS,
+        )
+    )
+    email = Prompt.ask(FEEDBACK_EMAIL_REQUEST)
+
+    # Process the email
+    if email:
+        # Create a request
+        data = {"email": email, "message": "Want to help!"}
+        headers = {
+            "Content-Type": "application/json",
+            "Access-Control-Allow-Origin": "*",
+        }
+        requests.post(
+            "https://europe-central2-mutablesecurity.cloudfunctions.net/add_to_waiting_list",
+            json=data,
+            headers=headers,
+        )
+
+        # Skip the return code check :\ and print
+        console.print(FEEDBACK_THANKS)
+
+    console.print("")
 
 
 def _validate_connection_string(connection_string):
@@ -140,10 +203,9 @@ def _validate_connection_string(connection_string):
 
 def _setup_logging(verbose):
     # Enable rich logging
-    FORMAT = "%(message)s"
     logging.basicConfig(
         level=logging.DEBUG,
-        format=FORMAT,
+        format="%(message)s",
         datefmt="[%X]",
         handlers=[
             RichHandler(console=Console(file=open("/tmp/mutablesecurity.log", "w")))
@@ -228,6 +290,7 @@ def _print_response(response):
     help="New value of the configuration's aspect. Available only with an aspect (--aspect).",
 )
 @click.option("--verbose", is_flag=True, help="Increase in the logging volume")
+@click.option("--feedback", is_flag=True, help="Show feedback form")
 @click.option(
     "-h",
     "--help",
@@ -236,17 +299,33 @@ def _print_response(response):
     help="Useful information for using MutableSecurity or about a solution",
 )
 @click.pass_context
-def run_command(ctx, remote, solution, operation, aspect, value, verbose, help):
+def run_command(
+    ctx, remote, solution, operation, aspect, value, verbose, feedback, help
+):
+    # Print the feedback form
+    if feedback:
+        _print_feedback_form(check=False)
+
+        return
+
     # Print the generic help. Includes the -h presence and an invalid host to
     # connect to
     if solution is None or (remote and not _validate_connection_string(remote)):
         _print_help(ctx, None, value=True)
 
-        ctx.exit()
+        # Print the feedback form
+        _print_feedback_form(before_empty_lines=2)
+
+        return
 
     # Print the module-specific help. Here the solution must be set.
     if operation is None or help:
         _print_module_help(ctx, solution)
+
+        # Print the feedback form
+        _print_feedback_form(before_empty_lines=2)
+
+        return
 
     # Process (and get) the required connection details
     hostname = None
@@ -278,6 +357,9 @@ def run_command(ctx, remote, solution, operation, aspect, value, verbose, help):
     # Run
     response = Main.run(connection_details, solution, operation, additional_arguments)
     _print_response(response)
+
+    # Print the feedback form
+    _print_feedback_form(before_empty_lines=2)
 
 
 def main():
