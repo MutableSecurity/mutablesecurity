@@ -4,6 +4,9 @@ docs/
 # Backup files
 .bak/
 
+# Feedback file
+.feedback
+
 # Poetry
 .venv/
 dist/
