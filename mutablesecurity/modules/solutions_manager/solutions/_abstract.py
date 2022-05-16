@@ -79,7 +79,9 @@ class AbstractSolution(ABC):
 
     @staticmethod
     @abstractmethod
-    def _set_configuration_callback(state: State, host: Host, aspect, value):
+    def _set_configuration_callback(
+        state: State, host: Host, aspect, old_value, new_value
+    ):
         """Executes operations after the configuration setting.
 
         If overwritten, it is called automatically by set_configuration to
@@ -89,7 +91,8 @@ class AbstractSolution(ABC):
             state (State): pyinfra's state
             host (Host): pyinfra's host
             aspect (str): Set aspect
-            value (str): Set value
+            old_value (str): Old value
+            new_value (str): New value
 
         Raises:
             NotImplementedError: Method not implemented
