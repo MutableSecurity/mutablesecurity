@@ -5,6 +5,7 @@ from pyinfra.api.deploy import add_deploy
 from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
+from ..exceptions import MutableSecurityException
 from ..leader import Leader
 from ..solutions_manager import AbstractSolution, AvailableSolution, SolutionsManager
 
@@ -54,6 +55,7 @@ class Main:
         meta = getattr(solution_class, "meta")
 
         # Run the required deployment
+        responses = []
         try:
             # Check the number of the arguments. Two of them are inherited from
             # the pyinfra deployment.
@@ -66,27 +68,43 @@ class Main:
             run_ops(state)
 
         except PyinfraError:
-            result = None
-            is_fail = True
+            responses.append(
+                {
+                    "host": "all",
+                    "success": 0,
+                    "message": meta["messages"][operation_name][1],
+                    "raw_result": None,
+                }
+            )
 
-        # Check the result
-        results = getattr(solution_class, "result")
-        responses = []
-        for result in results:
-            host, host_result = result
-            if not host_result:
-                is_fail = True
-            else:
-                is_fail = False
+        except MutableSecurityException as exception:
+            responses.append(
+                {
+                    "host": "all",
+                    "success": 0,
+                    "message": str(exception),
+                    "raw_result": None,
+                }
+            )
 
-            # Check the result and build the response
-            message = meta["messages"][operation_name][int(is_fail)]
-            response = {
-                "host": host,
-                "success": not is_fail,
-                "message": message,
-                "raw_result": result[1],
-            }
-            responses.append(response)
+        else:
+            # Check the result
+            results = getattr(solution_class, "result")
+            for result in results:
+                host, host_result = result
+                if not host_result:
+                    is_fail = True
+                else:
+                    is_fail = False
+
+                # Check the result and build the response
+                message = meta["messages"][operation_name][int(is_fail)]
+                response = {
+                    "host": host,
+                    "success": not is_fail,
+                    "message": message,
+                    "raw_result": result[1],
+                }
+                responses.append(response)
 
         return responses

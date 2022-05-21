@@ -1,27 +1,30 @@
+import os
 from datetime import datetime
 
-from genericpath import exists
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
+from pyinfra.facts import files as file_facts
 from pyinfra.operations import apt, python, server
 
+from ...exceptions import MandatoryAspectLeftUnsetException
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
 from . import AbstractSolution
 
 
 class SecuredRequests(FactBase):
-    command = "cat /var/log/nginx/https_dev.mutablesecurity.io_access.log | wc -l "
+    def command(self, domain):
+        return f"cat /var/log/nginx/https_{domain}_access.log | wc -l "
 
     def process(self, output):
         return int(output[0])
 
 
 class SecuredRequestsToday(FactBase):
-    def command(self):
+    def command(self, domain):
         current_date = datetime.today().strftime("%d/%B/%Y")
 
-        return f"sudo cat /var/log/nginx/https_dev.mutablesecurity.io_access.log | grep '{current_date}' | wc -l"
+        return f"sudo cat /var/log/nginx/https_{domain}_access.log | grep '{current_date}' | wc -l"
 
     def process(self, output):
         return int(output[0])
@@ -35,7 +38,8 @@ class Version(FactBase):
 
 
 class Logs(FactBase):
-    command = "cat /var/log/nginx/https_dev.mutablesecurity.io_access.log"
+    def command(self, domain):
+        return f"cat /var/log/nginx/https_{domain}_access.log"
 
     def process(self, output):
         return output
@@ -43,9 +47,9 @@ class Logs(FactBase):
 
 class LetsEncrypt(AbstractSolution):
     meta = {
-        "id": "letsencrypt",
+        "id": "lets_encrypt",
         "full_name": "Let's Encrypt x Certbot",
-        "description": "Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is made by the Electronic Frontier Foundation (EFF), a 501(c)3 nonprofit based in San Francisco, CA, that defends digital privacy, free speech, and innovation.",
+        "description": "Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.",
         "references": [
             "https://letsencrypt.org/",
             "https://github.com/letsencrypt",
@@ -55,22 +59,22 @@ class LetsEncrypt(AbstractSolution):
         "configuration": {
             "email": {
                 "type": str,
-                "help": "The email provided for security reasons when generating certificates",
-                "default": "hello@mutablesecurity.io",
+                "help": "Email provided for security reasons when generating the certificate",
+                "default": None,
             },
-            "domains": {
-                "type": list,
-                "help": "The domain(s) protected by certificates",
-                "default": "staging.mutablesecurity.io",
+            "domain": {
+                "type": str,
+                "help": "Domain protected by the generated certificate",
+                "default": None,
             },
         },
         "metrics": {
             "SecuredRequests": {
-                "description": "Total number Secured Requests",
+                "description": "Total number of secured requests",
                 "fact": SecuredRequests,
             },
             "SecuredRequestsToday": {
-                "description": "Total number of Secured Requests Today",
+                "description": "Total number of secured requests in the current day",
                 "fact": SecuredRequestsToday,
             },
             "version": {"description": "Current installed version", "fact": Version},
@@ -145,9 +149,20 @@ class LetsEncrypt(AbstractSolution):
         )
 
     @deploy
-    def _set_configuration_callback(state, host, aspect=None, value=None):
-        # Perform post-setting operations, based on the set configuration
-        pass
+    def _set_configuration_callback(
+        state, host, aspect=None, old_value=None, new_value=None
+    ):
+        try:
+            LetsEncrypt._check_installation_config(state=state, host=host)
+        except MandatoryAspectLeftUnsetException:
+            pass
+        else:
+            # Check if the solution is alreadt installed
+            if host.get_fact(
+                file_facts.File, "/opt/mutablesecurity/lets_encrypt/default"
+            ):
+                LetsEncrypt._revoke_current_certificate(state=state, host=host)
+                LetsEncrypt._generate_certificate(state=state, host=host)
 
     @deploy
     def _put_configuration(state, host):
@@ -156,21 +171,54 @@ class LetsEncrypt(AbstractSolution):
         )
 
     @deploy
-    def install(state, host):
-        LetsEncrypt._set_default_configuration(state=state, host=host)
-        LetsEncrypt._put_configuration(state=state, host=host)
+    def _check_installation_config(state, host):
+        ManagedYAMLBackedConfig._check_installation_config(
+            state=state, host=host, solution_class=LetsEncrypt
+        )
 
-        file_path = "/opt/mutablesecurity/letsencrypt/default"
-        if not exists(file_path):
-            server.shell(
-                state=state,
-                host=host,
-                sudo=True,
-                name="Saves the default config file in case the user wants to remove LetsEncrypt(Certbot)",
-                commands=[
-                    "cp /etc/nginx/sites-enabled/default /opt/mutablesecurity/letsencrypt/"
-                ],
-            )
+    @deploy
+    def _generate_certificate(state, host):
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Saves the default config file in case the user wants to remove LetsEncrypt(Certbot)",
+            commands=[
+                "cp /etc/nginx/sites-enabled/default /opt/mutablesecurity/lets_encrypt/"
+            ],
+        )
+
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Generates and installs the certificates for the given nginx domain",
+            commands=[
+                f"certbot --nginx --noninteractive --agree-tos --cert-name {LetsEncrypt._configuration['domain']} -d {LetsEncrypt._configuration['domain']} -m {LetsEncrypt._configuration['email']} --redirect"
+            ],
+        )
+
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Adds MutableSecurity logs command in sites-enabled",
+            commands=[
+                f"sed -i '/server_name {LetsEncrypt._configuration['domain']};/a access_log /var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log; # Managed by MutableSecurity' /etc/nginx/sites-enabled/default"
+            ],
+        )
+
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Restart the Nginx service",
+            commands=["systemctl restart nginx"],
+        )
+
+    @deploy
+    def install(state, host):
+        LetsEncrypt._check_installation_config(state=state, host=host)
 
         apt.update(
             state=state,
@@ -191,33 +239,9 @@ class LetsEncrypt(AbstractSolution):
             latest=True,
         )
 
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Generates and installs the certificates for the given nginx domain",
-            commands=[
-                "certbot --nginx --noninteractive --agree-tos --cert-name staging.mutablesecurity.io -d staging.mutablesecurity.io -m hello@mutablesecurity.io --redirect"
-            ],
-        )
+        LetsEncrypt._generate_certificate(state=state, host=host)
 
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Adds MutableSecurity logs command in sites-enabled",
-            commands=[
-                "sed -i '/server_name staging.mutablesecurity.io;/a access_log /var/log/nginx/https_dev.mutablesecurity.io_access.log; # Managed by MutableSecurity' /etc/nginx/sites-enabled/default"
-            ],
-        )
-
-        server.shell(
-            state=state,
-            host=host,
-            sudo=True,
-            name="Restart the Nginx service",
-            commands=["systemctl restart nginx"],
-        )
+        LetsEncrypt._put_configuration(state=state, host=host)
 
         LetsEncrypt.result = True
 
@@ -225,7 +249,7 @@ class LetsEncrypt(AbstractSolution):
     def test(state, host):
         LetsEncrypt.get_configuration(state=state, host=host)
 
-        curl_command = "curl https://staging.mutablesecurity.io"
+        curl_command = "curl https://" + LetsEncrypt._configuration["domain"]
         server.shell(
             state=state,
             host=host,
@@ -249,7 +273,9 @@ class LetsEncrypt(AbstractSolution):
     def get_logs(state, host):
         LetsEncrypt.get_configuration(state=state, host=host)
 
-        LetsEncrypt.result = host.get_fact(Logs)
+        LetsEncrypt.result = host.get_fact(
+            Logs, domain=LetsEncrypt._configuration["domain"]
+        )
 
     @deploy
     def update(state, host):
@@ -266,15 +292,15 @@ class LetsEncrypt(AbstractSolution):
         LetsEncrypt.result = True
 
     @deploy
-    def uninstall(state, host):
-        LetsEncrypt.get_configuration(state=state, host=host)
-
+    def _revoke_current_certificate(state, host):
         server.shell(
             state=state,
             host=host,
             sudo=True,
             name="Revokes the generated certificate",
-            commands=["certbot revoke -n --cert-name staging.mutablesecurity.io"],
+            commands=[
+                f"certbot revoke -n --cert-name {LetsEncrypt._configuration['domain']}"
+            ],
         )
 
         server.shell(
@@ -283,9 +309,25 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Adds all the old configurations back in place on sites-enabled",
             commands=[
-                "cp /opt/mutablesecurity/letsencrypt/default /etc/nginx/sites-enabled/default"
+                "cp /opt/mutablesecurity/lets_encrypt/default /etc/nginx/sites-enabled/default"
             ],
         )
+
+        server.shell(
+            state=state,
+            host=host,
+            sudo=True,
+            name="Removes all traces of Let's Encrypt x Certbot",
+            commands=[
+                f"/var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log /opt/mutablesecurity/lets_encrypt/default"
+            ],
+        )
+
+    @deploy
+    def uninstall(state, host):
+        LetsEncrypt.get_configuration(state=state, host=host)
+
+        LetsEncrypt._revoke_current_certificate(state=state, host=host)
 
         server.shell(
             state=state,
@@ -301,7 +343,7 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                "rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/ /opt/eff.org/certbot/ /var/lib/letsencrypt/ /var/log/letsencrypt/ /var/log/nginx/https_dev.mutablesecurity.io_access.log /opt/mutablesecurity/letsencrypt/default"
+                f"rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/ /opt/eff.org/certbot/ /var/lib/letsencrypt/ /var/log/letsencrypt/"
             ],
         )
 
