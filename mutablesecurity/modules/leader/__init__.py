@@ -1,1 +1,1 @@
-from .leader import Leader
+from .leader import ConnectionDetails, Leader

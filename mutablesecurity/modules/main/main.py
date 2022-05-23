@@ -5,7 +5,7 @@ from pyinfra.api.deploy import add_deploy
 from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
-from ..leader import Leader
+from ..leader import ConnectionDetails, Leader
 from ..solutions_manager import AbstractSolution, AvailableSolution, SolutionsManager
 
 
@@ -33,14 +33,13 @@ class Main:
     def run(connection_details, solution_name, operation_name, additional_arguments):
         try:
             # Connect to local or remote depending on the set host
-            if connection_details[0]:
-                host, ssh_port, ssh_user, ssh_password = connection_details
-                state = Leader.connect_to_ssh_with_password(
-                    host, ssh_port, ssh_user, ssh_password
-                )
+            if connection_details.hostname:
+                if connection_details.key:
+                    state = Leader.connect_to_ssh_with_key(connection_details)
+                else:
+                    state = Leader.connect_to_ssh_with_password(connection_details)
             else:
-                local_password = connection_details[3]
-                state = Leader.connect_to_local(local_password)
+                state = Leader.connect_to_local(connection_details)
         except:
             return {
                 "success": False,
