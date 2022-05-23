@@ -18,6 +18,7 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
+from .modules.leader import ConnectionDetails
 from .modules.main import Main
 from .modules.solutions_manager import SolutionsManager
 
@@ -266,6 +267,12 @@ def _print_response(response):
     help="Connect to remote in the USERNAME@HOSTNAME:PORT format. If ommited, the operations are executed locally.",
 )
 @click.option(
+    "-k",
+    "--key",
+    type=click.Path(exists=True, dir_okay=False),
+    help="SSH key to use when connecting to the remote host",
+)
+@click.option(
     "-s",
     "--solution",
     type=click.Choice(Main.get_available_solutions(), case_sensitive=True),
@@ -300,7 +307,7 @@ def _print_response(response):
 )
 @click.pass_context
 def run_command(
-    ctx, remote, solution, operation, aspect, value, verbose, feedback, help
+    ctx, remote, key, solution, operation, aspect, value, verbose, feedback, help
 ):
     # Print the feedback form
     if feedback:
@@ -331,12 +338,11 @@ def run_command(
     hostname = None
     port = None
     username = None
-    connection_details = None
-    connection_location_string = remote if remote else "localhost"
+    locked_object_id = (
+        f"{key} and {remote}" if key else remote if remote else "localhost"
+    )
     password = click.prompt(
-        Text.from_markup(
-            f":locked_with_key: Password for {connection_location_string}"
-        ),
+        Text.from_markup(f":locked_with_key: Password for {locked_object_id}"),
         hide_input=True,
         type=str,
     )
@@ -346,7 +352,7 @@ def run_command(
         remote = remote[1].split(":")
         hostname = remote[0]
         port = int(remote[1])
-    connection_details = (hostname, port, username, password)
+    connection_details = ConnectionDetails(hostname, port, username, key, password)
 
     # Here the solution and the operation must be set.
     additional_arguments = {"aspect": aspect, "value": value}
