@@ -11,4 +11,4 @@ class ManagedStats:
         for _, value in metrics_config.items():
             result[value["description"]] = host.get_fact(value["fact"])
 
-        solution_class.result = result
+        solution_class.result.append((host, result))

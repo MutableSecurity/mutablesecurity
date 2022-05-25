@@ -18,6 +18,7 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
+from .modules.helpers.networking import parse_connection_string
 from .modules.leader import ConnectionDetails
 from .modules.main import Main
 from .modules.solutions_manager import SolutionsManager
@@ -220,43 +221,47 @@ def _setup_logging(verbose):
         logging.getLogger("mutablesecurity").setLevel(logging.DEBUG)
 
 
-def _print_response(response):
-    text = Text()
+def _print_response(responses):
+    for index, response in enumerate(responses):
+        text = Text()
 
-    # Check the success status
-    if response["success"]:
-        emoji = "white_check_mark"
-    else:
-        emoji = "stop_sign"
-    text.append(str(Emoji(emoji)))
-
-    # Plug the message and the addition sent data
-    text.append(" " + response["message"])
-
-    # Print the message
-    console.print(text)
-
-    # If there are additional data, print it (only dicts by now)
-    additonal_data = response["raw_result"]
-    if additonal_data:
-        if isinstance(additonal_data, list):
-            time.sleep(SLEEP_SECONDS_BEFORE_LOGS)
-
-            with console.pager():
-                for line in additonal_data:
-                    console.print(line)
-        elif isinstance(additonal_data, dict):
-            # Create the table
-            table = Table()
-            table.add_column("Attribute", justify="left", style="bold")
-            table.add_column("Value", justify="left")
-
-            # Iterate through dict
-            for key, value in additonal_data.items():
-                table.add_row(key, str(value))
-
+        if index != 0:
             console.print("")
-            console.print(table)
+
+        # Check the success status
+        if response["success"]:
+            emoji = "white_check_mark"
+        else:
+            emoji = "stop_sign"
+        text.append(str(Emoji(emoji)))
+
+        # Plug the host, the message and the addition sent data
+        text.append(" " + response["host"].name + ": " + response["message"])
+
+        # Print the message
+        console.print(text)
+
+        # If there are additional data, print it (only dicts by now)
+        additonal_data = response["raw_result"]
+        if additonal_data:
+            if isinstance(additonal_data, list):
+                time.sleep(SLEEP_SECONDS_BEFORE_LOGS)
+
+                with console.pager():
+                    for line in additonal_data:
+                        console.print(line)
+            elif isinstance(additonal_data, dict):
+                # Create the table
+                table = Table()
+                table.add_column("Attribute", justify="left", style="bold")
+                table.add_column("Value", justify="left")
+
+                # Iterate through dict
+                for key, value in additonal_data.items():
+                    table.add_row(key, str(value))
+
+                console.print("")
+                console.print(table)
 
 
 @click.command(cls=CommandWithBanner)
@@ -264,7 +269,13 @@ def _print_response(response):
     "-r",
     "--remote",
     type=str,
-    help="Connect to remote in the USERNAME@HOSTNAME:PORT format. If ommited, the operations are executed locally.",
+    help="Connect to remote in the USERNAME@HOSTNAME:PORT format. If ommited (besides the remote list parameter), the operations are executed locally.",
+)
+@click.option(
+    "-l",
+    "--remote-list",
+    type=click.Path(exists=True, dir_okay=False),
+    help="Connect to a series of remote hosts specified in a file, in the USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host parameter), the operations are executed locally.",
 )
 @click.option(
     "-k",
@@ -307,7 +318,17 @@ def _print_response(response):
 )
 @click.pass_context
 def run_command(
-    ctx, remote, key, solution, operation, aspect, value, verbose, feedback, help
+    ctx,
+    remote,
+    remote_list,
+    key,
+    solution,
+    operation,
+    aspect,
+    value,
+    verbose,
+    feedback,
+    help,
 ):
     # Print the feedback form
     if feedback:
@@ -338,21 +359,46 @@ def run_command(
     hostname = None
     port = None
     username = None
-    locked_object_id = (
-        f"{key} and {remote}" if key else remote if remote else "localhost"
-    )
+    locked_object_id = []
+    if key:
+        locked_object_id.append(key)
+    if remote:
+        locked_object_id.append(remote)
+    elif remote_list:
+        locked_object_id.append("hosts")
+    else:
+        locked_object_id.append("@local")
+    locked_object_id = " and ".join(locked_object_id)
     password = click.prompt(
         Text.from_markup(f":locked_with_key: Password for {locked_object_id}"),
         hide_input=True,
         type=str,
     )
+    connection_string_list = []
     if remote:
-        remote = remote.split("@")
-        username = remote[0]
-        remote = remote[1].split(":")
-        hostname = remote[0]
-        port = int(remote[1])
-    connection_details = ConnectionDetails(hostname, port, username, key, password)
+        connection_string_list.append(remote)
+    elif remote_list:
+        with open(remote_list, "r") as remote_hosts:
+            for line in remote_hosts.readlines():
+                line = line.strip()
+                if line:
+                    connection_string_list.append(line)
+    else:
+        connection_string_list.append(None)
+
+    connection_details = []
+    for string in connection_string_list:
+        if string:
+            details = parse_connection_string(string)
+            if details:
+                username, hostname, port = details
+            else:
+                continue
+        else:
+            username = hostname = port = None
+        connection_details.append(
+            ConnectionDetails(hostname, port, username, key, password)
+        )
 
     # Here the solution and the operation must be set.
     additional_arguments = {"aspect": aspect, "value": value}

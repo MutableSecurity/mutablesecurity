@@ -137,7 +137,7 @@ class Suricata(AbstractSolution):
             ),
         },
     }
-    result = None
+    result = []
 
     @deploy
     def get_configuration(state, host):
@@ -296,7 +296,7 @@ class Suricata(AbstractSolution):
 
         Suricata._put_configuration(state=state, host=host)
 
-        Suricata.result = True
+        Suricata.result.append((host, True))
 
     @deploy
     def test(state, host):
@@ -316,7 +316,7 @@ class Suricata(AbstractSolution):
             # request above.
             alerts = host.get_fact(TestAlertsCount)
 
-            Suricata.result = alerts != 0
+            Suricata.result.append((host, alerts != 0))
 
         python.call(state=state, host=host, sudo=True, function=stage)
 
@@ -328,7 +328,7 @@ class Suricata(AbstractSolution):
     def get_logs(state, host):
         Suricata.get_configuration(state=state, host=host)
 
-        Suricata.result = host.get_fact(Logs)
+        Suricata.result.append((host, host.get_fact(Logs)))
 
     @deploy
     def update(state, host):
@@ -342,7 +342,7 @@ class Suricata(AbstractSolution):
             present=True,
         )
 
-        Suricata.result = True
+        Suricata.result.append((host, True))
 
     @deploy
     def uninstall(state, host):
@@ -356,4 +356,4 @@ class Suricata(AbstractSolution):
             commands=["tmux new -d 'apt -y remove suricata'"],
         )
 
-        Suricata.result = True
+        Suricata.result.append((host, True))
