@@ -7,9 +7,9 @@ from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, python, server
 
+from ...helpers.github import GitHub
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
-from ..helpers.github import GitHub
 from . import AbstractSolution
 
 
@@ -162,7 +162,7 @@ class Teler(AbstractSolution):
             ),
         },
     }
-    result = None
+    result = []
 
     @deploy
     def get_configuration(state, host):
@@ -356,7 +356,7 @@ class Teler(AbstractSolution):
 
         Teler._put_configuration(state=state, host=host)
 
-        Teler.result = True
+        Teler.result.append((host, True))
 
     @deploy
     def test(state, host):
@@ -380,7 +380,8 @@ class Teler(AbstractSolution):
             # request above.
             alerts = host.get_fact(TestBadUserAgent)
 
-            Teler.result = alerts != 0
+            Teler.result.append((host, alerts != 0))
+            host.get_fact(Logs)
 
         python.call(state=state, host=host, sudo=True, function=stage)
 
@@ -392,7 +393,7 @@ class Teler(AbstractSolution):
     def get_logs(state, host):
         Teler.get_configuration(state=state, host=host)
 
-        Teler.result = host.get_fact(Logs)
+        Teler.result.append((host, host.get_fact(Logs)))
 
     @deploy
     def update(state, host):
@@ -401,7 +402,7 @@ class Teler(AbstractSolution):
         local_version = host.get_fact(Version)
         github_latest_version = GitHub.get_latest_release_name("kitabisa", "teler")
         if version.parse(local_version) == version.parse(github_latest_version):
-            Teler.result = True
+            Teler.result.append((host, True))
 
             return
 
@@ -459,4 +460,4 @@ class Teler(AbstractSolution):
             present=False,
         )
 
-        Teler.result = True
+        Teler.result.append((host, True))

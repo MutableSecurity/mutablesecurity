@@ -48,7 +48,7 @@ class ManagedYAMLBackedConfig:
             ConfigurationState, solution_class=solution_class
         )
 
-        solution_class.result = solution_class._configuration
+        solution_class.result.append((host, solution_class._configuration))
 
     @deploy
     def _verify_new_configuration(state, host, solution_class, aspect, value):
@@ -68,7 +68,7 @@ class ManagedYAMLBackedConfig:
         except KeyError:
             pass
 
-        solution_class.result = real_value is not None
+        solution_class.result.append((host, real_value is not None))
 
     @deploy
     def set_configuration(state, host, solution_class, aspect, value):
@@ -77,7 +77,7 @@ class ManagedYAMLBackedConfig:
             state=state, host=host, aspect=aspect, value=value
         )
         if not solution_class.result:
-            solution_class.result = False
+            solution_class.result.append((host, False))
 
             return
 
@@ -107,7 +107,7 @@ class ManagedYAMLBackedConfig:
                 new_value=value,
             )
 
-        solution_class.result = True
+        solution_class.result.append((host, True))
 
     @deploy
     def _put_configuration(state, host, solution_class):
@@ -129,4 +129,4 @@ class ManagedYAMLBackedConfig:
             dest=location,
         )
 
-        solution_class.result = True
+        solution_class.result.append((host, True))

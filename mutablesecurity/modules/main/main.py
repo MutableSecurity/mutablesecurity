@@ -5,7 +5,7 @@ from pyinfra.api.deploy import add_deploy
 from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
-from ..leader import ConnectionDetails, Leader
+from ..leader import Leader
 from ..solutions_manager import AbstractSolution, AvailableSolution, SolutionsManager
 
 
@@ -32,9 +32,10 @@ class Main:
     @staticmethod
     def run(connection_details, solution_name, operation_name, additional_arguments):
         try:
-            # Connect to local or remote depending on the set host
-            if connection_details.hostname:
-                if connection_details.key:
+            # Connect to local or remote depending on the set hosts (only the
+            # first is checked)
+            if connection_details[0].hostname:
+                if connection_details[0].key:
                     state = Leader.connect_to_ssh_with_key(connection_details)
                 else:
                     state = Leader.connect_to_ssh_with_password(connection_details)
@@ -63,19 +64,29 @@ class Main:
 
             # Run the operations
             run_ops(state)
-            result = getattr(solution_class, "result")
 
-            # Check the result
-            if not result:
-                is_fail = True
-            else:
-                is_fail = False
         except PyinfraError:
             result = None
             is_fail = True
 
-        # Check the result and build the response
-        message = meta["messages"][operation_name][int(is_fail)]
-        response = {"success": not is_fail, "message": message, "raw_result": result}
+        # Check the result
+        results = getattr(solution_class, "result")
+        responses = []
+        for result in results:
+            host, host_result = result
+            if not host_result:
+                is_fail = True
+            else:
+                is_fail = False
 
-        return response
+            # Check the result and build the response
+            message = meta["messages"][operation_name][int(is_fail)]
+            response = {
+                "host": host,
+                "success": not is_fail,
+                "message": message,
+                "raw_result": result[1],
+            }
+            responses.append(response)
+
+        return responses
