@@ -28,4 +28,4 @@ class ManagedStats:
 
             result[value["description"]] = host.get_fact(fact, **kwargs)
 
-        solution_class.result.append((host, result))
+        solution_class.result[host.name] = result

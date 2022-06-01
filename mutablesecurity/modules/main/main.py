@@ -90,9 +90,8 @@ class Main:
         else:
             # Check the result
             results = getattr(solution_class, "result")
-            for result in results:
-                host, host_result = result
-                if not host_result:
+            for host, result in results.items():
+                if not result:
                     is_fail = True
                 else:
                     is_fail = False
@@ -103,7 +102,7 @@ class Main:
                     "host": host,
                     "success": not is_fail,
                     "message": message,
-                    "raw_result": result[1],
+                    "raw_result": result,
                 }
                 responses.append(response)
 

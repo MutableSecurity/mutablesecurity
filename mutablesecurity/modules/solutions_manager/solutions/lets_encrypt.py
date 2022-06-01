@@ -114,7 +114,7 @@ class LetsEncrypt(AbstractSolution):
             ),
         },
     }
-    result = None
+    result = {}
 
     @deploy
     def get_configuration(state, host):
@@ -251,7 +251,7 @@ class LetsEncrypt(AbstractSolution):
 
         LetsEncrypt._put_configuration(state=state, host=host)
 
-        LetsEncrypt.result = True
+        LetsEncrypt.result[host.name] = True
 
     @deploy
     def test(state, host):
@@ -271,7 +271,7 @@ class LetsEncrypt(AbstractSolution):
                 SecuredRequestsToday, domain=LetsEncrypt._configuration["domain"]
             )
 
-            LetsEncrypt.result = connections != 0
+            LetsEncrypt.result[host.name] = connections != 0
 
         python.call(state=state, host=host, sudo=True, function=stage)
 
@@ -283,9 +283,8 @@ class LetsEncrypt(AbstractSolution):
     def get_logs(state, host):
         LetsEncrypt.get_configuration(state=state, host=host)
 
-        LetsEncrypt.result = host.get_fact(
-            Logs, domain=LetsEncrypt._configuration["domain"]
-        )
+        logs = host.get_fact(Logs, domain=LetsEncrypt._configuration["domain"])
+        LetsEncrypt.result[host.name] = logs
 
     @deploy
     def update(state, host):
@@ -299,7 +298,7 @@ class LetsEncrypt(AbstractSolution):
             present=True,
         )
 
-        LetsEncrypt.result = True
+        LetsEncrypt.result[host.name] = True
 
     @deploy
     def _revoke_current_certificate(state, host, domain=None):
@@ -374,4 +373,4 @@ class LetsEncrypt(AbstractSolution):
             commands=["systemctl restart nginx"],
         )
 
-        LetsEncrypt.result = True
+        LetsEncrypt.result[host.name] = True
