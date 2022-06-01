@@ -108,8 +108,9 @@ MutableSecurity implements and operates on a few concepts:
 
 ## Functionalities 🚀
 
-- Local or remote (via password-based SSH) deployment
-- One solution supported so far (and more under development)
+- Three solution supported so far (and more under development)
+- Local or remote (via password-based or key-based SSH) deployment
+- Deployment to multiple hosts, in parallel
 - Intuitive command line interface
 
 ## Supported Cybersecurity Solutions 📦
@@ -119,14 +120,24 @@ MutableSecurity implements and operates on a few concepts:
         <tr>
             <th>Supported Solution</th>
             <th>Short Description</th>
-            <th>Supported Operating Systems</th>
+            <th>Supported Environment</th>
         </tr>
     </thead>
     <tbody>
         <tr>
+            <td><a href="https://github.com/kitabisa/teler"><img src="others/solutions_logos/teler.png" width="200px"></a></td>
+            <td>Open source real-time HTTP intrusion detection system</td>
+            <td>• Ubuntu 20.04 LTS or above<br/>• nginx</td>
+        </tr>
+        <tr>
+            <td><a href="https://letsencrypt.org/"><img src="others/solutions_logos/lets_encrypt.png" width="200px"></a></td>
+            <td>TLS certificates generation using a nonprofit Certificate Authority</td>
+            <td>• Ubuntu 20.04 LTS or above<br/>• nginx</td>
+        </tr>
+        <tr>
             <td><a href="https://suricata.io/"><img src="others/solutions_logos/suricata.png" width="200px"></a></td>
             <td>Open source network intrusion detection and prevention system</td>
-            <td>Ubuntu 20.04 LTS and 22.04 LTS</td>
+            <td>• Ubuntu 20.04 LTS or above</td>
         </tr>
         <tr>
             <td colspan=3><center>More coming soon...</center></td>
