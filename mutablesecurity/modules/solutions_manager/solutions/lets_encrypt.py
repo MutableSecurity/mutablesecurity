@@ -22,7 +22,7 @@ class SecuredRequests(FactBase):
 
 class SecuredRequestsToday(FactBase):
     def command(self, domain):
-        current_date = datetime.today().strftime("%d/%B/%Y")
+        current_date = datetime.today().strftime("%d/%b/%Y")
 
         return f"sudo cat /var/log/nginx/https_{domain}_access.log | grep '{current_date}' | wc -l"
 
@@ -161,7 +161,13 @@ class LetsEncrypt(AbstractSolution):
             if host.get_fact(
                 file_facts.File, "/opt/mutablesecurity/lets_encrypt/default"
             ):
-                LetsEncrypt._revoke_current_certificate(state=state, host=host)
+                domain = None
+                if aspect == "domain":
+                    domain = old_value
+
+                LetsEncrypt._revoke_current_certificate(
+                    state=state, host=host, domain=domain
+                )
                 LetsEncrypt._generate_certificate(state=state, host=host)
 
     @deploy
@@ -218,6 +224,8 @@ class LetsEncrypt(AbstractSolution):
 
     @deploy
     def install(state, host):
+        LetsEncrypt.get_configuration(state=state, host=host)
+
         LetsEncrypt._check_installation_config(state=state, host=host)
 
         apt.update(
@@ -259,7 +267,9 @@ class LetsEncrypt(AbstractSolution):
         )
 
         def stage(state, host):
-            connections = host.get_fact(SecuredRequestsToday)
+            connections = host.get_fact(
+                SecuredRequestsToday, domain=LetsEncrypt._configuration["domain"]
+            )
 
             LetsEncrypt.result = connections != 0
 
@@ -292,15 +302,16 @@ class LetsEncrypt(AbstractSolution):
         LetsEncrypt.result = True
 
     @deploy
-    def _revoke_current_certificate(state, host):
+    def _revoke_current_certificate(state, host, domain=None):
+        if not domain:
+            domain = LetsEncrypt._configuration["domain"]
+
         server.shell(
             state=state,
             host=host,
             sudo=True,
             name="Revokes the generated certificate",
-            commands=[
-                f"certbot revoke -n --cert-name {LetsEncrypt._configuration['domain']}"
-            ],
+            commands=[f"certbot revoke -n --cert-name {domain}"],
         )
 
         server.shell(
@@ -319,7 +330,7 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                f"rm /var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log /opt/mutablesecurity/lets_encrypt/default"
+                f"rm /var/log/nginx/https_{domain}_access.log /opt/mutablesecurity/lets_encrypt/default"
             ],
         )
 
