@@ -236,7 +236,7 @@ def _print_response(responses):
         text.append(str(Emoji(emoji)))
 
         # Plug the host, the message and the addition sent data
-        text.append(" " + response["host"].name + ": " + response["message"])
+        text.append(" " + response["host"] + ": " + response["message"])
 
         # Print the message
         console.print(text)

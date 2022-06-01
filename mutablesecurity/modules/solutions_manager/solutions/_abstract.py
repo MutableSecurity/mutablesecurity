@@ -8,7 +8,7 @@ class AbstractSolution(ABC):
 
     _configuration: dict
     meta: dict
-    result: list
+    result: dict
 
     @staticmethod
     @abstractmethod
