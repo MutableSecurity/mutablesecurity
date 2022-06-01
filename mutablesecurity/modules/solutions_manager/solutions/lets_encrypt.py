@@ -157,7 +157,7 @@ class LetsEncrypt(AbstractSolution):
         except MandatoryAspectLeftUnsetException:
             pass
         else:
-            # Check if the solution is alreadt installed
+            # Check if the solution is already installed
             if host.get_fact(
                 file_facts.File, "/opt/mutablesecurity/lets_encrypt/default"
             ):
@@ -319,7 +319,7 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                f"/var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log /opt/mutablesecurity/lets_encrypt/default"
+                f"rm /var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log /opt/mutablesecurity/lets_encrypt/default"
             ],
         )
 
@@ -343,7 +343,7 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                f"rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/ /opt/eff.org/certbot/ /var/lib/letsencrypt/ /var/log/letsencrypt/"
+                "rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/ /opt/eff.org/certbot/ /var/lib/letsencrypt/ /var/log/letsencrypt/"
             ],
         )
 

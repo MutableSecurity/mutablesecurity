@@ -18,9 +18,6 @@ class ManagedYAMLBackedConfig:
 
     @deploy
     def _check_installation_config(state, host, solution_class):
-        # Get the actual configuration
-        solution_class.get_configuration(state=state, host=host)
-
         # Check each key in the coniguration
         configuration_meta = solution_class.meta["configuration"]
         for key, _ in configuration_meta.items():
