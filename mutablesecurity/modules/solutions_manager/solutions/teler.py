@@ -88,7 +88,7 @@ class TestBadUserAgent(FactBase):
 class Teler(AbstractSolution):
     meta = {
         "id": "teler",
-        "full_name": "teler Real-time HTTP Intrusion Detection ",
+        "full_name": "teler Real-time HTTP Intrusion Detection",
         "description": "teler is an real-time intrusion detection and threat alert based on web log.",
         "references": ["https://github.com/kitabisa/teler"],
         "configuration": {

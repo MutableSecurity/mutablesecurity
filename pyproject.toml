@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mutablesecurity"
-version = "0.1.0.post6"
+version = "0.2.0"
 description = "Seamless deployment and management of cybersecurity solutions"
 keywords = ["cybersecurity", "security-solutions", "hardening", "automatic-deployment"]
 license = "MIT"
@@ -22,6 +22,12 @@ classifiers = [
 include = [
     "LICENSE",
 ]
+
+[tool.poetry.urls]
+"Changelog" = "https://github.com/MutableSecurity/mutablesecurity/blob/main/CHANGELOG.md"
+"Issue Tracker" = "https://github.com/MutableSecurity/mutablesecurity/issues"
+"LinkedIn" = "https://www.linkedin.com/company/mutablesecurity"
+"Twitter" = "https://twitter.com/mutablesecurity/"
 
 [tool.poetry.dependencies]
 python = "^3.9"
