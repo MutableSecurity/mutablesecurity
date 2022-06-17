@@ -3,7 +3,7 @@ class MutableSecurityException(Exception):
 
     def __init__(self) -> None:
         """Initializes the MutableSecurityException instance."""
-        super(Exception, self).__init__(self.__doc__)
+        super().__init__(self.__doc__)
 
 
 class MandatoryAspectLeftUnsetException(MutableSecurityException):

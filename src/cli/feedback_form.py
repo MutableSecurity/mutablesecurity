@@ -4,39 +4,16 @@ import os
 from typing import Optional
 
 import requests
-from rich import box
 from rich.console import Console
-from rich.panel import Panel
-from rich.prompt import Prompt
 
 from .cli import CLIException
+from .printer import NoEmailProvidedException, Printer
 
 
 class FeedbackForm:
-    """Class for showing and processing a feedback form."""
+    """Class for managing the feedback form."""
 
-    TITLE = "[bold][blue]We'd Love To Hear From You "
-    BODY = """
-    We're all administrators, just like you. We deploy and manage security \
-    solutions in our infrastructure, but we're sick of repeating the same \
-    time-consuming procedures over and over again.
-
-    Our goal is to make interacting with security solutions easier. Because \
-    we're starting from scratch, we'd like to get in touch with as many \
-    administrators as possible to see how they use our software in their \
-    daily operations and what features could be added to make their jobs \
-    easier.
-
-    [bold]Please provide us your email address if you want to support us with \
-    the above.[/bold] If you'd rather send it later, simply press ENTER now \
-    and run [italic]mutablesecurity feedback[/italic] when you're ready.
-    """
-    THANKS = (
-        "\n  [bold]Many thanks! One of our staff members will contact you as"
-        " soon as possible."
-    )
     FILENAME = ".feedback"
-    EMAIL_REQUEST = "\n  [bold][blue]Your Email Address"
 
     console: Console
 
@@ -102,24 +79,19 @@ class FeedbackForm:
             return
 
         # Print the text and the prompt
-        self.console.print(
-            Panel(
-                self.BODY,
-                title=self.TITLE,
-                box=box.HORIZONTALS,
-            )
-        )
-        email = Prompt.ask(self.EMAIL_REQUEST)
+        printer = Printer(self.console)
+        try:
+            email = printer.print_feedback_and_ask()
+        except NoEmailProvidedException:
+            return
 
         # Process the email
-        if email:
-            try:
-                self.__send_feedback_form(email_address=email)
-
-                self.console.print(self.THANKS + "\n")
-
-            except FeedbackNotSentException as exception:
-                raise exception
+        try:
+            self.__send_feedback_form(email_address=email)
+        except FeedbackNotSentException as exception:
+            raise exception
+        else:
+            printer.thanks_for_feedback()
 
 
 class FeedbackNotSentException(CLIException):

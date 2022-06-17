@@ -3,3 +3,8 @@ src
 capsys
 pylint
 autouse
+pypattyrn
+metaclass
+creational
+getmembers
+isfunction
