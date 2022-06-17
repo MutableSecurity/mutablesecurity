@@ -13,6 +13,7 @@
     "python.pythonPath": ".venv/bin/python",
     "files.exclude": {
         "**/.git": true,
+        "**/.mypy_cache": true,
         "**/.venv": true,
         "**/dist": true,
         "**/poetry.lock": true

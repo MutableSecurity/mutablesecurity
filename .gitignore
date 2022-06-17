@@ -8,6 +8,7 @@ poetry.lock
 
 # Python
 __pycache__
+.mypy_cache
 
 # Pyinfra
 pyinfra-sudo-askpass
