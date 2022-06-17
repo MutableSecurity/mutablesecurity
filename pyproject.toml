@@ -40,7 +40,7 @@ packaging = "^21.3"
 requests = "^2.27.1"
 
 [tool.poetry.scripts]
-mutablesecurity = "mutablesecurity.cli:main"
+mutablesecurity = "src.cli:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
