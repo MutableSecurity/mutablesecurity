@@ -18,10 +18,10 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from .modules.helpers.networking import parse_connection_string
-from .modules.leader import ConnectionDetails
-from .modules.main import Main
-from .modules.solutions_manager import SolutionsManager
+from .helpers.networking import parse_connection_string
+from .leader import ConnectionDetails
+from .main import Main
+from .solutions_manager import SolutionsManager
 
 MIN_PYTHON_VERSION = (3, 9)
 BANNER_FORMAT = """
@@ -48,8 +48,10 @@ Our goal is to make interacting with security solutions easier. Because we're\
  above.[/bold] If you'd rather send it later, simply press ENTER now and run\
  [italic]mutablesecurity feedback[/italic] when you're ready.
 """
-FEEDBACK_THANKS = "\n  [bold]Many thanks! One of our staff members will\
- contact you as soon as possible."
+FEEDBACK_THANKS = (
+    "\n  [bold]Many thanks! One of our staff members will contact you as soon"
+    " as possible."
+)
 FEEDBACK_FILE = ".feedback"
 FEEDBACK_EMAIL_REQUEST = "\n  [bold][blue]Your Email Address"
 SLEEP_SECONDS_BEFORE_LOGS = 2
@@ -89,7 +91,8 @@ def _print_version_error():
     text = Text()
     text.append(str(Emoji("stop_sign")) + " ")
     text.append(
-        f"Please make sure that your Python version is at least {major}.{minor} before executing MutableSecurity."
+        "Please make sure that your Python version is at least"
+        f" {major}.{minor} before executing MutableSecurity."
     )
     console.print(text)
 
@@ -120,7 +123,9 @@ def _print_module_help(ctx, solution):
         possible_values = "*"
         required_type = details["type"].__name__
         if issubclass(details["type"], Enum):
-            possible_values = ", ".join([value.name for value in details["type"]])
+            possible_values = ", ".join(
+                [value.name for value in details["type"]]
+            )
             required_type = "str"
 
         table.add_row(key, required_type, possible_values, details["help"])
@@ -210,7 +215,9 @@ def _setup_logging(verbose):
         format="%(message)s",
         datefmt="[%X]",
         handlers=[
-            RichHandler(console=Console(file=open("/tmp/mutablesecurity.log", "w")))
+            RichHandler(
+                console=Console(file=open("/tmp/mutablesecurity.log", "w"))
+            )
         ],
     )
 
@@ -269,13 +276,21 @@ def _print_response(responses):
     "-r",
     "--remote",
     type=str,
-    help="Connect to remote in the USERNAME@HOSTNAME:PORT format. If ommited (besides the remote list parameter), the operations are executed locally.",
+    help=(
+        "Connect to remote in the USERNAME@HOSTNAME:PORT format. If ommited"
+        " (besides the remote list parameter), the operations are executed"
+        " locally."
+    ),
 )
 @click.option(
     "-l",
     "--remote-list",
     type=click.Path(exists=True, dir_okay=False),
-    help="Connect to a series of remote hosts specified in a file, in the USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host parameter), the operations are executed locally.",
+    help=(
+        "Connect to a series of remote hosts specified in a file, in the"
+        " USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host"
+        " parameter), the operations are executed locally."
+    ),
 )
 @click.option(
     "-k",
@@ -299,13 +314,19 @@ def _print_response(responses):
     "-a",
     "--aspect",
     type=str,
-    help="Configuration's aspect to modify. Available only with a value (--value)",
+    help=(
+        "Configuration's aspect to modify. Available only with a value"
+        " (--value)"
+    ),
 )
 @click.option(
     "-v",
     "--value",
     type=str,
-    help="New value of the configuration's aspect. Available only with an aspect (--aspect).",
+    help=(
+        "New value of the configuration's aspect. Available only with an"
+        " aspect (--aspect)."
+    ),
 )
 @click.option("--verbose", is_flag=True, help="Increase in the logging volume")
 @click.option("--feedback", is_flag=True, help="Show feedback form")
@@ -338,7 +359,9 @@ def run_command(
 
     # Print the generic help. Includes the -h presence and an invalid host to
     # connect to
-    if solution is None or (remote and not _validate_connection_string(remote)):
+    if solution is None or (
+        remote and not _validate_connection_string(remote)
+    ):
         _print_help(ctx, None, value=True)
 
         # Print the feedback form
@@ -407,7 +430,9 @@ def run_command(
     _setup_logging(verbose)
 
     # Run
-    response = Main.run(connection_details, solution, operation, additional_arguments)
+    response = Main.run(
+        connection_details, solution, operation, additional_arguments
+    )
     _print_response(response)
 
     # Print the feedback form

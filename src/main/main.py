@@ -2,12 +2,16 @@ import logging
 from inspect import signature
 
 from pyinfra.api.deploy import add_deploy
-from pyinfra.api.exceptions import PyinfraError
+from pyinfra.api.helpers.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
-from ..exceptions import MutableSecurityException
+from ..helpers.exceptions import MutableSecurityException
 from ..leader import Leader
-from ..solutions_manager import AbstractSolution, AvailableSolution, SolutionsManager
+from ..solutions_manager import (
+    AbstractSolution,
+    AvailableSolution,
+    SolutionsManager,
+)
 
 
 class Main:
@@ -31,7 +35,9 @@ class Main:
         return methods
 
     @staticmethod
-    def run(connection_details, solution_name, operation_name, additional_arguments):
+    def run(
+        connection_details, solution_name, operation_name, additional_arguments
+    ):
         try:
             # Connect to local or remote depending on the set hosts (only the
             # first is checked)
@@ -39,7 +45,9 @@ class Main:
                 if connection_details[0].key:
                     state = Leader.connect_to_ssh_with_key(connection_details)
                 else:
-                    state = Leader.connect_to_ssh_with_password(connection_details)
+                    state = Leader.connect_to_ssh_with_password(
+                        connection_details
+                    )
             else:
                 state = Leader.connect_to_local(connection_details)
         except:

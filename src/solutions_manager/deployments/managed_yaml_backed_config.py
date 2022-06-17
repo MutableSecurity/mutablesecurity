@@ -4,10 +4,13 @@ from io import StringIO
 import yaml
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
-from pyinfra.api.exceptions import PyinfraError
+from pyinfra.api.helpers.exceptions import PyinfraError
 from pyinfra.operations import files, python
 
-from ...exceptions import MandatoryAspectLeftUnsetException, SameSetConfigurationValue
+from ...helpers.exceptions import (
+    MandatoryAspectLeftUnsetException,
+    SameSetConfigurationValue,
+)
 
 
 class ManagedYAMLBackedConfig:
@@ -47,7 +50,10 @@ class ManagedYAMLBackedConfig:
 
                 solution_class_name = solution_class.__name__.lower()
 
-                return f"cat {ManagedYAMLBackedConfig._get_configuration_filename(solution_class)} || echo ''"
+                return (
+                    f"cat {ManagedYAMLBackedConfig._get_configuration_filename(solution_class)} ||"
+                    " echo ''"
+                )
 
             def process(self, output):
                 if not output[0]:
@@ -163,8 +169,12 @@ class ManagedYAMLBackedConfig:
             host=host,
             sudo=True,
             name="Dumps the solution configuration file",
-            src=StringIO(yaml.dump(solution_class._configuration, Dumper=FullDumper)),
-            dest=ManagedYAMLBackedConfig._get_configuration_filename(solution_class),
+            src=StringIO(
+                yaml.dump(solution_class._configuration, Dumper=FullDumper)
+            ),
+            dest=ManagedYAMLBackedConfig._get_configuration_filename(
+                solution_class
+            ),
         )
 
         solution_class.result[host.name] = True

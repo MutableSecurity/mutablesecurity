@@ -6,7 +6,7 @@ from pyinfra.api.deploy import deploy
 from pyinfra.facts import files as file_facts
 from pyinfra.operations import apt, python, server
 
-from ...exceptions import MandatoryAspectLeftUnsetException
+from ...helpers.exceptions import MandatoryAspectLeftUnsetException
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
 from . import AbstractSolution
@@ -24,7 +24,10 @@ class SecuredRequestsToday(FactBase):
     def command(self, domain):
         current_date = datetime.today().strftime("%d/%b/%Y")
 
-        return f"sudo cat /var/log/nginx/https_{domain}_access.log | grep '{current_date}' | wc -l"
+        return (
+            f"sudo cat /var/log/nginx/https_{domain}_access.log | grep"
+            f" '{current_date}' | wc -l"
+        )
 
     def process(self, output):
         return int(output[0])
@@ -49,7 +52,13 @@ class LetsEncrypt(AbstractSolution):
     meta = {
         "id": "lets_encrypt",
         "full_name": "Let's Encrypt x Certbot",
-        "description": "Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.",
+        "description": (
+            "Let's Encrypt is a free, automated, and open certificate"
+            " authority brought to you by the nonprofit Internet Security"
+            " Research Group (ISRG). Certbot is a free, open source software"
+            " tool for automatically using Let's Encrypt certificates on"
+            " manually-administrated websites to enable HTTPS."
+        ),
         "references": [
             "https://letsencrypt.org/",
             "https://github.com/letsencrypt",
@@ -59,7 +68,10 @@ class LetsEncrypt(AbstractSolution):
         "configuration": {
             "email": {
                 "type": str,
-                "help": "Email provided for security reasons when generating the certificate",
+                "help": (
+                    "Email provided for security reasons when generating the"
+                    " certificate"
+                ),
                 "default": None,
             },
             "domain": {
@@ -74,23 +86,31 @@ class LetsEncrypt(AbstractSolution):
                 "fact": SecuredRequests,
             },
             "SecuredRequestsToday": {
-                "description": "Total number of secured requests in the current day",
+                "description": (
+                    "Total number of secured requests in the current day"
+                ),
                 "fact": SecuredRequestsToday,
             },
-            "version": {"description": "Current installed version", "fact": Version},
+            "version": {
+                "description": "Current installed version",
+                "fact": Version,
+            },
         },
         "messages": {
             "GET_CONFIGURATION": (
                 "The configuration of Let's Encrypt x Certbot was retrieved.",
-                "The configuration of Let's Encrypt x Certbot could not be retrieved.",
+                "The configuration of Let's Encrypt x Certbot could not be"
+                " retrieved.",
             ),
             "SET_CONFIGURATION": (
                 "The configuration of Let's Encrypt x Certbot was set.",
-                "The configuration of Let's Encrypt x Certbot could not be set. Check the provided aspect and value to be valid.",
+                "The configuration of Let's Encrypt x Certbot could not be"
+                " set. Check the provided aspect and value to be valid.",
             ),
             "INSTALL": (
                 "Let's Encrypt x Certbot is now installed on this machine.",
-                "There was an error on Let's Encrypt x Certbot's installation.",
+                "There was an error on Let's Encrypt x Certbot's"
+                " installation.",
             ),
             "TEST": (
                 "Let's Encrypt x Certbot works as expected.",
@@ -109,8 +129,10 @@ class LetsEncrypt(AbstractSolution):
                 "There was an error on Let's Encrypt x Certbot's update.",
             ),
             "UNINSTALL": (
-                "Let's Encrypt x Certbot is no longer installed on this machine.",
-                "There was an error on Let's Encrypt x Certbot's uninstallation.",
+                "Let's Encrypt x Certbot is no longer installed on this"
+                " machine.",
+                "There was an error on Let's Encrypt x Certbot's"
+                " uninstallation.",
             ),
         },
     }
@@ -188,9 +210,13 @@ class LetsEncrypt(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Saves the default config file in case the user wants to remove LetsEncrypt(Certbot)",
+            name=(
+                "Saves the default config file in case the user wants to"
+                " remove LetsEncrypt(Certbot)"
+            ),
             commands=[
-                "cp /etc/nginx/sites-enabled/default /opt/mutablesecurity/lets_encrypt/"
+                "cp /etc/nginx/sites-enabled/default"
+                " /opt/mutablesecurity/lets_encrypt/"
             ],
         )
 
@@ -198,9 +224,15 @@ class LetsEncrypt(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Generates and installs the certificates for the given nginx domain",
+            name=(
+                "Generates and installs the certificates for the given nginx"
+                " domain"
+            ),
             commands=[
-                f"certbot --nginx --noninteractive --agree-tos --cert-name {LetsEncrypt._configuration['domain']} -d {LetsEncrypt._configuration['domain']} -m {LetsEncrypt._configuration['email']} --redirect"
+                "certbot --nginx --noninteractive --agree-tos --cert-name"
+                f" {LetsEncrypt._configuration['domain']} -d"
+                f" {LetsEncrypt._configuration['domain']} -m"
+                f" {LetsEncrypt._configuration['email']} --redirect"
             ],
         )
 
@@ -210,7 +242,11 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Adds MutableSecurity logs command in sites-enabled",
             commands=[
-                f"sed -i '/server_name {LetsEncrypt._configuration['domain']};/a access_log /var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log; # Managed by MutableSecurity' /etc/nginx/sites-enabled/default"
+                "sed -i '/server_name"
+                f" {LetsEncrypt._configuration['domain']};/a access_log"
+                f" /var/log/nginx/https_{LetsEncrypt._configuration['domain']}_access.log;"
+                " # Managed by MutableSecurity'"
+                " /etc/nginx/sites-enabled/default"
             ],
         )
 
@@ -268,7 +304,8 @@ class LetsEncrypt(AbstractSolution):
 
         def stage(state, host):
             connections = host.get_fact(
-                SecuredRequestsToday, domain=LetsEncrypt._configuration["domain"]
+                SecuredRequestsToday,
+                domain=LetsEncrypt._configuration["domain"],
             )
 
             LetsEncrypt.result[host.name] = connections != 0
@@ -277,7 +314,9 @@ class LetsEncrypt(AbstractSolution):
 
     @deploy
     def get_stats(state, host):
-        ManagedStats.get_stats(state=state, host=host, solution_class=LetsEncrypt)
+        ManagedStats.get_stats(
+            state=state, host=host, solution_class=LetsEncrypt
+        )
 
     @deploy
     def get_logs(state, host):
@@ -317,9 +356,13 @@ class LetsEncrypt(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Adds all the old configurations back in place on sites-enabled",
+            name=(
+                "Adds all the old configurations back in place on"
+                " sites-enabled"
+            ),
             commands=[
-                "cp /opt/mutablesecurity/lets_encrypt/default /etc/nginx/sites-enabled/default"
+                "cp /opt/mutablesecurity/lets_encrypt/default"
+                " /etc/nginx/sites-enabled/default"
             ],
         )
 
@@ -329,7 +372,8 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                f"rm /var/log/nginx/https_{domain}_access.log /opt/mutablesecurity/lets_encrypt/default"
+                f"rm /var/log/nginx/https_{domain}_access.log"
+                " /opt/mutablesecurity/lets_encrypt/default"
             ],
         )
 
@@ -353,7 +397,9 @@ class LetsEncrypt(AbstractSolution):
             sudo=True,
             name="Removes all traces of Let's Encrypt x Certbot",
             commands=[
-                "rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/ /opt/eff.org/certbot/ /var/lib/letsencrypt/ /var/log/letsencrypt/"
+                "rm -rf /etc/letsencrypt /root/.local/share/letsencrypt/"
+                " /opt/eff.org/certbot/ /var/lib/letsencrypt/"
+                " /var/log/letsencrypt/"
             ],
         )
 
