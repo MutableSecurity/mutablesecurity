@@ -2,9 +2,13 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
-    "python.formatting.provider": "black",
     "editor.formatOnSave": true,
+    "python.formatting.provider": "black",
     "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Path": "pflake8",
+    "python.linting.lintOnSave": true,
+    "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
     "python.pythonPath": ".venv/bin/python"
 }

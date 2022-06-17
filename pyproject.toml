@@ -44,9 +44,31 @@ mutablesecurity = "mutablesecurity.cli:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
+darglint = "^1.8.1"
+flake8 = "^4.0.1"
+flake8-annotations = "^2.9.0"
+flake8-bandit = "^3.0.0"
+flake8-docstrings = "^1.6.0"
+flake8-quotes = "^3.3.1"
+flake8-spellcheck = "^0.28.0"
 isort = "^5.10.1"
+mypy = "^0.961"
+pep8-naming = "^0.13.0"
 pylint = "^2.13.5"
+pyproject-flake8 = "^0.0.1-alpha.4"
+
+[tool.black]
+line-length = 79
+preview = true
+
+[tool.flake8]
+exclude = ".venv"
+inline-quotes = "double"
 
 [tools.isort]
 known_local_folder= ["modules"]
-line_length = 88
+line_length = 79
+profile = "black"
+
+[tool.mypy]
+python_version = "3.9"
