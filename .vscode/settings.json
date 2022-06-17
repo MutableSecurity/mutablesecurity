@@ -10,5 +10,11 @@
     "python.linting.lintOnSave": true,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": ".venv/bin/python"
+    "python.pythonPath": ".venv/bin/python",
+    "files.exclude": {
+        "**/.git": true,
+        "**/.venv": true,
+        "**/dist": true,
+        "**/poetry.lock": true
+    }
 }
