@@ -2,7 +2,7 @@ import logging
 from inspect import signature
 
 from pyinfra.api.deploy import add_deploy
-from pyinfra.api.helpers.exceptions import PyinfraError
+from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
 from ..helpers.exceptions import MutableSecurityException

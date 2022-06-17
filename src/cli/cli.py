@@ -1,27 +1,23 @@
 #!/usr/bin/env python3
 
 import logging
-import os
 import re
 import sys
 import time
 from enum import Enum
 
 import click
-import requests
-from rich import box
 from rich.console import Console
 from rich.emoji import Emoji
 from rich.logging import RichHandler
-from rich.panel import Panel
-from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from .helpers.networking import parse_connection_string
-from .leader import ConnectionDetails
-from .main import Main
-from .solutions_manager import SolutionsManager
+from ..helpers.exceptions import MutableSecurityException
+from ..helpers.networking import parse_connection_string
+from ..leader import ConnectionDetails
+from ..main import Main
+from ..solutions_manager import SolutionsManager
 
 MIN_PYTHON_VERSION = (3, 9)
 BANNER_FORMAT = """
@@ -33,27 +29,6 @@ BANNER_FORMAT = """
      {} |___/ 
 """
 MOTTO = "Seamless deployment and management of cybersecurity solutions"
-FEEDBACK_TITLE = "[bold][blue]We'd Love To Hear From You "
-FEEDBACK_BODY = """
-We're all administrators, just like you. We deploy and manage security\
- solutions in our infrastructure, but we're sick of repeating the same\
- time-consuming procedures over and over again.
-
-Our goal is to make interacting with security solutions easier. Because we're\
- starting from scratch, we'd like to get in touch with as many administrators\
- as possible to see how they use our software in their daily operations and\
- what features could be added to make their jobs easier.
-
-[bold]Please provide us your email address if you want to support us with the\
- above.[/bold] If you'd rather send it later, simply press ENTER now and run\
- [italic]mutablesecurity feedback[/italic] when you're ready.
-"""
-FEEDBACK_THANKS = (
-    "\n  [bold]Many thanks! One of our staff members will contact you as soon"
-    " as possible."
-)
-FEEDBACK_FILE = ".feedback"
-FEEDBACK_EMAIL_REQUEST = "\n  [bold][blue]Your Email Address"
 SLEEP_SECONDS_BEFORE_LOGS = 2
 
 console = Console()
@@ -152,51 +127,6 @@ def _print_module_help(ctx, solution):
     # Print the text and the table
     console.print(help_text)
     console.print(table)
-
-
-def _check_or_mark_shown_feedback():
-    if not (exists := os.path.isfile(FEEDBACK_FILE)):
-        # Create file if it does not exists
-        open(FEEDBACK_FILE, "w").close()
-
-    return exists
-
-
-def _print_feedback_form(check=True, before_empty_lines=1):
-    # Check if the feedback was already shown
-    if check and _check_or_mark_shown_feedback():
-        return
-
-    console.print(before_empty_lines * "\n", end="")
-
-    # Print the text and the prompt
-    console.print(
-        Panel(
-            FEEDBACK_BODY,
-            title=FEEDBACK_TITLE,
-            box=box.HORIZONTALS,
-        )
-    )
-    email = Prompt.ask(FEEDBACK_EMAIL_REQUEST)
-
-    # Process the email
-    if email:
-        # Create a request
-        data = {"email": email, "message": "Want to help!"}
-        headers = {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
-        }
-        requests.post(
-            "https://europe-central2-mutablesecurity.cloudfunctions.net/add_to_waiting_list",
-            json=data,
-            headers=headers,
-        )
-
-        # Skip the return code check :\ and print
-        console.print(FEEDBACK_THANKS)
-
-    console.print("")
 
 
 def _validate_connection_string(connection_string):
@@ -353,7 +283,7 @@ def run_command(
 ):
     # Print the feedback form
     if feedback:
-        _print_feedback_form(check=False)
+        _print_feedback_form(no_check=False)
 
         return
 
@@ -365,7 +295,8 @@ def run_command(
         _print_help(ctx, None, value=True)
 
         # Print the feedback form
-        _print_feedback_form(before_empty_lines=2)
+        console.print(2 * "\n", end="")
+        _print_feedback_form()
 
         return
 
@@ -374,7 +305,8 @@ def run_command(
         _print_module_help(ctx, solution)
 
         # Print the feedback form
-        _print_feedback_form(before_empty_lines=2)
+        console.print(2 * "\n", end="")
+        _print_feedback_form()
 
         return
 
@@ -436,7 +368,8 @@ def run_command(
     _print_response(response)
 
     # Print the feedback form
-    _print_feedback_form(before_empty_lines=2)
+    console.print(2 * "\n", end="")
+    _print_feedback_form()
 
 
 def main():
@@ -451,3 +384,7 @@ def main():
 
 if __name__ == "__main__":
     main()
+
+
+class CLIException(MutableSecurityException):
+    """An error occured in the CLI module."""

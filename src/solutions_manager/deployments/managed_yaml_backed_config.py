@@ -4,7 +4,7 @@ from io import StringIO
 import yaml
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
-from pyinfra.api.helpers.exceptions import PyinfraError
+from pyinfra.api.exceptions import PyinfraError
 from pyinfra.operations import files, python
 
 from ...helpers.exceptions import (

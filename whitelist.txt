@@ -1,0 +1,5 @@
+isfile
+src
+capsys
+pylint
+autouse

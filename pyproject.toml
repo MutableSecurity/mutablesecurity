@@ -57,6 +57,7 @@ pep8-naming = "^0.13.0"
 pylint = "^2.13.5"
 pyproject-flake8 = "^0.0.1-alpha.4"
 pytest = "^7.1.2"
+types-requests = "^2.27.30"
 
 [tool.black]
 line-length = 79
@@ -65,14 +66,27 @@ preview = true
 [tool.flake8]
 exclude = ".venv"
 inline-quotes = "double"
+extend-ignore = "ANN101,"
 per-file-ignores = """
-    ./tests/*: S101
+    ./tests/*: S101, DAR301
 """
+dictionaries = "en_US,python,technical"
 
 [tools.isort]
-known_local_folder= ["modules"]
 line_length = 79
 profile = "black"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+known_first_party= ["src"]
+known_local_folder = ["src"]
 
 [tool.mypy]
 python_version = "3.9"
+
+[tool.pylint.MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "src"
+]

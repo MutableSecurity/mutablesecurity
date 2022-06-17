@@ -3,10 +3,18 @@
         "source.organizeImports": true
     },
     "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
-    "python.linting.flake8Path": "pflake8",
+    "python.linting.flake8Path": ".venv/bin/pflake8",
+    "python.formatting.blackArgs": [
+        "--preview"
+    ],
+    "python.sortImports.path": "${workspaceFolder}/.venv/bin/isort",
+    "python.sortImports.args": [
+        "--src=${workspaceFolder}"
+    ],
     "python.linting.lintOnSave": true,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
@@ -17,5 +25,5 @@
         "**/.venv": true,
         "**/dist": true,
         "**/poetry.lock": true
-    }
+    },
 }

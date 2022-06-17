@@ -12,3 +12,6 @@ __pycache__
 
 # Pyinfra
 pyinfra-sudo-askpass
+
+# Tests
+tests/**
