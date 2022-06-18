@@ -1,4 +1,6 @@
 import logging
+import typing
+from enum import Enum
 from inspect import signature
 
 from pyinfra.api.deploy import add_deploy
@@ -12,6 +14,18 @@ from ..solutions_manager import (
     AvailableSolution,
     SolutionsManager,
 )
+
+
+class ResponseTypes(Enum):
+    SUCCESS = 0
+    ERROR = 1
+
+
+class SecurityDeployment:
+    host: str
+    response_type: ResponseTypes
+    message: str
+    additional_data: typing.Any
 
 
 class Main:

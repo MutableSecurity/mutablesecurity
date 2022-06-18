@@ -1,3 +1,4 @@
+import typing
 from abc import ABC, abstractmethod
 
 from pyinfra.api import Host, State
@@ -6,9 +7,33 @@ from pyinfra.api import Host, State
 class AbstractSolution(ABC):
     """Abstract class wrapping a security solution"""
 
+    FULL_NAME = ""
+    DESCRIPTION = ""
+    REFERENCES = []
+
     _configuration: dict
     meta: dict
     result: dict
+
+    def represent_configuration_as_list(self) -> typing.List[typing.List[str]]:
+        meta_configuration = meta["configuration"]
+        for key in meta_configuration.keys():
+            details = meta_configuration[key]
+
+            possible_values = "*"
+            required_type = details["type"].__name__
+            if issubclass(details["type"], Enum):
+                possible_values = ", ".join(
+                    [value.name for value in details["type"]]
+                )
+                required_type = "str"
+
+            table.add_row(key, required_type, possible_values, details["help"])
+
+        table.add_column("Aspect", justify="left", style="bold")
+        table.add_column("Type", justify="left")
+        table.add_column("Possible Values", justify="center")
+        table.add_column("Description", justify="left")
 
     @staticmethod
     @abstractmethod
@@ -26,7 +51,9 @@ class AbstractSolution(ABC):
 
     @staticmethod
     @abstractmethod
-    def _set_default_configuration(state: State, host: Host, aspect: str, value: str):
+    def _set_default_configuration(
+        state: State, host: Host, aspect: str, value: str
+    ):
         """Overwrites the local configuration with the default one.
 
         It can be called by methods which resets the configuration to its

@@ -1,182 +1,62 @@
 #!/usr/bin/env python3
-import re
+
+"""Module for implementing the CLI.
+
+Raises:
+    UnsupportedPythonVersion: The current Python version is unsupported
+"""
+
 import sys
-import time
-from enum import Enum
+import typing
 
 import click
 from rich.console import Console
-from rich.emoji import Emoji
-from rich.table import Table
-from rich.text import Text
 
 from ..helpers.exceptions import MutableSecurityException
-from ..helpers.networking import parse_connection_string
+from ..helpers.parsers import (
+    parse_connection_string,
+    parse_file_with_connection_strings,
+)
 from ..leader import ConnectionDetails
 from ..logger.logger import _setup_logging
 from ..main import Main
 from ..solutions_manager import SolutionsManager
+from ..solutions_manager.solutions import AbstractSolution
+from .feedback_form import FeedbackForm
+from .printer import Printer
 
 MIN_PYTHON_VERSION = (3, 9)
-BANNER_FORMAT = """
-              _        _     _      __                      _ _         
-  /\/\  _   _| |_ __ _| |__ | | ___/ _\ ___  ___ _   _ _ __(_| |_ _   _ 
- /    \| | | | __/ _` | '_ \| |/ _ \ \ / _ \/ __| | | | '__| | __| | | |
-/ /\/\ | |_| | || (_| | |_) | |  ___\ |  __| (__| |_| | |  | | |_| |_| |
-\/    \/\__,_|\__\__,_|_.__/|_|\___\__/\___|\___|\__,_|_|  |_|\__|\__, |
-     {} |___/ 
-"""
-MOTTO = "Seamless deployment and management of cybersecurity solutions"
-SLEEP_SECONDS_BEFORE_LOGS = 2
 
 console = Console()
 
 
+def __click_callback(callback: typing.Callable) -> typing.Callable:
+    """Convert a function into a click lambda function.
+
+    Args:
+        callback (typing.Callable): Callback function
+
+    Returns:
+        typing.Callable: Corresponding click lambda function
+    """
+    return lambda _, __, value: callback(value)
+
+
 class CommandWithBanner(click.Command):
-    def format_usage(self, ctx, formatter):
-        console.print(_create_banner())
+    """Class for attaching the banner to solution's help."""
+
+    def format_usage(
+        self, ctx: click.Context, formatter: click.formatting.HelpFormatter
+    ) -> None:
+        """Format the help message to use the banner.
+
+        Args:
+            ctx (click.Context): click's context
+            formatter (click.formatting.HelpFormatter): click's formatter
+        """
+        Printer(console).print_banner()
 
         super().format_usage(ctx, formatter)
-
-
-def _create_banner():
-    parts = BANNER_FORMAT.split("{}")
-
-    banner = Text()
-    banner.append(parts[0], style="json.key")
-    banner.append(MOTTO)
-    banner.append(parts[1], style="json.key")
-
-    return banner
-
-
-def _prepare_long_text(text):
-    wrapped_text = Text(text, justify="full")
-
-    return wrapped_text
-
-
-def _print_version_error():
-    console.print(_create_banner())
-
-    major, minor = MIN_PYTHON_VERSION
-
-    text = Text()
-    text.append(str(Emoji("stop_sign")) + " ")
-    text.append(
-        "Please make sure that your Python version is at least"
-        f" {major}.{minor} before executing MutableSecurity."
-    )
-    console.print(text)
-
-
-def _print_help(ctx, param, value):
-    if value is False:
-        return
-    console.print(ctx.get_help())
-
-
-def _print_module_help(ctx, solution):
-    # Get the metadata
-    solution_class = SolutionsManager.get_solution_by_name(solution)
-    meta = solution_class.meta
-
-    # Create the table with the configurable aspects
-    table = Table()
-    table.add_column("Aspect", justify="left", style="bold")
-    table.add_column("Type", justify="left")
-    table.add_column("Possible Values", justify="center")
-    table.add_column("Description", justify="left")
-
-    # Fill the table with data
-    meta_configuration = meta["configuration"]
-    for key in meta_configuration.keys():
-        details = meta_configuration[key]
-
-        possible_values = "*"
-        required_type = details["type"].__name__
-        if issubclass(details["type"], Enum):
-            possible_values = ", ".join(
-                [value.name for value in details["type"]]
-            )
-            required_type = "str"
-
-        table.add_row(key, required_type, possible_values, details["help"])
-
-    # Create the text
-    help_text = Text()
-    help_text.append(_create_banner())
-    help_text.append("\n")
-    help_text.append("Full name: ", style="bold")
-    help_text.append(
-        meta["full_name"],
-    )
-    help_text.append("\n\n")
-    help_text.append("Description:", style="bold")
-    help_text.append("\n")
-    help_text.append(_prepare_long_text(meta["description"]))
-    help_text.append("\n\n")
-    help_text.append("References:\n", style="bold")
-    for reference in meta["references"]:
-        help_text.append(f"- {reference}\n")
-    help_text.append("\n")
-    help_text.append("Configuration:", style="bold")
-
-    # Print the text and the table
-    console.print(help_text)
-    console.print(table)
-
-
-def _validate_connection_string(connection_string):
-    regex = r"^[a-z][-a-z0-9]*@(\b25[0-5]|\b2[0-4][0-9]|\b[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){3}:((6553[0-5])|(655[0-2][0-9])|(65[0-4][0-9]{2})|(6[0-4][0-9]{3})|([1-5][0-9]{4})|([0-5]{0,5})|([0-9]{1,4}))$"
-
-    if re.match(regex, connection_string):
-        return True
-
-    return False
-
-
-def _print_response(responses):
-    for index, response in enumerate(responses):
-        text = Text()
-
-        if index != 0:
-            console.print("")
-
-        # Check the success status
-        if response["success"]:
-            emoji = "white_check_mark"
-        else:
-            emoji = "stop_sign"
-        text.append(str(Emoji(emoji)))
-
-        # Plug the host, the message and the addition sent data
-        text.append(" " + response["host"] + ": " + response["message"])
-
-        # Print the message
-        console.print(text)
-
-        # If there are additional data, print it (only dicts by now)
-        additonal_data = response["raw_result"]
-        if additonal_data:
-            if isinstance(additonal_data, list):
-                time.sleep(SLEEP_SECONDS_BEFORE_LOGS)
-
-                with console.pager():
-                    for line in additonal_data:
-                        console.print(line)
-            elif isinstance(additonal_data, dict):
-                # Create the table
-                table = Table()
-                table.add_column("Attribute", justify="left", style="bold")
-                table.add_column("Value", justify="left")
-
-                # Iterate through dict
-                for key, value in additonal_data.items():
-                    table.add_row(key, str(value))
-
-                console.print("")
-                console.print(table)
 
 
 @click.command(cls=CommandWithBanner)
@@ -189,6 +69,7 @@ def _print_response(responses):
         " (besides the remote list parameter), the operations are executed"
         " locally."
     ),
+    callback=__click_callback(parse_connection_string),
 )
 @click.option(
     "-l",
@@ -199,6 +80,7 @@ def _print_response(responses):
         " USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host"
         " parameter), the operations are executed locally."
     ),
+    callback=__click_callback(parse_file_with_connection_strings),
 )
 @click.option(
     "-k",
@@ -211,6 +93,7 @@ def _print_response(responses):
     "--solution",
     type=click.Choice(Main.get_available_solutions(), case_sensitive=True),
     help="Solution to manage",
+    callback=__click_callback(SolutionsManager.get_solution_by_name),
 )
 @click.option(
     "-o",
@@ -247,117 +130,90 @@ def _print_response(responses):
 )
 @click.pass_context
 def run_command(
-    ctx,
-    remote,
-    remote_list,
-    key,
-    solution,
-    operation,
-    aspect,
-    value,
-    verbose,
-    feedback,
-    help,
-):
-    # Print the feedback form
-    if feedback:
-        _print_feedback_form(no_check=False)
+    ctx: click.Context,
+    remote: ConnectionDetails,
+    remote_list: typing.List[ConnectionDetails],
+    key: click.Path,
+    solution: AbstractSolution,
+    operation: str,
+    aspect: str,
+    value: str,
+    verbose: bool,
+    feedback: bool,
+    help: bool,  # pylint: disable=redefined-builtin
+) -> None:
+    """Run the CLI based on the provided arguments.
+
+    Args:
+        ctx (click.Context): click's context
+        remote (ConnectionDetails): Remote host to connect to
+        remote_list (typing.List[ConnectionDetails]): File containing remote
+            hosts to connect to
+        key (click.Path): File containing the SSH key used for host connections
+        solution (AbstractSolution): Selected solution
+        operation (str): Selected operation
+        aspect (str): Solution aspect
+        value (str): New value for solution aspect
+        verbose (bool): Boolean indicating if the logging is verbose
+        feedback (bool): Boolean indicating if the feedback needs to be shown
+        help (bool): Boolean indicating if the help needs to be shown
+    """
+    # TODO: Convert operation to a proper type
+    # TODO: Convert aspect to a proper type
+
+    FeedbackForm(console).launch(no_check=feedback)
+
+    printer = Printer(console)
+
+    if solution is None or help:
+        printer.print_click_help(ctx)
 
         return
 
-    # Print the generic help. Includes the -h presence and an invalid host to
-    # connect to
-    if solution is None or (
-        remote and not _validate_connection_string(remote)
-    ):
-        _print_help(ctx, None, value=True)
-
-        # Print the feedback form
-        console.print(2 * "\n", end="")
-        _print_feedback_form()
-
-        return
-
-    # Print the module-specific help. Here the solution must be set.
     if operation is None or help:
-        _print_module_help(ctx, solution)
-
-        # Print the feedback form
-        console.print(2 * "\n", end="")
-        _print_feedback_form()
+        printer.print_solution_help(solution)
 
         return
 
-    # Process (and get) the required connection details
-    hostname = None
-    port = None
-    username = None
-    locked_object_id = []
-    if key:
-        locked_object_id.append(key)
-    if remote:
-        locked_object_id.append(remote)
-    elif remote_list:
-        locked_object_id.append("hosts")
-    else:
-        locked_object_id.append("@local")
-    locked_object_id = " and ".join(locked_object_id)
-    password = click.prompt(
-        Text.from_markup(f":locked_with_key: Password for {locked_object_id}"),
-        hide_input=True,
-        type=str,
-    )
-    connection_string_list = []
-    if remote:
-        connection_string_list.append(remote)
-    elif remote_list:
-        with open(remote_list, "r") as remote_hosts:
-            for line in remote_hosts.readlines():
-                line = line.strip()
-                if line:
-                    connection_string_list.append(line)
-    else:
-        connection_string_list.append(None)
+    # Attach the password and key to each connection
+    password = printer.ask_for_connection_password()
+    connection_details = [remote] if remote else remote_list
+    for details in connection_details:
+        if key:
+            details.key = key
 
-    connection_details = []
-    for string in connection_string_list:
-        if string:
-            details = parse_connection_string(string)
-            if details:
-                username, hostname, port = details
-            else:
-                continue
-        else:
-            username = hostname = port = None
-        connection_details.append(
-            ConnectionDetails(hostname, port, username, key, password)
-        )
+        details.password = password
 
     # Here the solution and the operation must be set.
-    additional_arguments = {"aspect": aspect, "value": value}
-
-    # Set up the logging
-    _setup_logging(verbose)
+    additional_arguments = {
+        "aspect": aspect,
+        "value": value,
+    }
 
     # Run
-    response = Main.run(
+    _setup_logging(verbose)
+    responses = Main.run(
         connection_details, solution, operation, additional_arguments
     )
-    _print_response(response)
-
-    # Print the feedback form
-    console.print(2 * "\n", end="")
-    _print_feedback_form()
+    printer.print_responses(responses)
 
 
-def main():
+def __check_python_version() -> None:
+    """Check if the Python version is compatible.
+
+    Raises:
+        UnsupportedPythonVersion: The version is not compatible.
+    """
     # Check Python version
     if sys.version_info < MIN_PYTHON_VERSION:
-        _print_version_error()
+        Printer(console=console).print_version_error()
 
-        return
+        raise UnsupportedPythonVersion()
 
-    run_command()
+
+def main() -> None:
+    """Run the program."""
+    run_command()  # pylint: disable=no-value-for-parameter
 
 
 if __name__ == "__main__":
@@ -366,3 +222,7 @@ if __name__ == "__main__":
 
 class CLIException(MutableSecurityException):
     """An error occured in the CLI module."""
+
+
+class UnsupportedPythonVersion(CLIException):
+    """This version if Python is not supported."""
