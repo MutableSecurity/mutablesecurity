@@ -12,7 +12,7 @@ import typing
 import click
 from rich.console import Console
 
-from ..helpers.exceptions import MutableSecurityException
+from ..helpers.exceptions import UnsupportedPythonVersion
 from ..helpers.parsers import (
     parse_connection_string,
     parse_file_with_connection_strings,
@@ -218,11 +218,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
-class CLIException(MutableSecurityException):
-    """An error occured in the CLI module."""
-
-
-class UnsupportedPythonVersion(CLIException):
-    """This version if Python is not supported."""

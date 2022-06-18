@@ -5,7 +5,10 @@ import re
 import typing
 
 from ..leader import ConnectionDetails
-from .exceptions import MutableSecurityException
+from .exceptions import (
+    InvalidConnectionStringException,
+    InvalidConnectionStringsFileException,
+)
 
 
 def parse_connection_string(user_input: str) -> ConnectionDetails:
@@ -65,15 +68,3 @@ def parse_file_with_connection_strings(
                 raise InvalidConnectionStringsFileException() from exception
 
     return result
-
-
-class ParserException(MutableSecurityException):
-    """The parsing process failed."""
-
-
-class InvalidConnectionStringException(ParserException):
-    """The provided connection string is invalid."""
-
-
-class InvalidConnectionStringsFileException(ParserException):
-    """The file containing connection strings is invalid."""
