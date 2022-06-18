@@ -1,6 +1,4 @@
 #!/usr/bin/env python3
-
-import logging
 import re
 import sys
 import time
@@ -9,13 +7,13 @@ from enum import Enum
 import click
 from rich.console import Console
 from rich.emoji import Emoji
-from rich.logging import RichHandler
 from rich.table import Table
 from rich.text import Text
 
 from ..helpers.exceptions import MutableSecurityException
 from ..helpers.networking import parse_connection_string
 from ..leader import ConnectionDetails
+from ..logger.logger import _setup_logging
 from ..main import Main
 from ..solutions_manager import SolutionsManager
 
@@ -136,26 +134,6 @@ def _validate_connection_string(connection_string):
         return True
 
     return False
-
-
-def _setup_logging(verbose):
-    # Enable rich logging
-    logging.basicConfig(
-        level=logging.DEBUG,
-        format="%(message)s",
-        datefmt="[%X]",
-        handlers=[
-            RichHandler(
-                console=Console(file=open("/tmp/mutablesecurity.log", "w"))
-            )
-        ],
-    )
-
-    # Set the logging level according to the options
-    if verbose:
-        logging.getLogger("mutablesecurity").setLevel(logging.INFO)
-    else:
-        logging.getLogger("mutablesecurity").setLevel(logging.DEBUG)
 
 
 def _print_response(responses):
