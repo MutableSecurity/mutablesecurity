@@ -13,3 +13,5 @@ formatter
 parsers
 hostnames
 writelines
+pyinfra
+sudo

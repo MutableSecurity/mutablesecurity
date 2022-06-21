@@ -6,7 +6,7 @@ from typing import Optional
 import requests
 from rich.console import Console
 
-from .cli import CLIException
+from ..helpers.exceptions import CLIException
 from .printer import NoEmailProvidedException, Printer
 
 

@@ -8,7 +8,7 @@ from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
 from ..helpers.exceptions import MutableSecurityException
-from ..leader import Leader
+from ..leader import ConnectionFactory
 from ..solutions_manager import (
     AbstractSolution,
     AvailableSolution,
@@ -57,13 +57,15 @@ class Main:
             # first is checked)
             if connection_details[0].hostname:
                 if connection_details[0].key:
-                    state = Leader.connect_to_ssh_with_key(connection_details)
+                    state = ConnectionFactory.connect_to_ssh_with_key(
+                        connection_details
+                    )
                 else:
-                    state = Leader.connect_to_ssh_with_password(
+                    state = ConnectionFactory.connect_to_ssh_with_password(
                         connection_details
                     )
             else:
-                state = Leader.connect_to_local(connection_details)
+                state = ConnectionFactory.connect_to_local(connection_details)
         except:
             return {
                 "success": False,

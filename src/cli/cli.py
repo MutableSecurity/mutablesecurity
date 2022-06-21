@@ -6,6 +6,7 @@ Raises:
     UnsupportedPythonVersion: The current Python version is unsupported
 """
 
+import pathlib
 import sys
 import typing
 
@@ -13,11 +14,7 @@ import click
 from rich.console import Console
 
 from ..helpers.exceptions import UnsupportedPythonVersion
-from ..helpers.parsers import (
-    parse_connection_string,
-    parse_file_with_connection_strings,
-)
-from ..leader import ConnectionDetails
+from ..leader.connections import ConnectionFactory
 from ..logger.logger import _setup_logging
 from ..main import Main
 from ..solutions_manager import SolutionsManager
@@ -69,7 +66,6 @@ class CommandWithBanner(click.Command):
         " (besides the remote list parameter), the operations are executed"
         " locally."
     ),
-    callback=__click_callback(parse_connection_string),
 )
 @click.option(
     "-l",
@@ -80,13 +76,14 @@ class CommandWithBanner(click.Command):
         " USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host"
         " parameter), the operations are executed locally."
     ),
-    callback=__click_callback(parse_file_with_connection_strings),
+    path_type=pathlib.Path,
 )
 @click.option(
     "-k",
     "--key",
     type=click.Path(exists=True, dir_okay=False),
     help="SSH key to use when connecting to the remote host",
+    path_type=pathlib.Path,
 )
 @click.option(
     "-s",
@@ -131,9 +128,9 @@ class CommandWithBanner(click.Command):
 @click.pass_context
 def run_command(
     ctx: click.Context,
-    remote: ConnectionDetails,
-    remote_list: typing.List[ConnectionDetails],
-    key: click.Path,
+    remote: str,
+    remote_list: pathlib.Path,
+    key: pathlib.Path,
     solution: AbstractSolution,
     operation: str,
     aspect: str,
@@ -146,10 +143,10 @@ def run_command(
 
     Args:
         ctx (click.Context): click's context
-        remote (ConnectionDetails): Remote host to connect to
-        remote_list (typing.List[ConnectionDetails]): File containing remote
-            hosts to connect to
-        key (click.Path): File containing the SSH key used for host connections
+        remote (str): Remote host to connect to
+        remote_list (pathlib.Path): File containing remote hosts to connect to
+        key (pathlib.Path): File containing the SSH key used for host
+            connections
         solution (AbstractSolution): Selected solution
         operation (str): Selected operation
         aspect (str): Solution aspect
@@ -177,12 +174,15 @@ def run_command(
 
     # Attach the password and key to each connection
     password = printer.ask_for_connection_password()
-    connection_details = [remote] if remote else remote_list
-    for details in connection_details:
-        if key:
-            details.key = key
-
-        details.password = password
+    if remote:
+        connection = ConnectionFactory().create_connection(
+            remote, password, key, password
+        )
+        connections = [connection]
+    elif remote_list:
+        connections = ConnectionFactory().create_connections_from_file(
+            remote_list, password, key, None
+        )
 
     # Here the solution and the operation must be set.
     additional_arguments = {
@@ -193,7 +193,7 @@ def run_command(
     # Run
     _setup_logging(verbose)
     responses = Main.run(
-        connection_details, solution, operation, additional_arguments
+        connections, solution, operation, additional_arguments
     )
     printer.print_responses(responses)
 

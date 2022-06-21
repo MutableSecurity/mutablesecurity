@@ -5,7 +5,7 @@ from enum import Enum
 from rich.emoji import Emoji
 from rich.text import Text
 
-from .cli import CLIException
+from ..helpers.exceptions import CLIException
 
 
 class MessageTypes(Enum):

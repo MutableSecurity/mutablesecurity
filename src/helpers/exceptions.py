@@ -25,13 +25,29 @@ class InvalidConnectionStringException(ParserException):
     """The provided connection string is invalid."""
 
 
-class InvalidConnectionStringsFileException(ParserException):
-    """The file containing connection strings is invalid."""
-
-
 class CLIException(MutableSecurityException):
     """An error occured in the CLI module."""
 
 
 class UnsupportedPythonVersion(CLIException):
     """This version if Python is not supported."""
+
+
+class ConnectionException(MutableSecurityException):
+    """An error occured in the module dealing with target hosts connections."""
+
+
+class ConnectionExportMethodNotImplemented(ConnectionException):
+    """The connection export method is not implemented."""
+
+
+class InvalidConnectionDetailsException(ConnectionException):
+    """The connections details are invalid."""
+
+
+class InvalidConnectionStringsFileException(ConnectionException):
+    """The provided connection strings file is invalid."""
+
+
+class UnknownConnectionTypeException(ConnectionException):
+    """The type of the connection could not be deduced."""

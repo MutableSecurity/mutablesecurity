@@ -10,9 +10,10 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
+from ..helpers.exceptions import CLIException
 from ..main import ResponseTypes, SecurityDeployment
 from ..solutions_manager.solutions import AbstractSolution
-from .cli import MIN_PYTHON_VERSION, CLIException
+from .cli import MIN_PYTHON_VERSION
 from .messages import MessageFactory, MessageTypes
 
 
