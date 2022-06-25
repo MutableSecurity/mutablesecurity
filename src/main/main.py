@@ -1,133 +1,75 @@
-import logging
+"""Module for orchestrating all the other modules."""
 import typing
-from enum import Enum
-from inspect import signature
 
-from pyinfra.api.deploy import add_deploy
-from pyinfra.api.exceptions import PyinfraError
-from pyinfra.api.operations import run_ops
-
-from ..helpers.exceptions import MutableSecurityException
-from ..leader import ConnectionFactory
-from ..solutions_manager import (
-    AbstractSolution,
-    AvailableSolution,
-    SolutionsManager,
+from ..helpers.exceptions import (
+    FailedConnectionToHostsException,
+    FailedExecutionException,
 )
-
-
-class ResponseTypes(Enum):
-    SUCCESS = 0
-    ERROR = 1
-
-
-class SecurityDeployment:
-    host: str
-    response_type: ResponseTypes
-    message: str
-    additional_data: typing.Any
+from ..leader import Connection, Leader
+from ..logger.logger import _setup_logging
+from ..solutions_manager import SolutionsManager
+from .deployments import ResponseTypes, SecurityDeploymentResult
 
 
 class Main:
-    logger = logging.getLogger("mutablesecurity")
+    """Class orchestrating all the other modules."""
 
-    @staticmethod
-    def get_available_solutions():
-        solutions = [element.name for element in AvailableSolution]
+    def __init__(self, verbose: typing.Optional[bool] = True) -> None:
+        """Initialize the object.
 
-        return solutions
+        Args:
+            verbose (bool, optional): Boolean indicating if the logging is
+                verbose. Defaults to True.
+        """
+        _setup_logging(verbose)
 
-    @staticmethod
-    def get_available_operations():
-        members = dir(AbstractSolution)
-        methods = [
-            member.upper()
-            for member in members
-            if member[0] != "_" and callable(getattr(AbstractSolution, member))
-        ]
-
-        return methods
-
-    @staticmethod
     def run(
-        connection_details, solution_name, operation_name, additional_arguments
-    ):
+        self,
+        connections: typing.List[Connection],
+        solution_name: str,
+        operation_name: str,
+        additional_arguments: dict,
+    ) -> typing.List[SecurityDeploymentResult]:
+        """Run an operation of a solution against a set of connections.
+
+        Args:
+            connections (typing.List[Connection]): List of connections
+            solution_name (str): Solution's name
+            operation_name (str): Operation's name, implemented in the given
+                solution
+            additional_arguments (dict): Additional arguments to be passed to
+                the operation
+
+        Raises:
+            FailedConnectionToHostsException: The hosts connection failed.
+            FailedExecutionException: The execution failed.
+
+        Returns:
+            typing.List[SecurityDeploymentResult]: List of deployments' results
+        """
+        # Attach connection
+        leader_module = Leader()
+        for connection in connections:
+            leader_module.attach_connection(connection)
+
+        # Connect
         try:
-            # Connect to local or remote depending on the set hosts (only the
-            # first is checked)
-            if connection_details[0].hostname:
-                if connection_details[0].key:
-                    state = ConnectionFactory.connect_to_ssh_with_key(
-                        connection_details
-                    )
-                else:
-                    state = ConnectionFactory.connect_to_ssh_with_password(
-                        connection_details
-                    )
-            else:
-                state = ConnectionFactory.connect_to_local(connection_details)
-        except:
-            return {
-                "success": False,
-                "message": "The host is down or the credentials are invalid.",
-                "raw_result": None,
-            }
+            leader_module.connect()
+        except FailedConnectionToHostsException as exception:
+            raise exception
 
-        # Get the module's method dealing with the provided operation
-        solution_class = SolutionsManager.get_solution_by_name(solution_name)
-        operation_method = getattr(solution_class, operation_name.lower())
-        meta = getattr(solution_class, "meta")
-
-        # Run the required deployment
-        responses = []
+        # Execute
+        solution = SolutionsManager().get_solution_by_name(solution_name)
+        operation = getattr(solution, operation_name.lower())
         try:
-            # Check the number of the arguments. Two of them are inherited from
-            # the pyinfra deployment.
-            if len(signature(operation_method).parameters) == 2:
-                add_deploy(state, operation_method)
-            else:
-                add_deploy(state, operation_method, **additional_arguments)
+            leader_module.run_operation(operation, **additional_arguments)
+        except FailedExecutionException as exception:
+            raise exception
 
-            # Run the operations
-            run_ops(state)
-
-        except PyinfraError:
-            responses.append(
-                {
-                    "host": "all",
-                    "success": 0,
-                    "message": meta["messages"][operation_name][1],
-                    "raw_result": None,
-                }
+        # TODO: After finishing the SolutionManager module, get its result or
+        #       error message
+        return [
+            SecurityDeploymentResult(
+                "local", ResponseTypes.SUCCESS, "Success", None
             )
-
-        except MutableSecurityException as exception:
-            responses.append(
-                {
-                    "host": "all",
-                    "success": 0,
-                    "message": str(exception),
-                    "raw_result": None,
-                }
-            )
-
-        else:
-            # Check the result
-            results = getattr(solution_class, "result")
-            for host, result in results.items():
-                if not result:
-                    is_fail = True
-                else:
-                    is_fail = False
-
-                # Check the result and build the response
-                message = meta["messages"][operation_name][int(is_fail)]
-                response = {
-                    "host": host,
-                    "success": not is_fail,
-                    "message": message,
-                    "raw_result": result,
-                }
-                responses.append(response)
-
-        return responses
+        ]

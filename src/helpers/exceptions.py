@@ -33,21 +33,33 @@ class UnsupportedPythonVersion(CLIException):
     """This version if Python is not supported."""
 
 
-class ConnectionException(MutableSecurityException):
+class HostsOrchestrationException(MutableSecurityException):
     """An error occured in the module dealing with target hosts connections."""
 
 
-class ConnectionExportMethodNotImplemented(ConnectionException):
+class ConnectionExportMethodNotImplemented(HostsOrchestrationException):
     """The connection export method is not implemented."""
 
 
-class InvalidConnectionDetailsException(ConnectionException):
+class InvalidConnectionDetailsException(HostsOrchestrationException):
     """The connections details are invalid."""
 
 
-class InvalidConnectionStringsFileException(ConnectionException):
+class InvalidConnectionStringsFileException(HostsOrchestrationException):
     """The provided connection strings file is invalid."""
 
 
-class UnknownConnectionTypeException(ConnectionException):
+class UnknownConnectionTypeException(HostsOrchestrationException):
     """The type of the connection could not be deduced."""
+
+
+class FailedConnectionToHostsException(HostsOrchestrationException):
+    """The connection to a remote host failed."""
+
+
+class FailedExecutionException(HostsOrchestrationException):
+    """An error occured while executing the given operation."""
+
+
+class MainModuleException(MutableSecurityException):
+    """An error occured in the main module."""

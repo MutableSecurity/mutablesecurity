@@ -15,10 +15,8 @@ from rich.console import Console
 
 from ..helpers.exceptions import UnsupportedPythonVersion
 from ..leader.connections import ConnectionFactory
-from ..logger.logger import _setup_logging
 from ..main import Main
 from ..solutions_manager import SolutionsManager
-from ..solutions_manager.solutions import AbstractSolution
 from .feedback_form import FeedbackForm
 from .printer import Printer
 
@@ -37,6 +35,18 @@ def __click_callback(callback: typing.Callable) -> typing.Callable:
         typing.Callable: Corresponding click lambda function
     """
     return lambda _, __, value: callback(value)
+
+
+def __lower_str_callback(argument: str) -> str:
+    """Transform a string into lowercase.
+
+    Args:
+        argument (str): String to transform
+
+    Returns:
+        str: Lowercased string
+    """
+    return argument.lower()
 
 
 class CommandWithBanner(click.Command):
@@ -88,14 +98,19 @@ class CommandWithBanner(click.Command):
 @click.option(
     "-s",
     "--solution",
-    type=click.Choice(Main.get_available_solutions(), case_sensitive=True),
+    type=click.Choice(
+        SolutionsManager().get_available_solutions_names(), case_sensitive=True
+    ),
     help="Solution to manage",
-    callback=__click_callback(SolutionsManager.get_solution_by_name),
 )
 @click.option(
     "-o",
     "--operation",
-    type=click.Choice(Main.get_available_operations(), case_sensitive=True),
+    type=click.Choice(
+        SolutionsManager().get_available_operations_for_solution(),
+        case_sensitive=True,
+    ),
+    callback=__click_callback(__lower_str_callback),
     help="Operation to perform",
 )
 @click.option(
@@ -131,7 +146,7 @@ def run_command(
     remote: str,
     remote_list: pathlib.Path,
     key: pathlib.Path,
-    solution: AbstractSolution,
+    solution: str,
     operation: str,
     aspect: str,
     value: str,
@@ -147,17 +162,14 @@ def run_command(
         remote_list (pathlib.Path): File containing remote hosts to connect to
         key (pathlib.Path): File containing the SSH key used for host
             connections
-        solution (AbstractSolution): Selected solution
-        operation (str): Selected operation
-        aspect (str): Solution aspect
+        solution (str): Selected solution
+        operation (str): Selected operation string identifier
+        aspect (str): Solution aspect string identifier
         value (str): New value for solution aspect
         verbose (bool): Boolean indicating if the logging is verbose
         feedback (bool): Boolean indicating if the feedback needs to be shown
         help (bool): Boolean indicating if the help needs to be shown
     """
-    # TODO: Convert operation to a proper type
-    # TODO: Convert aspect to a proper type
-
     FeedbackForm(console).launch(no_check=feedback)
 
     printer = Printer(console)
@@ -191,8 +203,8 @@ def run_command(
     }
 
     # Run
-    _setup_logging(verbose)
-    responses = Main.run(
+    main_module = Main(verbose)
+    responses = main_module.run(
         connections, solution, operation, additional_arguments
     )
     printer.print_responses(responses)

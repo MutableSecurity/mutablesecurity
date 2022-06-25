@@ -11,8 +11,8 @@ from rich.table import Table
 from rich.text import Text
 
 from ..helpers.exceptions import CLIException
-from ..main import ResponseTypes, SecurityDeployment
-from ..solutions_manager.solutions import AbstractSolution
+from ..main import ResponseTypes, SecurityDeploymentResult
+from ..solutions_manager import SolutionsManager
 from .cli import MIN_PYTHON_VERSION
 from .messages import MessageFactory, MessageTypes
 
@@ -189,12 +189,14 @@ class Printer:
         """
         self.console.print(ctx.get_help())
 
-    def print_solution_help(self, solution: AbstractSolution) -> None:
+    def print_solution_help(self, solution_name: str) -> None:
         """Print the help of a solution.
 
         Args:
-            solution (AbstractSolution): Selected solution
+            solution_name (str): Selected solution's name
         """
+        solution = SolutionsManager().get_solution_by_name(solution_name)
+
         configuration_matrix = solution.represent_configuration_as_list()
         configuration_repr = self.__represent_matrix(configuration_matrix)
         references_repr = self.__represent_unordered_list(solution.REFERENCES)
@@ -217,12 +219,13 @@ class Printer:
         return self.__ask(self.PASSWORD_PROMPT, is_sensitive=True)
 
     def print_responses(
-        self, responses: typing.List[SecurityDeployment]
+        self, responses: typing.List[SecurityDeploymentResult]
     ) -> None:
         """Print the reponses produces by the deployments.
 
         Args:
-            responses (typing.List[SecurityDeployment]): Produced responses
+            responses (typing.List[SecurityDeploymentResult]): Produced
+                responses
         """
         for index, response in enumerate(responses):
             if index != 0:
