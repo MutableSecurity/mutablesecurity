@@ -6,8 +6,8 @@ from typing import Optional
 import requests
 from rich.console import Console
 
-from ..helpers.exceptions import CLIException
-from .printer import NoEmailProvidedException, Printer
+from src.cli.printer import NoEmailProvidedException, Printer
+from src.helpers.exceptions import CLIException
 
 
 class FeedbackForm:

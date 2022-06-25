@@ -1,4 +1,4 @@
 """Module for storing the modules' orchestration logic."""
 
-from .deployments import ResponseTypes, SecurityDeploymentResult
-from .main import Main
+from src.main.deployments import ResponseTypes, SecurityDeploymentResult
+from src.main.main import Main

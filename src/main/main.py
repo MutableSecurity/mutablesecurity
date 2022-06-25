@@ -1,14 +1,14 @@
 """Module for orchestrating all the other modules."""
 import typing
 
-from ..helpers.exceptions import (
+from src.helpers.exceptions import (
     FailedConnectionToHostsException,
     FailedExecutionException,
 )
-from ..leader import Connection, Leader
-from ..logger.logger import _setup_logging
-from ..solutions_manager import SolutionsManager
-from .deployments import ResponseTypes, SecurityDeploymentResult
+from src.leader import Connection, Leader
+from src.logger.logger import _setup_logging
+from src.main.deployments import ResponseTypes, SecurityDeploymentResult
+from src.solutions_manager import SolutionsManager
 
 
 class Main:

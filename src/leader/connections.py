@@ -3,15 +3,15 @@ import abc
 import pathlib
 import typing
 
-from ..helpers.exceptions import (
+from src.helpers.exceptions import (
     ConnectionExportMethodNotImplemented,
     InvalidConnectionDetailsException,
     InvalidConnectionStringException,
     InvalidConnectionStringsFileException,
     UnknownConnectionTypeException,
 )
-from ..helpers.files import read_file_lines
-from ..helpers.parsers import parse_connection_string
+from src.helpers.files import read_file_lines
+from src.helpers.parsers import parse_connection_string
 
 
 class Connection:

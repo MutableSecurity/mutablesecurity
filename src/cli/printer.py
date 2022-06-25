@@ -10,11 +10,11 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from ..helpers.exceptions import CLIException
-from ..main import ResponseTypes, SecurityDeploymentResult
-from ..solutions_manager import SolutionsManager
-from .cli import MIN_PYTHON_VERSION
-from .messages import MessageFactory, MessageTypes
+from src.cli.cli import MIN_PYTHON_VERSION
+from src.cli.messages import MessageFactory, MessageTypes
+from src.helpers.exceptions import CLIException
+from src.main import ResponseTypes, SecurityDeploymentResult
+from src.solutions_manager import SolutionsManager
 
 
 class Printer:

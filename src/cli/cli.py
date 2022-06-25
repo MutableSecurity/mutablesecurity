@@ -13,12 +13,12 @@ import typing
 import click
 from rich.console import Console
 
-from ..helpers.exceptions import UnsupportedPythonVersion
-from ..leader.connections import ConnectionFactory
-from ..main import Main
-from ..solutions_manager import SolutionsManager
-from .feedback_form import FeedbackForm
-from .printer import Printer
+from src.cli.feedback_form import FeedbackForm
+from src.cli.printer import Printer
+from src.helpers.exceptions import UnsupportedPythonVersion
+from src.leader.connections import ConnectionFactory
+from src.main import Main
+from src.solutions_manager import SolutionsManager
 
 MIN_PYTHON_VERSION = (3, 9)
 

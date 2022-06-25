@@ -51,6 +51,7 @@ flake8-bandit = "^3.0.0"
 flake8-docstrings = "^1.6.0"
 flake8-quotes = "^3.3.1"
 flake8-spellcheck = "^0.28.0"
+flake8-tidy-imports = "^4.8.0"
 isort = "^5.10.1"
 mypy = "^0.961"
 pep8-naming = "^0.13.0"
@@ -70,6 +71,10 @@ extend-ignore = "ANN101,"
 per-file-ignores = """
     ./**/__init__.py: F401
     ./tests/*: S101, DAR301
+"""
+ban-relative-imports = true
+banned-modules = """
+    logging = Use the logging module instead.
 """
 dictionaries = "en_US,python,technical"
 

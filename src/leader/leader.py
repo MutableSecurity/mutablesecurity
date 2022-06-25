@@ -8,11 +8,11 @@ from pyinfra.api.deploy import add_deploy
 from pyinfra.api.exceptions import PyinfraError
 from pyinfra.api.operations import run_ops
 
-from ..helpers.exceptions import (
+from src.helpers.exceptions import (
     FailedConnectionToHostsException,
     FailedExecutionException,
 )
-from .connections import Connection
+from src.leader.connections import Connection
 
 
 class Leader:
