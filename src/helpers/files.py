@@ -3,24 +3,40 @@
 import pathlib
 import typing
 
+from src.helpers.exceptions import FileNotExists, ImproperPermissionsException
+
 
 def read_file_lines(
     path: pathlib.Path,
-) -> typing.Generator[str, None, None]:
-    """Parse a file containing connection strings.
+) -> typing.List[str]:
+    """Parse and strip a file containing text lines.
 
-    See the function parse_connection_string for format information.
+    To be used only with reasonable files. An implementation using yield is
+    better for larger files.
 
     Args:
-        path (pathlib.Path): File with connection string
+        path (pathlib.Path): Path to existent file
 
-    Yields:
-        str: Line in the file
+    Raises:
+        FileNotExists: File does not exists.
+        ImproperPermissionsException: Improper permissions
+
+    Returns:
+        str: List of lines in files
     """
-    with open(path, "r", encoding="utf-8") as remote_hosts:
-        for line in remote_hosts.readlines():
+    try:
+        if not path.exists():
+            raise FileNotExists()
+    except PermissionError as exception:
+        raise ImproperPermissionsException() from exception
+
+    with open(path, "r", encoding="utf-8") as opened_file:
+        lines = []
+        for line in opened_file.readlines():
             line = line.strip()
             if not line:
                 continue
 
-            yield line
+            lines.append(line)
+
+        return lines

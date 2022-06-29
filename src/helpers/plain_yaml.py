@@ -76,7 +76,7 @@ def load_from_file(
 
         if mandatory_keys:
             for key in mandatory_keys:
-                if not hasattr(content, key):
+                if key not in content:
                     raise YAMLKeyMissingException()
 
         return content

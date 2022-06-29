@@ -41,8 +41,24 @@ class NotPlainDictionaryException(PlainYAMLException):
     """The dictionary is not a plain YAML representation."""
 
 
+class FilesException(MutableSecurityException):
+    """An error occured when processing a file."""
+
+
+class FileNotExists(FilesException):
+    """The provided file does not exists."""
+
+
+class ImproperPermissionsException(FilesException):
+    """The permissions are not elevated enough(t) to manipulate the file."""
+
+
 class GitHubException(MutableSecurityException):
     """An error occured when communicating with GitHub API."""
+
+
+class GitHubAPIError(GitHubException):
+    """The result from GitHub API is not successful."""
 
 
 class NoIdentifiedAssetException(GitHubException):
