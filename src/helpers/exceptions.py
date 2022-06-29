@@ -25,6 +25,22 @@ class InvalidConnectionStringException(ParserException):
     """The provided connection string is invalid."""
 
 
+class PlainYAMLException(MutableSecurityException):
+    """The plain YAML handling failed."""
+
+
+class YAMLFileNotExistsException(PlainYAMLException):
+    """The provided YAML file does not exists."""
+
+
+class YAMLKeyMissingException(PlainYAMLException):
+    """A required key is missing from the provided YAML file."""
+
+
+class NotPlainDictionaryException(PlainYAMLException):
+    """The dictionary is not a plain YAML representation."""
+
+
 class GitHubException(MutableSecurityException):
     """An error occured when communicating with GitHub API."""
 
@@ -87,6 +103,10 @@ class OperationNotImplementedException(SolutionsManagerException):
 
 class SolutionException(MutableSecurityException):
     """An error occured inside the automation of a security solution."""
+
+
+class InvalidMetaException(SolutionException):
+    """The meta of the package containing the solution is invalid."""
 
 
 class InstallRequiredInformationNotSetException(SolutionException):

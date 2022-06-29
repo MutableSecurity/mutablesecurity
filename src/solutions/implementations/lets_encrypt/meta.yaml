@@ -1,0 +1,7 @@
+full_name: Let's Encrypt x Certbot
+description: Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.
+references:
+  - https://letsencrypt.org/
+  - https://github.com/letsencrypt
+  - https://certbot.eff.org/
+  - https://github.com/certbot/certbot

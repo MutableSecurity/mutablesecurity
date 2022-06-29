@@ -1,199 +1,34 @@
 """Module modeling the interface and common functionality for solutions."""
 
+import os
 import typing
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from pyinfra.api import FactBase, Host, State
+from pyinfra.api import Host, State
 from pyinfra.api.deploy import deploy
 
 from src.helpers.exceptions import (
     FailedSolutionTestException,
     InstallRequiredInformationNotSetException,
     InvalidInformationValueException,
+    InvalidMetaException,
     MutableSecurityException,
     RequirementsNotMetException,
     SolutionActionNotFoundException,
-    SolutionException,
     SolutionInformationNotFoundException,
     SolutionTestNotFoundException,
+    YAMLKeyMissingException,
 )
-
-Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
-
-
-class BaseSolutionException(SolutionException):
-    """Exception to be used as a parent by the solutions' implementations."""
-
-
-class BaseRequirement(ABC):
-    """Abstract class modeling a system requirement."""
-
-    @property
-    @abstractmethod
-    def identifier(self) -> str:
-        """Declare the identifier getter."""
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Declare the description getter."""
-
-    @property
-    @abstractmethod
-    def fact(self) -> FactBase:
-        """Declare the getter of the fact used to check the requirement."""
-
-
-class InformationType(Enum):
-    """Enumeration for possible types for an information."""
-
-    INTEGER = 0
-    STRING = 1
-    LIST = 2
-
-
-class InformationProperties(Enum):
-    """Enumeration for possible properties of an information."""
-
-    __TYPE_BASE = 0
-    CONFIGURATION = __TYPE_BASE + 1
-    METRIC = __TYPE_BASE + 2
-
-    __OPTIONALITY_BASE = 10
-    MANDATORY = __OPTIONALITY_BASE + 1
-    OPTIONAL = __OPTIONALITY_BASE + 2
-    NEEDED_AT_INSTALL = __OPTIONALITY_BASE + 3
-
-    __MISC_BASE = 100
-    AUTO_GENERATED = __MISC_BASE + 1
-
-
-class BaseInformation(ABC):
-    """Abstract class modeling an information related to the solution."""
-
-    @property
-    @abstractmethod
-    def identifier(self) -> str:
-        """Declare the identifier getter."""
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Declare the description getter."""
-
-    @property
-    @abstractmethod
-    def default_value(self) -> typing.Any:
-        """Declare the default value getter."""
-
-    @property
-    @abstractmethod
-    def actual_value(self) -> typing.Any:
-        """Declare the actual value getter."""
-
-    @property
-    @abstractmethod
-    def info_type(self) -> InformationType:
-        """Declare the infomation type's getter."""
-
-    @property
-    @abstractmethod
-    def properties(self) -> typing.List[InformationProperties]:
-        """Declare the getter of the properties describing the information."""
-
-    @property
-    @abstractmethod
-    def getter(self) -> FactBase:
-        """Declare the getter of the retrieving fact."""
-
-    @abstractmethod
-    def setter(self) -> Operation:
-        """Declare the getter of the setting operation."""
-
-    @abstractmethod
-    def validate_value(self, value: typing.Any) -> bool:
-        """Validate if the information's value is valid.
-
-        Args:
-            value (typing.Any): Value of the information
-
-        Returns:
-            bool: Boolean indicating if the information is valid
-        """
-
-
-class BaseAction:
-    """Abstract class modeling a possible action performed by the solution."""
-
-    @property
-    @abstractmethod
-    def identifier(self) -> str:
-        """Declare the identifier getter."""
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Declare the description getter."""
-
-    @property
-    @abstractmethod
-    def act(self) -> Operation:
-        """Declare the getter of the operation used to execute the action."""
-
-
-class TestType(Enum):
-    """Enumeration for types of tests."""
-
-    OPERATIONAL = 0
-    SECURITY = 1
-    INTEGRATION = 2
-
-
-class BaseTest(ABC):
-    """Abstract class modeling an atomic step for testing the solution."""
-
-    @property
-    @abstractmethod
-    def identifier(self) -> str:
-        """Declare the identifier getter."""
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Declare the description getter."""
-
-    @property
-    @abstractmethod
-    def test_type(self) -> TestType:
-        """Declare the test type's getter."""
-
-    @property
-    @abstractmethod
-    def fact(self) -> FactBase:
-        """Declare the getter of the fact used to execute the test.
-
-        The fact shoud return a boolean indicating it the test is successful.
-        """
-
-
-class BaseLog(ABC):
-    """Abstract class modeling a log source of the solution."""
-
-    @property
-    @abstractmethod
-    def identifier(self) -> str:
-        """Declare the identifier getter."""
-
-    @property
-    @abstractmethod
-    def description(self) -> str:
-        """Declare the description getter."""
-
-    @property
-    @abstractmethod
-    def fact(self) -> FactBase:
-        """Declare the fact used to retrieve the logs."""
+from src.helpers.plain_yaml import dump_to_file, load_from_file
+from src.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseRequirement,
+    BaseTest,
+    InformationProperties,
+)
 
 
 def exported_functionality(function: typing.Callable) -> typing.Callable:
@@ -230,6 +65,7 @@ class BaseSolution(ABC):
     """Abstract class wrapping a security solution."""
 
     identifier: str
+    config_filename: str
     full_name: str
     description: str
     references: typing.List[str]
@@ -239,26 +75,80 @@ class BaseSolution(ABC):
     logs: typing.Dict[str, BaseLog]
     actions: typing.Dict[str, BaseAction]
 
+    class MetaKeys(Enum):
+        """Class containing the mandatory key of a meta YAML file."""
+
+        FULL_NAME = "full_name"
+        DESCRIPTION = "description"
+        REFERENCES = "references"
+
     # By now, disable the unused arguments warnings as they are required for
     # the interface with pyinfra.
     # pylint: disable=unused-argument
 
-    def __init__(self) -> None:
-        """Initialize the object."""
-        # TODO: Parse a YAML file to get the configuration information.
-
-    @deploy
-    def __set_default_information(self, state: State, host: Host) -> None:
-        """Set the default values to configuration.
+    def __init__(self, hostname: str) -> None:
+        """Initialize the object.
 
         Args:
-            state (State): State
-            host (Host): Host
+            hostname (str): Name of the host on which the solution is managed
         """
-        for info in self.information.values():
-            info.actual_value = info.default_value
+        self.__load_meta()
 
-            # TODO: Set in the YAML file the default values.
+        self.identifier = self.__class__.__module__
+        self.config_filename = f"{hostname}_{self.identifier}.yaml"
+
+    def __load_meta(self) -> None:
+        """Load the meta YAML file containing the solution details.
+
+        Raises:
+            InvalidMetaException: Invalid meta YAML file
+        """
+        # Load the meta YAML file
+        meta_filename = os.path.join(
+            ".".join(__name__.split(".")[:-1]), "meta.yaml"
+        )
+        mandatory_keys = [key.value for key in self.MetaKeys]
+        try:
+            meta = load_from_file(meta_filename, mandatory_keys)
+        except YAMLKeyMissingException as exception:
+            raise InvalidMetaException() from exception
+
+        # Save the values into the class' members
+        self.full_name = meta[self.MetaKeys.FULL_NAME.value]
+        self.description = meta[self.MetaKeys.DESCRIPTION.value]
+        self.references = meta[self.MetaKeys.REFERENCES.value]
+
+    def __get_information_as_dict(
+        self, filter_property: typing.Optional[InformationProperties] = None
+    ) -> dict:
+        """Get the (filtered) information as a dictionary.
+
+        Args:
+            filter_property (InformationProperties, optional): Mandatory
+                properties for the information returned. Defaults to None.
+
+        Returns:
+            dict: Resulted dictionary
+        """
+        result = {}
+        for key, info in self.information.items():
+            if filter_property in info.properties:
+                result[key] = info.actual_value
+
+        return result
+
+    def __save_current_configuration_as_file(self) -> None:
+        """Save the current configuration as a file."""
+        configuration = self.__get_information_as_dict(
+            InformationProperties.CONFIGURATION
+        )
+        dump_to_file(configuration, self.config_filename)
+
+    @deploy
+    def __set_default_information(self) -> None:
+        """Set the default values to configuration."""
+        for info in self.information.values():
+            info.actual_value = info.default_value  # type: ignore
 
     @deploy
     def __check_required_information_for_install(self) -> bool:
@@ -320,14 +210,19 @@ class BaseSolution(ABC):
             except KeyError as exception:
                 raise SolutionInformationNotFoundException() from exception
 
-            info_list = [info]
+            info.actual_value = host.get_fact(info.getter)  # type: ignore
+
+            return_value = info.actual_value
         else:
             info_list = list(self.information.values())
+            for info in info_list:
+                info.actual_value = host.get_fact(info.getter)  # type: ignore
 
-        for info in info_list:
-            host.get_fact(info.getter)
+            return_value = self.__get_information_as_dict()
 
-        # TODO: Return and modify the YAML and the actual value.
+        self.__save_current_configuration_as_file()
+
+        return return_value
 
     @deploy
     def _set_information(
@@ -353,7 +248,7 @@ class BaseSolution(ABC):
         info.setter(value)
         info.actual_value = value
 
-        # TODO: Set the value in the YAML file.
+        self.__save_current_configuration_as_file()
 
     def _check_information_value(
         self, identifier: str, value: typing.Any
@@ -504,14 +399,10 @@ class BaseSolution(ABC):
 
     @exported_functionality
     @deploy
-    def init(self, state: State, host: Host) -> None:
-        """Initialize the security solution lifecycle.
-
-        Args:
-            state (State): [description]
-            host (Host): [description]
-        """
-        self.__set_default_information(state, host)
+    def init(self) -> None:
+        """Initialize the security solution lifecycle."""
+        self.__set_default_information()
+        self.__save_current_configuration_as_file()
 
     @exported_functionality
     @deploy
