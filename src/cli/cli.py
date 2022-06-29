@@ -99,7 +99,7 @@ class CommandWithBanner(click.Command):
     "-s",
     "--solution",
     type=click.Choice(
-        SolutionsManager().get_available_solutions_names(), case_sensitive=True
+        SolutionsManager().get_available_solutions_ids(), case_sensitive=True
     ),
     help="Solution to manage",
 )
@@ -107,7 +107,7 @@ class CommandWithBanner(click.Command):
     "-o",
     "--operation",
     type=click.Choice(
-        SolutionsManager().get_available_operations_for_solution(),
+        SolutionsManager().get_available_operations(),
         case_sensitive=True,
     ),
     callback=__click_callback(__lower_str_callback),
@@ -117,18 +117,15 @@ class CommandWithBanner(click.Command):
     "-a",
     "--aspect",
     type=str,
-    help=(
-        "Configuration's aspect to modify. Available only with a value"
-        " (--value)"
-    ),
+    help="Information to modify. Available only with a value (--value)",
 )
 @click.option(
     "-v",
     "--value",
     type=str,
     help=(
-        "New value of the configuration's aspect. Available only with an"
-        " aspect (--aspect)."
+        "New value of the information. Available only with an aspect"
+        " (--aspect)."
     ),
 )
 @click.option("--verbose", is_flag=True, help="Increase in the logging volume")
@@ -188,7 +185,7 @@ def run_command(
     password = printer.ask_for_connection_password()
     if remote:
         connection = ConnectionFactory().create_connection(
-            remote, password, key, password
+            password, remote, key, password
         )
         connections = [connection]
     elif remote_list:

@@ -10,7 +10,7 @@ from pyinfra.operations import apt, files, python, server
 from ...helpers.github import GitHub
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
-from . import AbstractSolution
+from . import BaseSolution
 
 
 class AlertsCount(FactBase):
@@ -31,7 +31,11 @@ class DailyAlertsCount(FactBase):
 
 
 class TopAttacksTypes(FactBase):
-    command = "cat /var/log/teler.log | jq -s '.' | jq  'group_by (.category)[] | {type: .[0].category, occurances: length}' | jq -s | jq -S . | jq 'sort_by(.occurances) | reverse | .[0:3]'"
+    command = (
+        "cat /var/log/teler.log | jq -s '.' | jq  'group_by (.category)[] |"
+        " {type: .[0].category, occurances: length}' | jq -s | jq -S . | jq"
+        " 'sort_by(.occurances) | reverse | .[0:3]'"
+    )
 
     def process(self, output):
         attacks_types = json.loads("".join(output))
@@ -45,7 +49,11 @@ class TopAttacksTypes(FactBase):
 
 
 class TopAttackers(FactBase):
-    command = "cat /var/log/teler.log | jq -s '.' | jq  'group_by (.remote_addr)[] | {attacker: .[0].remote_addr, occurances: length}' | jq -s | jq -S . | jq 'sort_by(.occurances) | reverse | .[0:3]'"
+    command = (
+        "cat /var/log/teler.log | jq -s '.' | jq  'group_by (.remote_addr)[] |"
+        " {attacker: .[0].remote_addr, occurances: length}' | jq -s | jq -S ."
+        " | jq 'sort_by(.occurances) | reverse | .[0:3]'"
+    )
 
     def process(self, output):
         attackers = json.loads("".join(output))
@@ -77,7 +85,11 @@ class TestBadUserAgent(FactBase):
     def command(self):
         current_date = datetime.today().strftime("%d/%b/%Y:%H:%M")
 
-        string = f'cat /var/log/teler.log | jq \'select((.http_user_agent == "curl x MutableSecurity") and (.time_local | startswith("{current_date}")))\' | wc -l'
+        string = (
+            "cat /var/log/teler.log | jq 'select((.http_user_agent == \"curl"
+            ' x MutableSecurity") and (.time_local |'
+            f' startswith("{current_date}")))\' | wc -l'
+        )
 
         return string
 
@@ -85,11 +97,14 @@ class TestBadUserAgent(FactBase):
         return int(output[0]) != 0
 
 
-class Teler(AbstractSolution):
+class Teler(BaseSolution):
     meta = {
         "id": "teler",
         "full_name": "teler Real-time HTTP Intrusion Detection",
-        "description": "teler is an real-time intrusion detection and threat alert based on web log.",
+        "description": (
+            "teler is an real-time intrusion detection and threat alert based"
+            " on web log."
+        ),
         "references": ["https://github.com/kitabisa/teler"],
         "configuration": {
             "port": {
@@ -105,7 +120,11 @@ class Teler(AbstractSolution):
             "log_format": {
                 "type": str,
                 "help": "Format for parsing the server's log messages",
-                "default": '$remote_addr $remote_user - [$time_local] "$request_method $request_uri $request_protocol" $status $body_bytes_sent "$http_referer" "$http_user_agent"',
+                "default": (
+                    "$remote_addr $remote_user - [$time_local]"
+                    ' "$request_method $request_uri $request_protocol" $status'
+                    ' $body_bytes_sent "$http_referer" "$http_user_agent"'
+                ),
             },
         },
         "metrics": {
@@ -125,7 +144,10 @@ class Teler(AbstractSolution):
                 "description": "Top 3 attackers",
                 "fact": TopAttackers,
             },
-            "version": {"description": "Current installed version", "fact": Version},
+            "version": {
+                "description": "Current installed version",
+                "fact": Version,
+            },
         },
         "messages": {
             "GET_CONFIGURATION": (
@@ -134,7 +156,8 @@ class Teler(AbstractSolution):
             ),
             "SET_CONFIGURATION": (
                 "The configuration of teler was set.",
-                "The configuration of teler could not be set. Check the provided aspect and value to be valid.",
+                "The configuration of teler could not be set. Check the"
+                " provided aspect and value to be valid.",
             ),
             "INSTALL": (
                 "teler is now installed on this machine.",
@@ -179,13 +202,21 @@ class Teler(AbstractSolution):
     @deploy
     def _verify_new_configuration(state, host, aspect, value):
         ManagedYAMLBackedConfig._verify_new_configuration(
-            state=state, host=host, solution_class=Teler, aspect=aspect, value=value
+            state=state,
+            host=host,
+            solution_class=Teler,
+            aspect=aspect,
+            value=value,
         )
 
     @deploy
     def set_configuration(state, host, aspect=None, value=None):
         ManagedYAMLBackedConfig.set_configuration(
-            state=state, host=host, solution_class=Teler, aspect=aspect, value=value
+            state=state,
+            host=host,
+            solution_class=Teler,
+            aspect=aspect,
+            value=value,
         )
 
     @deploy
@@ -204,11 +235,15 @@ class Teler(AbstractSolution):
             commands=["killall -9 /opt/teler/teler || true"],
         )
 
-        teler_command = f"tail -f {Teler._configuration['log_location']} | /opt/teler/teler -c /opt/teler/teler.conf"
+        teler_command = (
+            f"tail -f {Teler._configuration['log_location']} |"
+            " /opt/teler/teler -c /opt/teler/teler.conf"
+        )
         if aspect == "log_location":
             # Removes the old crontab
             old_teler_command = (
-                f"tail -f {old_value} | /opt/teler/teler -c /opt/teler/teler.conf"
+                f"tail -f {old_value} | /opt/teler/teler -c"
+                " /opt/teler/teler.conf"
             )
             server.crontab(
                 state=state,
@@ -240,13 +275,16 @@ class Teler(AbstractSolution):
             )
 
             # Regenerate and upload the new teler configuration
-            j2_configuration = {"log_format": Teler._configuration["log_format"]}
+            j2_configuration = {
+                "log_format": Teler._configuration["log_format"]
+            }
             files.template(
                 state=state,
                 host=host,
                 sudo=True,
                 name="Copy the regenerated configuration file",
-                src=os.path.dirname(__file__) + "/../files/teler/teler.conf.j2",
+                src=os.path.dirname(__file__)
+                + "/../files/teler/teler.conf.j2",
                 dest="/opt/teler/teler.conf",
                 configuration=j2_configuration,
             )
@@ -336,7 +374,10 @@ class Teler(AbstractSolution):
             commands=["touch /var/log/teler.log"],
         )
 
-        teler_command = f"tail -f {Teler._configuration['log_location']} | /opt/teler/teler -c /opt/teler/teler.conf"
+        teler_command = (
+            f"tail -f {Teler._configuration['log_location']} |"
+            " /opt/teler/teler -c /opt/teler/teler.conf"
+        )
         server.crontab(
             state=state,
             host=host,
@@ -350,7 +391,9 @@ class Teler(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Run the binary now, without a restart to trigger the crontab",
+            name=(
+                "Run the binary now, without a restart to trigger the crontab"
+            ),
             commands=[f"tmux new -d '{teler_command}'"],
         )
 
@@ -364,7 +407,8 @@ class Teler(AbstractSolution):
 
         url = "http://localhost:" + str(Teler._configuration["port"])
         wget_command = (
-            "wget --header 'User-Agent: curl x MutableSecurity' -O /tmp/index.html "
+            "wget --header 'User-Agent: curl x MutableSecurity' -O"
+            " /tmp/index.html "
             + url
         )
         server.shell(
@@ -400,8 +444,12 @@ class Teler(AbstractSolution):
         # Check if the latest release has a greater version than the local
         # software
         local_version = host.get_fact(Version)
-        github_latest_version = GitHub.get_latest_release_name("kitabisa", "teler")
-        if version.parse(local_version) == version.parse(github_latest_version):
+        github_latest_version = GitHub.get_latest_release_name(
+            "kitabisa", "teler"
+        )
+        if version.parse(local_version) == version.parse(
+            github_latest_version
+        ):
             Teler.result[host.name] = True
 
             return
@@ -423,7 +471,10 @@ class Teler(AbstractSolution):
             commands=["killall -9 /opt/teler/teler || true"],
         )
 
-        teler_command = f"tail -f {Teler._configuration['log_location']} | /opt/teler/teler -c /opt/teler/teler.conf"
+        teler_command = (
+            f"tail -f {Teler._configuration['log_location']} |"
+            " /opt/teler/teler -c /opt/teler/teler.conf"
+        )
         server.crontab(
             state=state,
             host=host,

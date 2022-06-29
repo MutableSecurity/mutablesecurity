@@ -42,8 +42,8 @@ class Printer:
     References:
     {references}
 
-    Configuration:
-    {configuration}
+    Information:
+    {information}
     """
 
     PASSWORD_PROMPT = "[bold][blue] Password"  # noqa: S105
@@ -189,22 +189,22 @@ class Printer:
         """
         self.console.print(ctx.get_help())
 
-    def print_solution_help(self, solution_name: str) -> None:
+    def print_solution_help(self, solution_id: str) -> None:
         """Print the help of a solution.
 
         Args:
-            solution_name (str): Selected solution's name
+            solution_id (str): Selected solution's name
         """
-        solution = SolutionsManager().get_solution_by_name(solution_name)
+        solution = SolutionsManager().get_solution_by_id(solution_id)
 
-        configuration_matrix = solution.represent_configuration_as_list()
-        configuration_repr = self.__represent_matrix(configuration_matrix)
-        references_repr = self.__represent_unordered_list(solution.REFERENCES)
+        information_matrix = solution.represent_information_as_matrix()
+        information_repr = self.__represent_matrix(information_matrix)
+        references_repr = self.__represent_unordered_list(solution.references)
         help_text = self.SOLUTION_HELP.format(
-            full_name=solution.FULL_NAME,
-            description=solution.DESCRIPTION,
+            full_name=solution.full_name,
+            description=solution.description,
             references=references_repr,
-            configuration=configuration_repr,
+            information=information_repr,
         )
 
         self.print_banner()
@@ -242,7 +242,7 @@ class Printer:
                 )
             self.console.print(message.to_text())
 
-            # TODO: Process the additional data
+            # TODO: Process the additional data returned in the result.
 
     def print_feedback_and_ask(self) -> str:
         """Print the feedback form description and ask for an email address.

@@ -6,13 +6,15 @@ from src.helpers.exceptions import (
     FailedExecutionException,
 )
 from src.leader import Connection, Leader
-from src.logger.logger import _setup_logging
+from src.logger import Logger
 from src.main.deployments import ResponseTypes, SecurityDeploymentResult
 from src.solutions_manager import SolutionsManager
 
 
 class Main:
     """Class orchestrating all the other modules."""
+
+    logger: Logger
 
     def __init__(self, verbose: typing.Optional[bool] = True) -> None:
         """Initialize the object.
@@ -21,12 +23,12 @@ class Main:
             verbose (bool, optional): Boolean indicating if the logging is
                 verbose. Defaults to True.
         """
-        _setup_logging(verbose)
+        self.logger = Logger(verbose)
 
     def run(
         self,
         connections: typing.List[Connection],
-        solution_name: str,
+        solution_id: str,
         operation_name: str,
         additional_arguments: dict,
     ) -> typing.List[SecurityDeploymentResult]:
@@ -34,7 +36,7 @@ class Main:
 
         Args:
             connections (typing.List[Connection]): List of connections
-            solution_name (str): Solution's name
+            solution_id (str): Solution's name
             operation_name (str): Operation's name, implemented in the given
                 solution
             additional_arguments (dict): Additional arguments to be passed to
@@ -59,15 +61,17 @@ class Main:
             raise exception
 
         # Execute
-        solution = SolutionsManager().get_solution_by_name(solution_name)
-        operation = getattr(solution, operation_name.lower())
+        solution = SolutionsManager().get_solution_by_id(solution_id)
+        operation = SolutionsManager().get_operation_by_name(
+            solution, operation_name
+        )
         try:
             leader_module.run_operation(operation, **additional_arguments)
         except FailedExecutionException as exception:
             raise exception
 
         # TODO: After finishing the SolutionManager module, get its result or
-        #       error message
+        #       error message.
         return [
             SecurityDeploymentResult(
                 "local", ResponseTypes.SUCCESS, "Success", None

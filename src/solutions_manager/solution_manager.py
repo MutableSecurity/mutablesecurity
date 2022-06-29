@@ -1,43 +1,145 @@
-import importlib
+"""Module for implementing the solution manager logic."""
 
-from ..solutions_manager import AbstractSolution, AvailableSolution
-from .solutions import AvailableSolution
+import importlib
+import os
+import re
+import typing
+
+from src.helpers.exceptions import (
+    OperationNotImplementedException,
+    SolutionNotPresentException,
+)
+from src.helpers.python import find_decorated_methods
+from src.solutions.base import BaseSolution, exported_functionality
+
+
+def __convert_to_upper(match: re.Match) -> str:
+    """Convert a Regex match into its corresponding uppercase version.
+
+    Args:
+        match (re.Match): Regex match
+
+    Returns:
+        str: Uppercased result
+    """
+    return match.group()[1].upper()
 
 
 class SolutionsManager:
-    def get_solution_by_name(self, solution_name):
-        if not solution_name:
-            return False
+    """Class for managing solutions automations."""
 
-        module = getattr(AvailableSolution, solution_name)
+    def __translate_solution_id_to_class_name(self, solution_id: str) -> str:
+        """Translate the identifier of a solution into its class name.
 
-        # Get the values stored into the tuple
-        module_name = module.value[0]
-        class_name = module.value[1]
+        Args:
+            solution_id (str): Solution's identifier
 
-        # Import the module and the class (that is stored)
-        try:
-            module = importlib.import_module(
-                f".solutions.{module_name}", package=__package__
-            )
+        Returns:
+            str: Implementation class
+        """
+        solution_id = solution_id.capitalize()
 
-            return getattr(module, class_name)
-        except (ImportError, AttributeError):
-            return None
+        return re.sub(r"_[a-z]", __convert_to_upper, solution_id.capitalize())
 
-    def get_available_solutions_names(self):
-        # TODO: Refactor after finishing the SolutionManager module
-        solutions = [element.name for element in AvailableSolution]
+    def __translate_operation_name_to_id(self, operation_name: str) -> str:
+        """Translate an operation name to an identifier.
+
+        It only uppercases all the letters.
+
+        Args:
+            operation_name (str): Operation's name
+
+        Returns:
+            str: Operation's identifier
+        """
+        return operation_name.upper()
+
+    def __translate_operation_id_to_name(self, operation_id: str) -> str:
+        """Translate an operation identifier to a name.
+
+        It only lowercases all the letters.
+
+        Args:
+            operation_id (str): Operation's identifier
+
+        Returns:
+            str: Operation's name
+        """
+        return operation_id.lower()
+
+    def get_available_solutions_ids(self) -> typing.List[str]:
+        """Get the locally available solutions.
+
+        Returns:
+            typing.List[str]: List of solutions identifiers
+        """
+        solutions_folder = os.path.join(__file__, ".solutions")
+        solutions = [
+            entry.name
+            for entry in os.scandir(solutions_folder)
+            if entry.is_dir() and not entry.name.startswith("_")
+        ]
 
         return solutions
 
-    def get_available_operations_for_solution(self):
-        # TODO: Refactor after finishing the SolutionManager module
-        members = dir(AbstractSolution)
-        methods = [
-            member.upper()
-            for member in members
-            if member[0] != "_" and callable(getattr(AbstractSolution, member))
+    def get_solution_by_id(self, solution_id: str) -> BaseSolution:
+        """Get a solution class by its identifier.
+
+        Args:
+            solution_id (str): Solution's identifier
+
+        Raises:
+            SolutionNotPresentException: The selected solution is not present
+                locally.
+
+        Returns:
+            BaseSolution: Implementation class
+        """
+        class_name = self.__translate_solution_id_to_class_name(solution_id)
+
+        try:
+            module = importlib.import_module(
+                f"src.solutions.implementations.{solution_id}"
+            )
+
+            return getattr(module, class_name)
+        except (ImportError, AttributeError) as exception:
+            raise SolutionNotPresentException() from exception
+
+    def get_available_operations(self) -> typing.List[str]:
+        """Get the operations implemented for a solution.
+
+        Returns:
+            typing.List[str]: List of operations' names
+        """
+        exported_methods = find_decorated_methods(
+            BaseSolution, exported_functionality
+        )
+        operations = [
+            self.__translate_operation_name_to_id(method)
+            for method in exported_methods
         ]
 
-        return methods
+        return operations
+
+    def get_operation_by_name(
+        self, solution: BaseSolution, operation_id: str
+    ) -> typing.Callable:
+        """Retrieve an operation by its name.
+
+        Args:
+            solution (BaseSolution): Solution
+            operation_id (str): Operation's name
+
+        Raises:
+            OperationNotImplementedException: The selected operation is not
+                implemented.
+
+        Returns:
+            typing.Callable: Operation function
+        """
+        operation_name = self.__translate_operation_id_to_name(operation_id)
+        try:
+            return getattr(solution, operation_name)
+        except AttributeError as exception:
+            raise OperationNotImplementedException() from exception

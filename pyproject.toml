@@ -31,7 +31,7 @@ include = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pyinfra = "^1.6.1"
+pyinfra = "^2.2"
 Click = "^8.0"
 PyYAML = "6.0"
 rich = "11.2.0"
@@ -90,6 +90,10 @@ python_version = "3.9"
 
 [tool.pylint.MASTER]
 init-hook='import sys; sys.path.append(".")'
+
+[tool.pylint.MESSAGES_CONTROL]
+disable='missing-function-docstring'
+
 
 [tool.pytest.ini_options]
 pythonpath = [

@@ -15,3 +15,8 @@ hostnames
 writelines
 pyinfra
 sudo
+optionality
+subnode
+getsource
+functiondef
+pycf

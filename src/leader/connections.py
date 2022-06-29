@@ -173,18 +173,20 @@ class ConnectionFactory:
 
     def create_connection(
         self,
-        connection_string: typing.Optional[str],
         user_password: str,
-        key: typing.Optional[pathlib.Path],
-        key_password: typing.Optional[str],
+        connection_string: typing.Optional[str] = None,
+        key: typing.Optional[pathlib.Path] = None,
+        key_password: typing.Optional[str] = None,
     ) -> Connection:
         """Create a single connection.
 
         Args:
-            connection_string (typing.Optional[str]): Connection string
             user_password (str): Password of user's account
-            key (pathlib.Path, optional): Path to SSH key
-            key_password (str, optional): Password for SSH key
+            connection_string (str, optional): Connection string. Defaults to
+                None.
+            key (pathlib.Path, optional): Path to SSH key. Defaults to None
+            key_password (str, optional): Password for SSH key. Defaults to
+                None
 
         Raises:
             InvalidConnectionDetailsException: The connection string could not
@@ -228,8 +230,8 @@ class ConnectionFactory:
         self,
         connection_strings_file: pathlib.Path,
         user_password: str,
-        key: typing.Optional[pathlib.Path],
-        key_password: typing.Optional[str],
+        key: typing.Optional[pathlib.Path] = None,
+        key_password: typing.Optional[str] = None,
     ) -> typing.List[Connection]:
         """Create connections from a file with connection string.
 
@@ -237,8 +239,9 @@ class ConnectionFactory:
             connection_strings_file (pathlib.Path): Path to file with
                 connection strings
             user_password (str): Password of user's account
-            key (pathlib.Path, optional): Path to SSH key
-            key_password (str, optional): Password for SSH key
+            key (pathlib.Path, optional): Path to SSH key. Defaults to None
+            key_password (str, optional): Password for SSH key. Defaults to
+                None
 
         Raises:
             InvalidConnectionStringsFileException: The provided file with
@@ -253,7 +256,7 @@ class ConnectionFactory:
         for connection_string in read_file_lines(connection_strings_file):
             try:
                 connection = self.create_connection(
-                    connection_string, user_password, key, key_password
+                    user_password, connection_string, key, key_password
                 )
             except InvalidConnectionDetailsException as exception:
                 raise InvalidConnectionStringsFileException() from exception

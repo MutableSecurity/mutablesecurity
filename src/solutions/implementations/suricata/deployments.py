@@ -9,7 +9,7 @@ from pyinfra.operations import apt, files, python, server
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
 from ..facts.networking import DefaultInterface
-from . import AbstractSolution
+from . import BaseSolution
 
 
 class AutomaticUpdates(Enum):
@@ -35,7 +35,10 @@ class TestAlertsCount(FactBase):
     def command(self):
         current_date = datetime.today().strftime("%m/%d/%Y-%H:%M")
 
-        return f"tail -n 1 /var/log/suricata/fast.log | grep '{current_date}' | grep -c '1:2100498:7' || true"
+        return (
+            f"tail -n 1 /var/log/suricata/fast.log | grep '{current_date}' |"
+            " grep -c '1:2100498:7' || true"
+        )
 
     def process(self, output):
         return int(output[0])
@@ -45,7 +48,9 @@ class DailyAlertsCount(FactBase):
     def command(self):
         current_date = datetime.today().strftime("%m/%d/%Y")
 
-        return f"cat /var/log/suricata/fast.log | grep '{current_date}' | wc -l"
+        return (
+            f"cat /var/log/suricata/fast.log | grep '{current_date}' | wc -l"
+        )
 
     def process(self, output):
         return int(output[0])
@@ -72,12 +77,21 @@ class Logs(FactBase):
         return output
 
 
-class Suricata(AbstractSolution):
+class Suricata(BaseSolution):
     meta = {
         "id": "suricata",
         "full_name": "Suricata Intrusion Detection and Prevention System",
-        "description": "Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.",
-        "references": ["https://suricata.io", "https://github.com/OISF/suricata"],
+        "description": (
+            "Suricata is the leading independent open source threat detection"
+            " engine. By combining intrusion detection (IDS), intrusion"
+            " prevention (IPS), network security monitoring (NSM) and PCAP"
+            " processing, Suricata can quickly identify, stop, and assess even"
+            " the most sophisticated attacks."
+        ),
+        "references": [
+            "https://suricata.io",
+            "https://github.com/OISF/suricata",
+        ],
         "configuration": {
             "interface": {
                 "type": str,
@@ -100,7 +114,10 @@ class Suricata(AbstractSolution):
                 "fact": DailyAlertsCount,
             },
             "uptime": {"description": "Uptime", "fact": Uptime},
-            "version": {"description": "Current installed version", "fact": Version},
+            "version": {
+                "description": "Current installed version",
+                "fact": Version,
+            },
         },
         "messages": {
             "GET_CONFIGURATION": (
@@ -109,7 +126,8 @@ class Suricata(AbstractSolution):
             ),
             "SET_CONFIGURATION": (
                 "The configuration of Suricata was set.",
-                "The configuration of Suricata could not be set. Check the provided aspect and value to be valid.",
+                "The configuration of Suricata could not be set. Check the"
+                " provided aspect and value to be valid.",
             ),
             "INSTALL": (
                 "Suricata is now installed on this machine.",
@@ -154,13 +172,21 @@ class Suricata(AbstractSolution):
     @deploy
     def _verify_new_configuration(state, host, aspect, value):
         ManagedYAMLBackedConfig._verify_new_configuration(
-            state=state, host=host, solution_class=Suricata, aspect=aspect, value=value
+            state=state,
+            host=host,
+            solution_class=Suricata,
+            aspect=aspect,
+            value=value,
         )
 
     @deploy
     def set_configuration(state, host, aspect=None, value=None):
         ManagedYAMLBackedConfig.set_configuration(
-            state=state, host=host, solution_class=Suricata, aspect=aspect, value=value
+            state=state,
+            host=host,
+            solution_class=Suricata,
+            aspect=aspect,
+            value=value,
         )
 
     @deploy
@@ -173,7 +199,10 @@ class Suricata(AbstractSolution):
                 state=state,
                 host=host,
                 sudo=True,
-                name="Adds a crontab to automatically update the Suricata's rules",
+                name=(
+                    "Adds a crontab to automatically update the Suricata's"
+                    " rules"
+                ),
                 command="suricata-update",
                 present=Suricata._configuration["automatic_updates"],
                 hour=0,
@@ -184,10 +213,15 @@ class Suricata(AbstractSolution):
                 state=state,
                 host=host,
                 sudo=True,
-                name="Replaces the default interface in the Suricata's configuration file",
+                name=(
+                    "Replaces the default interface in the Suricata's"
+                    " configuration file"
+                ),
                 path="/etc/suricata/suricata.yaml",
                 match=r"  - interface: [\"a-zA-Z0-9]*$",
-                replace=f"  - interface: {Suricata._configuration['interface']}",
+                replace=(
+                    f"  - interface: {Suricata._configuration['interface']}"
+                ),
             )
 
             server.shell(
@@ -260,7 +294,10 @@ class Suricata(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Replaces the default interface in the Suricata's configuration file",
+            name=(
+                "Replaces the default interface in the Suricata's"
+                " configuration file"
+            ),
             path="/etc/suricata/suricata.yaml",
             match=r"  - interface: [\"a-zA-Z0-9]*$",
             replace=f"  - interface: {Suricata._configuration['interface']}",
@@ -270,7 +307,10 @@ class Suricata(AbstractSolution):
             state=state,
             host=host,
             sudo=True,
-            name="Replaces the default rules location in the Suricata's configuration file",
+            name=(
+                "Replaces the default rules location in the Suricata's"
+                " configuration file"
+            ),
             path="/etc/suricata/suricata.yaml",
             match=r"^default-rule-path: /etc/suricata/rules$",
             replace="default-rule-path: /var/lib/suricata/rules",
@@ -302,7 +342,9 @@ class Suricata(AbstractSolution):
     def test(state, host):
         Suricata.get_configuration(state=state, host=host)
 
-        curl_command = "wget -O /tmp/index.html http://testmynids.org/uid/index.html"
+        curl_command = (
+            "wget -O /tmp/index.html http://testmynids.org/uid/index.html"
+        )
         server.shell(
             state=state,
             host=host,

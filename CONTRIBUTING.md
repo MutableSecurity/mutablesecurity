@@ -70,7 +70,7 @@ Before you begin implementing a module, we recommend that you answer the followi
 
 A security solution is represented as a module in the MutableSecurity infrastructure.
 
-Each module inherits a base class called `AbstractSolution` and overwrites multiple abstract methods that deal with security solution management, from installation to configuration settings.
+Each module inherits a base class called `BaseSolution` and overwrites multiple abstract methods that deal with security solution management, from installation to configuration settings.
 
 The process of creating a new module is divided into three major steps:
 1. If the solution requires some kind of files for proper management (for example, custom scripts to be run on a regular basis via crontab), create a new folder in `modules/solution_manager/files`.

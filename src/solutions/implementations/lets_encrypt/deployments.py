@@ -9,7 +9,7 @@ from pyinfra.operations import apt, python, server
 from ...helpers.exceptions import MandatoryAspectLeftUnsetException
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
-from . import AbstractSolution
+from . import BaseSolution
 
 
 class SecuredRequests(FactBase):
@@ -48,7 +48,7 @@ class Logs(FactBase):
         return output
 
 
-class LetsEncrypt(AbstractSolution):
+class LetsEncrypt(BaseSolution):
     meta = {
         "id": "lets_encrypt",
         "full_name": "Let's Encrypt x Certbot",

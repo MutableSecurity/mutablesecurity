@@ -63,3 +63,55 @@ class FailedExecutionException(HostsOrchestrationException):
 
 class MainModuleException(MutableSecurityException):
     """An error occured in the main module."""
+
+
+class SolutionsManagerException(MutableSecurityException):
+    """An error occured in the solutions manager module."""
+
+
+class SolutionNotPresentException(SolutionsManagerException):
+    """The given solution is not present locally."""
+
+
+class OperationNotImplementedException(SolutionsManagerException):
+    """The operation is not implemented in the selected solution."""
+
+
+class SolutionException(MutableSecurityException):
+    """An error occured inside the automation of a security solution."""
+
+
+class InstallRequiredInformationNotSetException(SolutionException):
+    """The information required for installation is not set."""
+
+
+class RequirementsNotMetException(SolutionException):
+    """The system requirements of the solution are not met."""
+
+
+class FailedSolutionTestException(SolutionException):
+    """One test executed against the installed solution failed."""
+
+
+class SolutionRequirementNotFoundException(SolutionException):
+    """The selected requirement does not exist in solution's context."""
+
+
+class SolutionInformationNotFoundException(SolutionException):
+    """The selected information does not exist in solution's context."""
+
+
+class SolutionTestNotFoundException(SolutionException):
+    """The selected test does not exist in solution's context."""
+
+
+class SolutionLogNotFoundException(SolutionException):
+    """The selected log source does not exist in solution's context."""
+
+
+class SolutionActionNotFoundException(SolutionException):
+    """The selected action does not exist in solution's context."""
+
+
+class InvalidInformationValueException(SolutionException):
+    """The set value for the information is invalid."""

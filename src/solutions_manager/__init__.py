@@ -1,2 +1,3 @@
-from .solution_manager import SolutionsManager
-from .solutions import AbstractSolution, AvailableSolution
+"""Package for storing and managing security solutions automations."""
+
+from src.solutions_manager.solution_manager import SolutionsManager
