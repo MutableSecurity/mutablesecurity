@@ -7,7 +7,10 @@ from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, python, server
 
-from ...helpers.github import GitHub
+from ...helpers.github import (
+    get_asset_from_latest_release,
+    get_latest_release_name,
+)
 from ..deployments.managed_stats import ManagedStats
 from ..deployments.managed_yaml_backed_config import ManagedYAMLBackedConfig
 from . import BaseSolution
@@ -318,7 +321,7 @@ class Teler(BaseSolution):
         )
 
         # Get the latest release
-        release_url = GitHub.get_asset_from_latest_release(
+        release_url = get_asset_from_latest_release(
             "kitabisa", "teler", "linux_amd64"
         )
         wget_command = f"wget -O /tmp/teler.tar.gz {release_url}"
@@ -444,9 +447,7 @@ class Teler(BaseSolution):
         # Check if the latest release has a greater version than the local
         # software
         local_version = host.get_fact(Version)
-        github_latest_version = GitHub.get_latest_release_name(
-            "kitabisa", "teler"
-        )
+        github_latest_version = get_latest_release_name("kitabisa", "teler")
         if version.parse(local_version) == version.parse(
             github_latest_version
         ):

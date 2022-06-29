@@ -25,6 +25,14 @@ class InvalidConnectionStringException(ParserException):
     """The provided connection string is invalid."""
 
 
+class GitHubException(MutableSecurityException):
+    """An error occured when communicating with GitHub API."""
+
+
+class NoIdentifiedAssetException(GitHubException):
+    """No release was matched using the provided identifier."""
+
+
 class CLIException(MutableSecurityException):
     """An error occured in the CLI module."""
 
