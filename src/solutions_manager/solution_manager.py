@@ -13,18 +13,6 @@ from src.helpers.python import find_decorated_methods
 from src.solutions.base import BaseSolution, exported_functionality
 
 
-def __convert_to_upper(match: re.Match) -> str:
-    """Convert a Regex match into its corresponding uppercase version.
-
-    Args:
-        match (re.Match): Regex match
-
-    Returns:
-        str: Uppercased result
-    """
-    return match.group()[1].upper()
-
-
 class SolutionsManager:
     """Class for managing solutions automations."""
 
@@ -39,7 +27,18 @@ class SolutionsManager:
         """
         solution_id = solution_id.capitalize()
 
-        return re.sub(r"_[a-z]", __convert_to_upper, solution_id.capitalize())
+        def convert_to_upper(match: re.Match) -> str:
+            """Convert a Regex match into its corresponding uppercase version.
+
+            Args:
+                match (re.Match): Regex match
+
+            Returns:
+                str: Uppercased result
+            """
+            return match.group()[1].upper()
+
+        return re.sub(r"_[a-z]", convert_to_upper, solution_id.capitalize())
 
     def __translate_operation_name_to_id(self, operation_name: str) -> str:
         """Translate an operation name to an identifier.
@@ -73,7 +72,9 @@ class SolutionsManager:
         Returns:
             typing.List[str]: List of solutions identifiers
         """
-        solutions_folder = os.path.join(__file__, ".solutions")
+        solutions_folder = os.path.join(
+            os.path.dirname(__file__), "../solutions/implementations"
+        )
         solutions = [
             entry.name
             for entry in os.scandir(solutions_folder)
@@ -99,14 +100,14 @@ class SolutionsManager:
 
         try:
             module = importlib.import_module(
-                f"src.solutions.implementations.{solution_id}"
+                f"src.solutions.implementations.{solution_id}.deployments"
             )
 
             return getattr(module, class_name)
         except (ImportError, AttributeError) as exception:
             raise SolutionNotPresentException() from exception
 
-    def get_available_operations(self) -> typing.List[str]:
+    def get_available_operations_ids(self) -> typing.List[str]:
         """Get the operations implemented for a solution.
 
         Returns:
@@ -122,7 +123,7 @@ class SolutionsManager:
 
         return operations
 
-    def get_operation_by_name(
+    def get_operation_by_id(
         self, solution: BaseSolution, operation_id: str
     ) -> typing.Callable:
         """Retrieve an operation by its name.

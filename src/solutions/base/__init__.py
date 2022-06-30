@@ -9,5 +9,5 @@ from src.solutions.base.information import (
 )
 from src.solutions.base.log import BaseLog
 from src.solutions.base.requirement import BaseRequirement
-from src.solutions.base.solution import BaseSolution
+from src.solutions.base.solution import BaseSolution, exported_functionality
 from src.solutions.base.test import BaseTest, TestType

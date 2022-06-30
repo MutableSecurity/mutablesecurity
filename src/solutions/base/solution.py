@@ -21,14 +21,14 @@ from src.helpers.exceptions import (
     YAMLKeyMissingException,
 )
 from src.helpers.plain_yaml import dump_to_file, load_from_file
-from src.solutions.base import (
-    BaseAction,
+from src.solutions.base.action import BaseAction
+from src.solutions.base.information import (
     BaseInformation,
-    BaseLog,
-    BaseRequirement,
-    BaseTest,
     InformationProperties,
 )
+from src.solutions.base.log import BaseLog
+from src.solutions.base.requirement import BaseRequirement
+from src.solutions.base.test import BaseTest
 
 
 def exported_functionality(function: typing.Callable) -> typing.Callable:

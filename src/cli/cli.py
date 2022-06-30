@@ -107,7 +107,7 @@ class CommandWithBanner(click.Command):
     "-o",
     "--operation",
     type=click.Choice(
-        SolutionsManager().get_available_operations(),
+        SolutionsManager().get_available_operations_ids(),
         case_sensitive=True,
     ),
     callback=__click_callback(__lower_str_callback),

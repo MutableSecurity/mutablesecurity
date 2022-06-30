@@ -62,7 +62,7 @@ class Main:
 
         # Execute
         solution = SolutionsManager().get_solution_by_id(solution_id)
-        operation = SolutionsManager().get_operation_by_name(
+        operation = SolutionsManager().get_operation_by_id(
             solution, operation_name
         )
         try:
