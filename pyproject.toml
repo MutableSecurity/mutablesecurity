@@ -71,7 +71,7 @@ inline-quotes = "double"
 extend-ignore = "ANN101,"
 per-file-ignores = """
     ./**/__init__.py: F401
-    ./tests/*: S101, DAR301
+    ./tests/*: S101, S105, S108, DAR301
     ./src/logger/logger.py: I251
 """
 ban-relative-imports = true

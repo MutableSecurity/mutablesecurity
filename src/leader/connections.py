@@ -46,7 +46,7 @@ class LocalPasswordConnection(Connection):
         Returns:
             tuple: Host details
         """
-        return ("@local",)
+        return "@local"
 
 
 class RemoteConnection(Connection):  # pylint: disable=abstract-method
@@ -162,7 +162,7 @@ class KeySSHRemoteConnection(RemoteConnection):
             username,
             user_password,
             {
-                "ssh_key": key,
+                "ssh_key": str(key),
                 "ssh_key_password": key_password,
             },
         )

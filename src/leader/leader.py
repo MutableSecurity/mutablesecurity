@@ -23,6 +23,10 @@ class Leader:
     state: State
     unique_password: str  # TODO: Remove after having passwords for each host
 
+    def __init__(self) -> None:
+        """Initialize the object."""
+        self.hosts = []
+
     def __make_inventory(
         self,
         hosts: typing.Optional[tuple] = (),
