@@ -10,7 +10,6 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
-from src.cli.cli import MIN_PYTHON_VERSION
 from src.cli.messages import MessageFactory, MessageTypes
 from src.helpers.exceptions import CLIException
 from src.main import ResponseTypes, SecurityDeploymentResult
@@ -162,13 +161,21 @@ class Printer:
             .create_message(MessageTypes.QUESTION, message)
             .to_text()
         )
+
         return Prompt.ask(decorated_message, password=is_sensitive)
 
-    def print_version_error(self) -> None:
-        """Print an error message related to Python's version."""
+    def print_version_error(
+        self, min_py_version: typing.Tuple[int, int]
+    ) -> None:
+        """Print an error message related to Python's version.
+
+        Args:
+            min_py_version(typing.Tuple[int, int]): Minimum major and minor
+                version numbers of Python
+        """
         self.print_banner()
 
-        major, minor = MIN_PYTHON_VERSION
+        major, minor = min_py_version
 
         message = MessageFactory().create_message(
             MessageTypes.ERROR,

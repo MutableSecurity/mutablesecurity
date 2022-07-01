@@ -16,6 +16,19 @@ from src.solutions.base import BaseSolution, exported_functionality
 class SolutionsManager:
     """Class for managing solutions automations."""
 
+    def __translate_solution_module_to_id(
+        self, solution_module_name: str
+    ) -> str:
+        """Convert a solution module name into an identifier.
+
+        Args:
+            solution_module_name (str): Name of the module
+
+        Returns:
+            str: Identifier
+        """
+        return solution_module_name.upper()
+
     def __translate_solution_id_to_class_name(self, solution_id: str) -> str:
         """Translate the identifier of a solution into its class name.
 
@@ -25,7 +38,7 @@ class SolutionsManager:
         Returns:
             str: Implementation class
         """
-        solution_id = solution_id.capitalize()
+        solution_id = solution_id.lower().capitalize()
 
         def convert_to_upper(match: re.Match) -> str:
             """Convert a Regex match into its corresponding uppercase version.
@@ -39,6 +52,17 @@ class SolutionsManager:
             return match.group()[1].upper()
 
         return re.sub(r"_[a-z]", convert_to_upper, solution_id.capitalize())
+
+    def __translate_solution_id_to_module_name(self, solution_id: str) -> str:
+        """Translate a solution identifier into a module name.
+
+        Args:
+            solution_id (str): Solution's identifier
+
+        Returns:
+            str: Module name
+        """
+        return solution_id.lower()
 
     def __translate_operation_name_to_id(self, operation_name: str) -> str:
         """Translate an operation name to an identifier.
@@ -76,7 +100,7 @@ class SolutionsManager:
             os.path.dirname(__file__), "../solutions/implementations"
         )
         solutions = [
-            entry.name
+            self.__translate_solution_module_to_id(entry.name)
             for entry in os.scandir(solutions_folder)
             if entry.is_dir() and not entry.name.startswith("_")
         ]
@@ -96,11 +120,12 @@ class SolutionsManager:
         Returns:
             BaseSolution: Implementation class
         """
+        module_name = self.__translate_solution_id_to_module_name(solution_id)
         class_name = self.__translate_solution_id_to_class_name(solution_id)
 
         try:
             module = importlib.import_module(
-                f"src.solutions.implementations.{solution_id}.deployments"
+                f"src.solutions.implementations.{module_name}.deployments"
             )
 
             return getattr(module, class_name)

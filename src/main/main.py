@@ -16,12 +16,12 @@ class Main:
 
     logger: Logger
 
-    def __init__(self, verbose: typing.Optional[bool] = True) -> None:
+    def __init__(self, verbose: bool = True) -> None:
         """Initialize the object.
 
         Args:
-            verbose (bool, optional): Boolean indicating if the logging is
-                verbose. Defaults to True.
+            verbose (bool): Boolean indicating if the logging is verbose.
+                Defaults to True.
         """
         self.logger = Logger(verbose)
 

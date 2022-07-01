@@ -88,12 +88,14 @@ class MessageFactory:
         Returns:
             Message: Constructed message
         """
-        if message_type == MessageTypes.WARNING:
-            return Message(message_type, 0, "warning", message)
+        if message_type == MessageTypes.QUESTION:
+            return Message(message_type, 0, "question_mark", message)
+        elif message_type == MessageTypes.WARNING:
+            return Message(message_type, 10, "warning", message)
         elif message_type == MessageTypes.ERROR:
-            return Message(message_type, 10, "stop_sign", message)
-        elif message_type == MessageTypes.ERROR:
-            return Message(message_type, 20, "white_check_mark", message)
+            return Message(message_type, 100, "stop_sign", message)
+        elif message_type == MessageTypes.SUCCESS:
+            return Message(message_type, 1000, "white_check_mark", message)
         else:
             raise UnknownMessageTypeException()
 

@@ -80,20 +80,18 @@ class CommandWithBanner(click.Command):
 @click.option(
     "-l",
     "--remote-list",
-    type=click.Path(exists=True, dir_okay=False),
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
     help=(
         "Connect to a series of remote hosts specified in a file, in the"
         " USERNAME@HOSTNAME:PORT format. If ommited (besides the remote host"
         " parameter), the operations are executed locally."
     ),
-    path_type=pathlib.Path,
 )
 @click.option(
     "-k",
     "--key",
-    type=click.Path(exists=True, dir_okay=False),
+    type=click.Path(exists=True, dir_okay=False, path_type=pathlib.Path),
     help="SSH key to use when connecting to the remote host",
-    path_type=pathlib.Path,
 )
 @click.option(
     "-s",
@@ -183,15 +181,15 @@ def run_command(
 
     # Attach the password and key to each connection
     password = printer.ask_for_connection_password()
-    if remote:
+    if remote_list:
+        connections = ConnectionFactory().create_connections_from_file(
+            remote_list, password, key, None
+        )
+    else:
         connection = ConnectionFactory().create_connection(
             password, remote, key, password
         )
         connections = [connection]
-    elif remote_list:
-        connections = ConnectionFactory().create_connections_from_file(
-            remote_list, password, key, None
-        )
 
     # Here the solution and the operation must be set.
     additional_arguments = {
@@ -215,7 +213,7 @@ def __check_python_version() -> None:
     """
     # Check Python version
     if sys.version_info < MIN_PYTHON_VERSION:
-        Printer(console=console).print_version_error()
+        Printer(console=console).print_version_error(MIN_PYTHON_VERSION)
 
         raise UnsupportedPythonVersion()
 
