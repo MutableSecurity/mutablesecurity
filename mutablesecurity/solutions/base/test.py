@@ -1,0 +1,135 @@
+"""Module defining an abstract log source."""
+import typing
+from enum import Enum
+
+from pyinfra import host
+from pyinfra.api import FactBase
+
+from mutablesecurity.helpers.exceptions import (
+    FailedSolutionTestException, SolutionObjectNotFoundException,
+    SolutionTestNotFoundException)
+from mutablesecurity.solutions.base.object import BaseManager, BaseObject
+
+
+class TestType(Enum):
+    """Enumeration for types of tests."""
+
+    # Used to determine if the system is compatible
+    REQUIREMENT = 0
+
+    # Used to determine if the solution is installed on the machine
+    PRESENCE = 1
+
+    # Used to determine if the solution is running (with or without achieving
+    # security)
+    OPERATIONAL = 2
+
+    # Used to determine if the solution achieves its security-related goals
+    SECURITY = 3
+
+    # Used to test if the solution integrates with other components of the
+    # infrastructure
+    INTEGRATION = 4
+
+
+class BaseTest(BaseObject):
+    """Abstract class modeling an atomic step for testing the solution."""
+
+    TEST_TYPE: TestType
+    FACT: FactBase
+
+
+class TestResult:
+    """Class for storing the result of a test."""
+
+    identifier: str
+    status: bool
+
+    def __init__(self, identifier: str, status: bool) -> None:
+        """Initialize the instance.
+
+        Args:
+            identifier (str): Identifier
+            status (bool): Status
+        """
+        self.identifier = identifier
+        self.status = status
+
+
+class TestsManager(BaseManager):
+    """Class managing the tests of a solution."""
+
+    def __init__(self, tests: typing.Sequence[BaseTest]) -> None:
+        """Initialize the instance.
+
+        Args:
+            tests (typing.Sequence[BaseTest]): List of tests to be added
+        """
+        super().__init__(tests)
+
+    def test(
+        self,
+        identifier: typing.Optional[str] = None,
+        filter_type: typing.Optional[TestType] = None,
+        only_check: typing.Optional[bool] = False,
+    ) -> typing.List[TestResult]:
+        """Make a test or all the testsuite.
+
+        Args:
+            identifier (str, optional): Test identifier.
+                Defaults to None if all the testsuite is executed.
+            filter_type (TestType, optional): Test type used as a filter
+            only_check (bool, optional): Boolean indicating if the tests raises
+                an exception if they not pass
+
+        Raises:
+            SolutionTestNotFoundException: Invalid test identifier
+            FailedSolutionTestException: A test failed.
+
+        Returns:
+            typing.List[TestResult]: List of results, only if the only_check
+                parameter is set
+        """
+        tests_list = []
+        if identifier:
+            try:
+                test: BaseTest = self.get_object_by_identifier(
+                    identifier
+                )  # type: ignore
+            except SolutionObjectNotFoundException as exception:
+                raise SolutionTestNotFoundException() from exception
+
+            tests_list = [test]
+        elif filter_type:
+            for raw_test in self.objects.values():
+                test: BaseTest = raw_test  # type: ignore
+
+                if test.TEST_TYPE == filter_type:
+                    tests_list.append(test)
+        else:
+            tests_list = list(self.objects.values())  # type: ignore
+
+        result = []
+        for test in tests_list:
+            check = host.get_fact(test.FACT)
+            if only_check:
+                result.append(TestResult(test.IDENTIFIER, check))
+            elif not check:
+                raise FailedSolutionTestException()
+
+        return result
+
+    def represent_as_matrix(self) -> typing.List[typing.List[str]]:
+        """Represent the tests as a matrix.
+
+        Returns:
+            typing.List[typing.List[str]]: Matrix with tests
+        """
+        result = [["Identifier", "Description", "Type"]]
+
+        for key, raw_test in self.objects.items():
+            test: BaseTest = raw_test  # type: ignore
+
+            result.append([key, test.DESCRIPTION, test.TEST_TYPE.name])
+
+        return result

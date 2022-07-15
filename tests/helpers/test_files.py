@@ -5,8 +5,11 @@ from pathlib import Path
 
 import pytest
 
-from src.helpers.exceptions import FileNotExists, ImproperPermissionsException
-from src.helpers.files import read_file_lines
+from mutablesecurity.helpers.exceptions import (
+    FileNotExists,
+    ImproperPermissionsException,
+)
+from mutablesecurity.helpers.files import read_file_lines
 
 
 def test_read_file_lines_correct() -> None:

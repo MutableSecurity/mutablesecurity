@@ -2,7 +2,7 @@
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import server
 
-from src.leader import ConnectionFactory, Leader
+from mutablesecurity.leader import ConnectionFactory, Leader
 
 
 @deploy

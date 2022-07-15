@@ -4,12 +4,12 @@ import tempfile
 
 import pytest
 
-from src.helpers.exceptions import (
+from mutablesecurity.helpers.exceptions import (
     NotPlainDictionaryException,
     YAMLFileNotExistsException,
     YAMLKeyMissingException,
 )
-from src.helpers.plain_yaml import dump_to_file, load_from_file
+from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
 
 
 def test_valid_load_dump() -> None:

@@ -1,6 +1,6 @@
 """Module for testing the Python helper module."""
 
-from src.helpers.python import find_decorated_methods
+from mutablesecurity.helpers.python import find_decorated_methods
 
 
 class ClassWithStaticMethods:

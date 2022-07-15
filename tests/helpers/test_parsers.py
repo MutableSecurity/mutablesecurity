@@ -3,8 +3,8 @@
 
 import pytest
 
-from src.helpers.exceptions import InvalidConnectionStringException
-from src.helpers.parsers import parse_connection_string
+from mutablesecurity.helpers.exceptions import InvalidConnectionStringException
+from mutablesecurity.helpers.parsers import parse_connection_string
 
 
 def test_parse_connection_string_correct() -> None:

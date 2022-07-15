@@ -3,11 +3,11 @@
 
 import pytest
 
-from src.helpers.exceptions import (
+from mutablesecurity.helpers.exceptions import (
     OperationNotImplementedException,
     SolutionNotPresentException,
 )
-from src.solutions_manager import SolutionsManager
+from mutablesecurity.solutions_manager import SolutionsManager
 
 
 def test_valid_solutions_operations() -> None:

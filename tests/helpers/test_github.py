@@ -2,8 +2,11 @@
 
 import pytest
 
-from src.helpers.exceptions import GitHubAPIError, NoIdentifiedAssetException
-from src.helpers.github import (
+from mutablesecurity.helpers.exceptions import (
+    GitHubAPIError,
+    NoIdentifiedAssetException,
+)
+from mutablesecurity.helpers.github import (
     get_asset_from_latest_release,
     get_latest_release_name,
 )

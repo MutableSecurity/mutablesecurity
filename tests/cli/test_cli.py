@@ -4,8 +4,9 @@ import typing
 import pytest
 from click.testing import CliRunner
 
-from src.cli.cli import run_command
-from src.main.deployments import ResponseTypes, SecurityDeploymentResult
+from mutablesecurity.cli.cli import __run_command
+from mutablesecurity.main.deployments import (ResponseTypes,
+                                              SecurityDeploymentResult)
 
 
 def __mock_dummy_password(message: str, password: bool) -> str:
@@ -44,7 +45,6 @@ def __mock_run(
 def test_error_exit() -> None:
     """Test errors raising when passing bad arguments combinations."""
     bad_combos = [
-        None,
         ["--solution"],
         ["--solution", "TELER"],
         ["--solution", "TELER", "--operation"],
@@ -52,7 +52,7 @@ def test_error_exit() -> None:
 
     for combo in bad_combos:
         runner = CliRunner()
-        result = runner.invoke(run_command, combo)
+        result = runner.invoke(__run_command, combo)
         assert (
             result.exit_code != 0
         ), f'The exit code is not error for "{combo}"'
@@ -68,7 +68,7 @@ def test_successful_run(
         capsys (pytest.CaptureFixture): Ignored fixture
         monkeypatch (pytest.MonkeyPatch): Object used for monkey patching
     """
-    monkeypatch.setattr("src.main.Main.run", __mock_run)
+    monkeypatch.setattr("mutablesecurity.main.Main.run", __mock_run)
     monkeypatch.setattr(
         "rich.prompt.Prompt.ask",
         __mock_dummy_password,
@@ -76,10 +76,9 @@ def test_successful_run(
 
     runner = CliRunner()
     result = runner.invoke(
-        run_command,
+        __run_command,
         ["--solution", "TELER", "--operation", "INIT"],
     )
-    print(result.output)
     assert (
         not result.exception
     ), "An error was generated despite the correct command."

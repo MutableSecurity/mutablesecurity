@@ -6,9 +6,9 @@ import pytest
 from click import Context
 from rich.console import Console
 
-from src.cli.cli import run_command
-from src.cli.printer import NoEmailProvidedException, Printer
-from src.main import ResponseTypes, SecurityDeploymentResult
+from mutablesecurity.cli.cli import __run_command
+from mutablesecurity.cli.printer import NoEmailProvidedException, Printer
+from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 
 
 def __mock_ask_with_no_input(message: str, password: bool) -> str:
@@ -71,7 +71,7 @@ def test_help() -> None:
 
     with console.capture() as capture:
         printer = Printer(console)
-        printer.print_click_help(Context(command=run_command))
+        printer.print_click_help(Context(command=__run_command))
 
     assert len(capture.get()) != 0, "No message printed when calling help."
 

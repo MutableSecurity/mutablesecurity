@@ -6,7 +6,10 @@ import typing
 import pytest
 from rich.console import Console
 
-from src.cli.feedback_form import FeedbackForm, FeedbackNotSentException
+from mutablesecurity.cli.feedback_form import (
+    FeedbackForm,
+    FeedbackNotSentException,
+)
 
 
 class GoodResponse:
@@ -21,13 +24,13 @@ class BadResponse:
     status_code = 501
 
 
-def __mock_good_request(args: tuple, **kwargs: dict) -> GoodResponse:
+def __mock_good_request(args: tuple, **kwargs: typing.Any) -> GoodResponse:
     # pylint: disable=unused-argument
     """Return a good response.
 
     Args:
         args (tuple): Unused
-        kwargs (dict): Unused
+        kwargs (typing.Any): Unused
 
     Returns:
         GoodResponse: Response
@@ -35,13 +38,13 @@ def __mock_good_request(args: tuple, **kwargs: dict) -> GoodResponse:
     return GoodResponse()
 
 
-def __mock_bad_request(args: tuple, **kwargs: dict) -> BadResponse:
+def __mock_bad_request(args: tuple, **kwargs: typing.Any) -> BadResponse:
     # pylint: disable=unused-argument
     """Return a bad response.
 
     Args:
         args (tuple): Unused
-        kwargs (dict): Unused
+        kwargs (typing.Any): Unused
 
     Returns:
         BadResponse: Response
@@ -102,7 +105,7 @@ def test_networking_issues(
     capsys: pytest.CaptureFixture, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     # pylint: disable=unused-argument
-    """Tests if there is raised an exception when a networking error occures.
+    """Tests if there is raised an exception when a networking error occurs.
 
     Args:
         capsys (pytest.CaptureFixture): Ignored fixture

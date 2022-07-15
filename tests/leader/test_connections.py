@@ -4,8 +4,10 @@ from pathlib import Path
 
 import pytest
 
-from src.helpers.exceptions import InvalidConnectionDetailsException
-from src.leader.connections import ConnectionFactory
+from mutablesecurity.helpers.exceptions import (
+    InvalidConnectionDetailsException,
+)
+from mutablesecurity.leader.connections import ConnectionFactory
 
 
 def test_create_connections() -> None:

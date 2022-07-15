@@ -38,12 +38,14 @@ rich = "11.2.0"
 humanfriendly = "^10.0"
 packaging = "^21.3"
 requests = "^2.27.1"
+pypattyrn = "^1.2"
 
 [tool.poetry.scripts]
-mutablesecurity = "src.cli.cli:main"
+mutablesecurity = "mutablesecurity.cli:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
+coverage = {extras = ["toml"], version = "^6.4.2"}
 darglint = "^1.8.1"
 flake8 = "^4.0.1"
 flake8-annotations = "^2.9.0"
@@ -55,6 +57,7 @@ flake8-tidy-imports = "^4.8.0"
 isort = "^5.10.1"
 mypy = "^0.961"
 pep8-naming = "^0.13.0"
+pyenchant = "^3.2.2"
 pylint = "^2.13.5"
 pyproject-flake8 = "^0.0.1-alpha.4"
 pytest = "^7.1.2"
@@ -71,8 +74,9 @@ inline-quotes = "double"
 extend-ignore = "ANN101,"
 per-file-ignores = """
     ./**/__init__.py: F401
+    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
+    ./mutablesecurity/logger/logger.py: I251
     ./tests/*: S101, S105, S108, DAR301
-    ./src/logger/logger.py: I251
 """
 ban-relative-imports = true
 banned-modules = """
@@ -91,14 +95,23 @@ known_local_folder = ["src"]
 python_version = "3.9"
 
 [tool.pylint.MASTER]
-init-hook='import sys; sys.path.append(".")'
+init-hook="import sys; sys.path.append('.')"
 
 [tool.pylint.MESSAGES_CONTROL]
-disable='missing-function-docstring'
-
+disable="missing-function-docstring"
 
 [tool.pytest.ini_options]
 pythonpath = [
     ".",
     "src"
+]
+
+[tool.pylint.SPELLING]
+spelling-dict = "en_US"
+spelling-private-dict-file = "whitelist.txt"
+
+[tool.coverage.run]
+omit = [
+    "mutablesecurity/solutions/implementations/*",
+    "tests/*"
 ]
