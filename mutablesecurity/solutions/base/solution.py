@@ -16,30 +16,22 @@ from enum import Enum
 from pyinfra import host
 from pyinfra.api.deploy import deploy
 
-from mutablesecurity.helpers.exceptions import (
-    FailedSolutionTestException,
-    InvalidMetaException,
-    MutableSecurityException,
-    RequirementsNotMetException,
-    SolutionNotInstalledException,
-    YAMLKeyMissingException,
-)
+from mutablesecurity.helpers.exceptions import (FailedSolutionTestException,
+                                                InvalidMetaException,
+                                                MutableSecurityException,
+                                                RequirementsNotMetException,
+                                                SolutionNotInstalledException,
+                                                YAMLKeyMissingException)
 from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
 from mutablesecurity.leader import Leader
 from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
-from mutablesecurity.solutions.base.information import (
-    BaseInformation,
-    InformationManager,
-    InformationProperties,
-)
+from mutablesecurity.solutions.base.information import (BaseInformation,
+                                                        InformationManager,
+                                                        InformationProperties)
 from mutablesecurity.solutions.base.log import BaseLog, LogsManager
-from mutablesecurity.solutions.base.test import (
-    BaseTest,
-    TestResult,
-    TestsManager,
-    TestType,
-)
+from mutablesecurity.solutions.base.test import (BaseTest, TestResult,
+                                                 TestsManager, TestType)
 
 
 def exported_functionality(function: typing.Callable) -> typing.Callable:
@@ -199,7 +191,7 @@ class BaseSolution(ABC):
 
     @classmethod
     @deploy
-    def _get_information_from_remote(
+    def __get_information_from_remote(
         cls: typing.Type["BaseSolution"],
         identifier: typing.Optional[str] = None,
     ) -> typing.Any:
@@ -212,18 +204,13 @@ class BaseSolution(ABC):
         Returns:
             typing.Any: Information value
         """
-        cls._ensure_installed()
+        cls.__ensure_installed()
 
         return cls.INFORMATION_MANAGER.get(identifier)
 
-    @staticmethod
-    @abstractmethod
-    def _install() -> None:
-        """Install the solution."""
-
     @classmethod
     @deploy
-    def _ensure_installed(cls: typing.Type["BaseSolution"]) -> None:
+    def __ensure_installed(cls: typing.Type["BaseSolution"]) -> None:
         """Ensure that the solution is installed.
 
         Mandatory executed when performing actions against an already-installed
@@ -239,6 +226,11 @@ class BaseSolution(ABC):
             cls.TESTS_MANAGER.test(None, TestType.PRESENCE)
         except FailedSolutionTestException as exception:
             raise SolutionNotInstalledException() from exception
+
+    @staticmethod
+    @abstractmethod
+    def _install() -> None:
+        """Install the solution."""
 
     @staticmethod
     @abstractmethod
@@ -295,7 +287,7 @@ class BaseSolution(ABC):
         Returns:
             typing.Any: Information value
         """
-        cls._ensure_installed()
+        cls.__ensure_installed()
 
         return cls.INFORMATION_MANAGER.get(identifier)
 
@@ -313,8 +305,8 @@ class BaseSolution(ABC):
             identifier (str):  Key identifying the information
             value (typing.Any): New value of the information
         """
-        cls._ensure_installed()
-        cls._get_information_from_remote()
+        cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         cls.INFORMATION_MANAGER.set(identifier, value)
 
@@ -336,8 +328,8 @@ class BaseSolution(ABC):
         Returns:
             typing.List[str]: List of results
         """
-        cls._ensure_installed()
-        cls._get_information_from_remote()
+        cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         result = cls.TESTS_MANAGER.test(identifier, only_check=True)
 
@@ -359,7 +351,7 @@ class BaseSolution(ABC):
         Returns:
             typing.Any: Logs
         """
-        cls._ensure_installed()
+        cls.__ensure_installed()
 
         return cls.LOGS_MANAGER.get_content(identifier)
 
@@ -368,8 +360,8 @@ class BaseSolution(ABC):
     @deploy
     def update(cls: typing.Type["BaseSolution"]) -> None:
         """Update the security solution."""
-        cls._ensure_installed()
-        cls._get_information_from_remote()
+        cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         cls._update()
 
@@ -378,8 +370,8 @@ class BaseSolution(ABC):
     @deploy
     def uninstall(cls: typing.Type["BaseSolution"]) -> None:
         """Uninstall a security solution."""
-        cls._ensure_installed()
-        cls._get_information_from_remote()
+        cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         cls._uninstall()
 
@@ -398,7 +390,7 @@ class BaseSolution(ABC):
             args (typing.Dict[str, str]): Dictionary containing the arguments
                 of the action. Defaults to None.
         """
-        cls._ensure_installed()
-        cls._get_information_from_remote()
+        cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         cls.ACTIONS_MANAGER.execute(identifier, args)

@@ -1,0 +1,173 @@
+digraph "Call Graph" {
+	subgraph cluster_cli_commands {
+		graph [color=red,
+			label="CLI Commands"
+		];
+		node [color=red,
+			shape=box,
+			style=filled
+		];
+		init	[color=red,
+			label=init,
+			shape=box,
+			style=filled];
+		install	[color=red,
+			label=install,
+			shape=box,
+			style=filled];
+		get_information	[color=red,
+			label=get_information,
+			shape=box,
+			style=filled];
+		set_information	[color=red,
+			label=set_information,
+			shape=box,
+			style=filled];
+		test	[color=red,
+			label=test,
+			shape=box,
+			style=filled];
+		get_logs	[color=red,
+			label=get_logs,
+			shape=box,
+			style=filled];
+		update	[color=red,
+			label=update,
+			shape=box,
+			style=filled];
+		uninstall	[color=red,
+			label=uninstall,
+			shape=box,
+			style=filled];
+		execute	[color=red,
+			label=execute,
+			shape=box,
+			style=filled];
+	}
+	subgraph cluster_abstract_methods {
+		graph [label="Abstract methods"];
+		node [color=royalblue,
+			shape=box,
+			style=filled
+		];
+		_install	[color=royalblue,
+			label=_install,
+			shape=box,
+			style=filled];
+		_uninstall	[color=royalblue,
+			label=_uninstall,
+			shape=box,
+			style=filled];
+		_update	[color=royalblue,
+			label=_update,
+			shape=box,
+			style=filled];
+	}
+	subgraph cluster_class_methods {
+		graph [label="Concrete class methods"];
+		node [color=lightslategray,
+			shape=box,
+			style=filled
+		];
+		__load_meta	[color=lightslategray,
+			label=__load_meta,
+			shape=box,
+			style=filled];
+		__get_configuration_filename	[color=lightslategray,
+			label=__get_configuration_filename,
+			shape=box,
+			style=filled];
+		__load_current_configuration_from_file	[color=lightslategray,
+			label=__load_current_configuration_from_file,
+			shape=box,
+			style=filled];
+		__save_current_configuration_as_file	[color=lightslategray,
+			label=__save_current_configuration_as_file,
+			shape=box,
+			style=filled];
+		__get_information_from_remote	[color=lightslategray,
+			label=__get_information_from_remote,
+			shape=box,
+			style=filled];
+		__ensure_installed	[color=lightslategray,
+			label=__ensure_installed,
+			shape=box,
+			style=filled];
+	}
+	subgraph cluster_managers_methods {
+		graph [label="Managers methods"];
+		node [color=lightgray,
+			shape=ellipse,
+			style=filled
+		];
+		"INFORMATION_MANAGER.set_default_values"	[color=lightgray,
+			label="INFORMATION_MANAGER.set_default_values",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.set_all_from_dict"	[color=lightgray,
+			label="INFORMATION_MANAGER.set_all_from_dict",
+			shape=ellipse,
+			style=filled];
+		"ACTIONS_MANAGER.execute"	[color=lightgray,
+			label="ACTIONS_MANAGER.execute",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.validate"	[color=lightgray,
+			label="INFORMATION_MANAGER.validate",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.set"	[color=lightgray,
+			label="INFORMATION_MANAGER.set",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.get"	[color=lightgray,
+			label="INFORMATION_MANAGER.get",
+			shape=ellipse,
+			style=filled];
+		"LOGS_MANAGER.get_content"	[color=lightgray,
+			label="LOGS_MANAGER.get_content",
+			shape=ellipse,
+			style=filled];
+		"TESTS_MANAGER.test"	[color=lightgray,
+			label="TESTS_MANAGER.test",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.get_all_as_dict"	[color=lightgray,
+			label="INFORMATION_MANAGER.get_all_as_dict",
+			shape=ellipse,
+			style=filled];
+	}
+	init -> __save_current_configuration_as_file;
+	init -> "INFORMATION_MANAGER.set_default_values"	[minlen=1];
+	install -> _install	[minlen=1];
+	install -> "INFORMATION_MANAGER.validate"	[minlen=2];
+	install -> "TESTS_MANAGER.test";
+	get_information -> __ensure_installed;
+	get_information -> "INFORMATION_MANAGER.get";
+	set_information -> __save_current_configuration_as_file;
+	set_information -> __get_information_from_remote;
+	set_information -> __ensure_installed;
+	set_information -> "INFORMATION_MANAGER.set"	[minlen=1];
+	test -> __get_information_from_remote;
+	test -> __ensure_installed;
+	test -> "TESTS_MANAGER.test";
+	get_logs -> __ensure_installed;
+	get_logs -> "LOGS_MANAGER.get_content"	[minlen=1];
+	update -> _update	[minlen=1];
+	update -> __get_information_from_remote;
+	update -> __ensure_installed;
+	uninstall -> _uninstall	[minlen=1];
+	uninstall -> __get_information_from_remote;
+	uninstall -> __ensure_installed;
+	execute -> __get_information_from_remote;
+	execute -> __ensure_installed;
+	execute -> "ACTIONS_MANAGER.execute"	[minlen=1];
+	__load_current_configuration_from_file -> __get_configuration_filename;
+	__load_current_configuration_from_file -> "INFORMATION_MANAGER.set_all_from_dict"	[minlen=1];
+	__save_current_configuration_as_file -> __get_configuration_filename;
+	__save_current_configuration_as_file -> "INFORMATION_MANAGER.get_all_as_dict"	[minlen=1];
+	__get_information_from_remote -> __ensure_installed;
+	__get_information_from_remote -> "INFORMATION_MANAGER.get";
+	__ensure_installed -> __load_current_configuration_from_file;
+	__ensure_installed -> "TESTS_MANAGER.test";
+}

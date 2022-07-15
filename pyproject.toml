@@ -54,6 +54,7 @@ flake8-docstrings = "^1.6.0"
 flake8-quotes = "^3.3.1"
 flake8-spellcheck = "^0.28.0"
 flake8-tidy-imports = "^4.8.0"
+graphviz = "^0.20"
 isort = "^5.10.1"
 mypy = "^0.961"
 pep8-naming = "^0.13.0"
@@ -77,6 +78,7 @@ per-file-ignores = """
     ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
     ./mutablesecurity/logger/logger.py: I251
     ./tests/*: S101, S105, S108, DAR301
+    ./others/solutions_api_call_graph/generate.py: N802
 """
 ban-relative-imports = true
 banned-modules = """
