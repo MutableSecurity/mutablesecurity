@@ -127,7 +127,7 @@ class PasswordSSHRemoteConnection(RemoteConnection):
             user_password,
             {
                 "ssh_password": user_password,
-                "look_for_keys": False,
+                "ssh_look_for_keys": False,
             },
         )
 

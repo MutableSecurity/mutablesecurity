@@ -15,6 +15,7 @@ class MessageTypes(Enum):
     ERROR = "error"
     SUCCESS = "success"
     QUESTION = "white_question_mark"
+    COMPUTER_INFO = "computer_info"
 
 
 class Message:
@@ -108,6 +109,8 @@ class MessageFactory:
             return Message(message_type, 100, "stop_sign", message)
         elif message_type == MessageTypes.SUCCESS:
             return Message(message_type, 1000, "white_check_mark", message)
+        elif message_type == MessageTypes.COMPUTER_INFO:
+            return Message(message_type, 0, "computer", message)
         else:
             raise UnknownMessageTypeException()
 

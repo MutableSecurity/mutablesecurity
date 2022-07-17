@@ -48,6 +48,22 @@ class FileSizeInformation(BaseInformation):
     GETTER = GetFileSize
 
 
+class MachineIDInformation(BaseInformation):
+    class GetMachineID(FactBase):
+        command = "cat /etc/machine-id"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[0]
+
+    IDENTIFIER = "machine_id"
+    DESCRIPTION = "Get the machine ID."
+    INFO_TYPE = StringInformationType
+    PROPERTIES = [InformationProperties.METRIC]
+    DEFAULT_VALUE = None
+    GETTER = GetMachineID
+
+
 class CurrentUserInformation(BaseInformation):
     class GetCurrentUser(FactBase):
         command = "whoami"
@@ -115,7 +131,11 @@ class ContentLogs(BaseLog):
 
 
 class Dummy(BaseSolution):
-    INFORMATION = [FileSizeInformation, CurrentUserInformation]  # type: ignore
+    INFORMATION = [
+        FileSizeInformation,  # type: ignore
+        CurrentUserInformation,  # type: ignore
+        MachineIDInformation,  # type: ignore
+    ]
     TESTS = [UbuntuRequirement, PresenceTest]  # type: ignore
     LOGS = [ContentLogs]  # type: ignore
     ACTIONS = [AppendToFileAction]  # type: ignore

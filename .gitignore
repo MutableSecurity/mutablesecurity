@@ -1,15 +1,18 @@
 # Feedback file
-.feedback
+/.feedback
+
+# Forgot solutions configurations
+/*.yaml
 
 # Poetry
-.venv/
-dist/
-poetry.lock
+/.venv/
+/dist/
+/poetry.lock
 
 # Python
-__pycache__
-.mypy_cache
-.coverage
+**/__pycache__
+/.mypy_cache
+/.coverage
 
 # Pyinfra
-pyinfra-sudo-askpass
+/pyinfra-sudo-askpass

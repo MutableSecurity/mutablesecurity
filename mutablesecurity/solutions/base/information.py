@@ -145,24 +145,28 @@ class InformationType:
 class IntegerInformationType(InformationType):
     """Information type for integer."""
 
+    ALIAS = "INTEGER"
     INNER_TYPE = InnerInformationType.INTEGER
 
 
 class StringInformationType(InformationType):
     """Information type for strings."""
 
+    ALIAS = "STRING"
     INNER_TYPE = InnerInformationType.STRING
 
 
 class IntegerListInformationType(InformationType):
     """Information type for list of integers."""
 
+    ALIAS = "LIST OF INTEGERS"
     INNER_TYPE = InnerInformationType.LIST_OF_INTEGERS
 
 
 class StringListInformationType(InformationType):
     """Information type for list of strings."""
 
+    ALIAS = "LIST OF STRINGS"
     INNER_TYPE = InnerInformationType.LIST_OF_STRINGS
 
 
@@ -233,8 +237,6 @@ class BaseInformation(BaseObject):
         """Ensure that the information can be stored in the host data."""
         if "mutablesecurity" not in host.host_data:
             host.host_data["mutablesecurity"] = {}
-        else:
-            print(host.host_data["mutablesecurity"])
 
     @classmethod
     def get_actual_value(cls: typing.Type["BaseInformation"]) -> typing.Any:

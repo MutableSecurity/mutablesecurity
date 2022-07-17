@@ -20,10 +20,12 @@
     "python.linting.pylintEnabled": true,
     "python.pythonPath": ".venv/bin/python",
     "files.exclude": {
-        "**/.git": true,
-        "**/.mypy_cache": true,
-        "**/.venv": true,
-        "**/dist": true,
-        "**/poetry.lock": true
+        ".git": true,
+        ".mypy_cache": true,
+        ".venv": true,
+        "dist": true,
+        "poetry.lock": true,
+        ".coverage": true,
+        "pyinfra-sudo-askpass": true
     },
 }

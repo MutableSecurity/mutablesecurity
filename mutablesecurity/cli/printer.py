@@ -97,6 +97,9 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     def __to_str(self, obj: typing.Any) -> str:
         """Stringify an object.
 
+        The classes can be printed either by their implicit name or, if
+        defined, by a static member named ALIAS.
+
         Args:
             obj (typing.Any): Any object
 
@@ -106,7 +109,10 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         if obj is None:
             return ""
         elif isinstance(obj, type):
-            return obj.__name__
+            if not (name := getattr(obj, "ALIAS", None)):
+                name = obj.__name__
+
+            return name
         elif isinstance(obj, list):
             return ", ".join([self.__to_str(elem) for elem in obj])
 
@@ -361,6 +367,13 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
             if index != 0:
                 self.console.print("")
 
+            # Print host information
+            host_message = MessageFactory().create_message(
+                MessageTypes.COMPUTER_INFO,
+                f"Host {response.host_id}",
+            )
+            self.console.print(host_message.to_text())
+
             # Create a message for each result and print it
             if response.response_type == ResponseTypes.SUCCESS:
                 message = MessageFactory().create_message(
@@ -380,7 +393,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                     result.concrete_objects,
                 )
 
-                self.console.print("")
                 self.console.print(self.__represent_table(matrix))
 
     def print_feedback_and_ask(self) -> str:
