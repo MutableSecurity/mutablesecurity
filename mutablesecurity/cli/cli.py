@@ -17,7 +17,10 @@ from rich.traceback import install
 
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
-from mutablesecurity.helpers.exceptions import UnsupportedPythonVersion
+from mutablesecurity.helpers.exceptions import (
+    MutableSecurityException,
+    UnsupportedPythonVersion,
+)
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
 from mutablesecurity.solutions_manager import SolutionsManager
@@ -250,6 +253,8 @@ def main() -> None:
         __run_command(  # pylint: disable=no-value-for-parameter
             standalone_mode=False
         )
+    except MutableSecurityException as exception:
+        Printer(console=console).print_exception(exception)
     except click.Abort:
         Printer(console=console).print_keyboard_interrupt_message()
 

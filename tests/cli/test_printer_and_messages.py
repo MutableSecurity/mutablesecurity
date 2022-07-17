@@ -76,14 +76,13 @@ def test_help() -> None:
     assert len(capture.get()) != 0, "No message printed when calling help."
 
 
-@pytest.mark.skip(reason="Solutions not refactored yet.")
 def test_print_solution_help() -> None:
     """Test the print of a solution help."""
     console = Console()
 
     with console.capture() as capture:
         printer = Printer(console)
-        printer.print_solution_help("suricata")
+        printer.print_solution_help("dummy")
 
     assert (
         len(capture.get()) != 0

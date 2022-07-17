@@ -12,7 +12,10 @@ from rich.table import Table
 from rich.text import Text
 
 from mutablesecurity.cli.messages import MessageFactory, MessageTypes
-from mutablesecurity.helpers.exceptions import CLIException
+from mutablesecurity.helpers.exceptions import (
+    CLIException,
+    MutableSecurityException,
+)
 from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,
@@ -84,7 +87,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     )
     FEEDBACK_EMAIL_PROMPT = "\n  [bold][blue]Your Email Address"
 
-    HOST_MESSAGE = "{host} Host"
+    HOST_MESSAGE = "Host {host}"
 
     VERSION_ERROR_TEXT = (
         "Please make sure that your Python version is at least"
@@ -303,6 +306,18 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
             MessageTypes.ERROR,
             self.STOP_MESSAGE,
         )
+        self.console.print(message.to_text())
+
+    def print_exception(self, exception: MutableSecurityException) -> None:
+        """Print a MutableSecurity exception to stdout.
+
+        Args:
+            exception (MutableSecurityException): Exception to print
+        """
+        message = MessageFactory().create_message(
+            MessageTypes.ERROR, str(exception)
+        )
+
         self.console.print(message.to_text())
 
     def print_banner(self) -> None:
