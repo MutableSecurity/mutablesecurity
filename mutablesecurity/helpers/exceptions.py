@@ -6,7 +6,11 @@ class MutableSecurityException(Exception):
 
     def __init__(self) -> None:
         """Initialize the MutableSecurityException instance."""
-        super().__init__(self.__doc__)
+        if not self.__doc__:
+            return
+
+        documentation = self.__doc__.replace("\n", "")
+        super().__init__(documentation)
 
 
 class MandatoryAspectLeftUnsetException(MutableSecurityException):
@@ -123,6 +127,11 @@ class SolutionException(MutableSecurityException):
 
 class InvalidMetaException(SolutionException):
     """The meta of the package containing the solution is invalid."""
+
+
+class NoLocalConfigurationFileException(SolutionException):
+    """No local configuration file for the given solution was found. Maybe you \
+should initialize it first."""
 
 
 class RequirementsNotMetException(SolutionException):

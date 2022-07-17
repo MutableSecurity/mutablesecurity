@@ -43,7 +43,7 @@ class BaseTest(BaseObject):
     """Abstract class modeling an atomic step for testing the solution.
 
     The tests does not includes a success code because they are ephemeral. The
-    old response, once returned, can be discarded.
+    old response, once returned, can be discarded. So this class is stateless.
     """
 
     TEST_TYPE: TestType

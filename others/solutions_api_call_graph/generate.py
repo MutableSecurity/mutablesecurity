@@ -166,6 +166,7 @@ def create_graph(
         comment="Call Graph in Solution API",
         filename="call_graph",
         format="png",
+        graph_attr={"nodesep": "3", "ranksep": "3"},
     )
 
     # Add the CLI commands

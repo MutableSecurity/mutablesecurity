@@ -19,8 +19,10 @@ from pyinfra.api.deploy import deploy
 from mutablesecurity.helpers.exceptions import (
     FailedSolutionTestException,
     InvalidMetaException,
+    NoLocalConfigurationFileException,
     RequirementsNotMetException,
     SolutionNotInstalledException,
+    YAMLFileNotExistsException,
     YAMLKeyMissingException,
 )
 from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
@@ -71,12 +73,10 @@ class BaseSolution(ABC):
         DESCRIPTION = "description"
         REFERENCES = "references"
 
-    # By now, disable the unused arguments warnings as they are required for
-    # the interface with pyinfra.
-    # pylint: disable=unused-argument
-
     def __new__(  # type: ignore
-        cls: typing.Type["BaseSolution"], *args: tuple, **kwargs: typing.Any
+        cls: typing.Type["BaseSolution"],  # pylint: disable=unused-argument
+        *args: tuple,
+        **kwargs: typing.Any,
     ) -> "BaseSolution":
         """Initialize the class after definition.
 
@@ -145,8 +145,12 @@ class BaseSolution(ABC):
     def __load_current_configuration_from_file(
         cls: typing.Type["BaseSolution"],
     ) -> None:
-        configuration = load_from_file(cls.__get_configuration_filename())
-        cls.INFORMATION_MANAGER.set_all_from_dict(configuration)
+        try:
+            configuration = load_from_file(cls.__get_configuration_filename())
+        except YAMLFileNotExistsException as exception:
+            raise NoLocalConfigurationFileException() from exception
+
+        cls.INFORMATION_MANAGER.set_all_from_dict_locally(configuration)
 
     @classmethod
     def __save_current_configuration_as_file(
@@ -173,8 +177,6 @@ class BaseSolution(ABC):
         Returns:
             typing.Any: Information value
         """
-        cls.__ensure_installed()
-
         return cls.INFORMATION_MANAGER.get(identifier)
 
     @classmethod
@@ -217,7 +219,7 @@ class BaseSolution(ABC):
     @deploy
     def init(cls: typing.Type["BaseSolution"]) -> None:
         """Initialize the security solution lifecycle."""
-        cls.INFORMATION_MANAGER.set_default_values()
+        cls.INFORMATION_MANAGER.set_default_values_locally()
         cls.__save_current_configuration_as_file()
 
     @classmethod
@@ -228,7 +230,7 @@ class BaseSolution(ABC):
         Raises:
             RequirementsNotMetException: The requirements are not met.
         """
-        cls.INFORMATION_MANAGER.validate()
+        cls.__load_current_configuration_from_file()
 
         # Ensure that the requirements are met
         try:
@@ -256,6 +258,7 @@ class BaseSolution(ABC):
         cls.__ensure_installed()
 
         results = cls.INFORMATION_MANAGER.get(identifier)
+        cls.__save_current_configuration_as_file()
 
         return cls.__build_manager_result(cls.INFORMATION_MANAGER, results)
 
@@ -317,6 +320,7 @@ class BaseSolution(ABC):
             ConcreteObjectsResult: Result with the requested logs
         """
         cls.__ensure_installed()
+        cls.__get_information_from_remote()
 
         results = cls.LOGS_MANAGER.get_content(identifier)
 

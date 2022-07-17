@@ -65,6 +65,7 @@ reraising
 safeload
 securitydeploymentresult
 src
+stateful
 str
 stringified
 stringify

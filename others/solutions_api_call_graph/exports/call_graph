@@ -1,4 +1,7 @@
 digraph "Call Graph" {
+	graph [nodesep=3,
+		ranksep=3
+	];
 	subgraph cluster_cli_commands {
 		graph [color=red,
 			label="CLI Commands"
@@ -69,6 +72,10 @@ digraph "Call Graph" {
 			shape=box,
 			style=filled
 		];
+		__build_manager_result	[color=lightslategray,
+			label=__build_manager_result,
+			shape=box,
+			style=filled];
 		__load_meta	[color=lightslategray,
 			label=__load_meta,
 			shape=box,
@@ -100,57 +107,58 @@ digraph "Call Graph" {
 			shape=ellipse,
 			style=filled
 		];
-		"INFORMATION_MANAGER.set_default_values"	[color=lightgray,
-			label="INFORMATION_MANAGER.set_default_values",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.set_all_from_dict"	[color=lightgray,
-			label="INFORMATION_MANAGER.set_all_from_dict",
-			shape=ellipse,
-			style=filled];
-		"ACTIONS_MANAGER.execute"	[color=lightgray,
-			label="ACTIONS_MANAGER.execute",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.validate"	[color=lightgray,
-			label="INFORMATION_MANAGER.validate",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.set"	[color=lightgray,
-			label="INFORMATION_MANAGER.set",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.get"	[color=lightgray,
-			label="INFORMATION_MANAGER.get",
-			shape=ellipse,
-			style=filled];
-		"LOGS_MANAGER.get_content"	[color=lightgray,
-			label="LOGS_MANAGER.get_content",
+		"INFORMATION_MANAGER.represent_as_dict"	[color=lightgray,
+			label="INFORMATION_MANAGER.represent_as_dict",
 			shape=ellipse,
 			style=filled];
 		"TESTS_MANAGER.test"	[color=lightgray,
 			label="TESTS_MANAGER.test",
 			shape=ellipse,
 			style=filled];
-		"INFORMATION_MANAGER.get_all_as_dict"	[color=lightgray,
-			label="INFORMATION_MANAGER.get_all_as_dict",
+		"INFORMATION_MANAGER.set_default_values_locally"	[color=lightgray,
+			label="INFORMATION_MANAGER.set_default_values_locally",
+			shape=ellipse,
+			style=filled];
+		"LOGS_MANAGER.get_content"	[color=lightgray,
+			label="LOGS_MANAGER.get_content",
+			shape=ellipse,
+			style=filled];
+		"ACTIONS_MANAGER.execute"	[color=lightgray,
+			label="ACTIONS_MANAGER.execute",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.get"	[color=lightgray,
+			label="INFORMATION_MANAGER.get",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.set_all_from_dict_locally"	[color=lightgray,
+			label="INFORMATION_MANAGER.set_all_from_dict_locally",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.set"	[color=lightgray,
+			label="INFORMATION_MANAGER.set",
 			shape=ellipse,
 			style=filled];
 	}
 	init -> __save_current_configuration_as_file;
-	init -> "INFORMATION_MANAGER.set_default_values"	[minlen=1];
+	init -> "INFORMATION_MANAGER.set_default_values_locally"	[minlen=1];
 	install -> _install	[minlen=1];
-	install -> "INFORMATION_MANAGER.validate"	[minlen=2];
+	install -> __load_current_configuration_from_file;
 	install -> "TESTS_MANAGER.test";
+	get_information -> __build_manager_result;
+	get_information -> __save_current_configuration_as_file;
 	get_information -> __ensure_installed;
 	get_information -> "INFORMATION_MANAGER.get";
 	set_information -> __save_current_configuration_as_file;
 	set_information -> __get_information_from_remote;
 	set_information -> __ensure_installed;
 	set_information -> "INFORMATION_MANAGER.set"	[minlen=1];
+	test -> __build_manager_result;
 	test -> __get_information_from_remote;
 	test -> __ensure_installed;
 	test -> "TESTS_MANAGER.test";
+	get_logs -> __build_manager_result;
+	get_logs -> __get_information_from_remote;
 	get_logs -> __ensure_installed;
 	get_logs -> "LOGS_MANAGER.get_content"	[minlen=1];
 	update -> _update	[minlen=1];
@@ -163,10 +171,9 @@ digraph "Call Graph" {
 	execute -> __ensure_installed;
 	execute -> "ACTIONS_MANAGER.execute"	[minlen=1];
 	__load_current_configuration_from_file -> __get_configuration_filename;
-	__load_current_configuration_from_file -> "INFORMATION_MANAGER.set_all_from_dict"	[minlen=1];
+	__load_current_configuration_from_file -> "INFORMATION_MANAGER.set_all_from_dict_locally"	[minlen=1];
 	__save_current_configuration_as_file -> __get_configuration_filename;
-	__save_current_configuration_as_file -> "INFORMATION_MANAGER.get_all_as_dict"	[minlen=1];
-	__get_information_from_remote -> __ensure_installed;
+	__save_current_configuration_as_file -> "INFORMATION_MANAGER.represent_as_dict"	[minlen=1];
 	__get_information_from_remote -> "INFORMATION_MANAGER.get";
 	__ensure_installed -> __load_current_configuration_from_file;
 	__ensure_installed -> "TESTS_MANAGER.test";

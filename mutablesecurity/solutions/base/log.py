@@ -13,7 +13,10 @@ from mutablesecurity.solutions.base.result import BaseConcreteResultObjects
 
 
 class BaseLog(BaseObject):
-    """Abstract class modeling a log source of the solution."""
+    """Abstract class modeling a log source of the solution.
+
+    This class is stateless.
+    """
 
     FACT: FactBase
 

@@ -11,7 +11,10 @@ Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
 
 
 class BaseAction(BaseObject):
-    """Abstract class modeling a possible action performed by the solution."""
+    """Abstract class modeling a possible action performed by the solution.
+
+    This class is stateless.
+    """
 
     ACT: Operation
 

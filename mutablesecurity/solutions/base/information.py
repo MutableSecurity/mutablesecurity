@@ -215,14 +215,53 @@ class InformationProperties(Enum):
 
 
 class BaseInformation(BaseObject):
-    """Abstract class modeling an information related to the solution."""
+    """Abstract class modeling an information related to the solution.
+
+    As the information is the only part of a solution that is stateful (can be
+    useful for the effective operations), the actual value is stored inside the
+    host data.
+    """
 
     DEFAULT_VALUE: typing.Any
     INFO_TYPE: typing.Type[InformationType]
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
     SETTER: Operation
-    actual_value: typing.Any
+
+    @staticmethod
+    def __ensure_exists_on_host() -> None:
+        """Ensure that the information can be stored in the host data."""
+        if "mutablesecurity" not in host.host_data:
+            host.host_data["mutablesecurity"] = {}
+        else:
+            print(host.host_data["mutablesecurity"])
+
+    @classmethod
+    def get_actual_value(cls: typing.Type["BaseInformation"]) -> typing.Any:
+        """Get the actual value of the property, as stored in the host data.
+
+        Returns:
+            typing.Any: Value
+        """
+        cls.__ensure_exists_on_host()
+
+        try:
+            return host.host_data["mutablesecurity"][cls.IDENTIFIER]
+        except KeyError:
+            return None
+
+    @classmethod
+    def set_actual_value(
+        cls: typing.Type["BaseInformation"], value: typing.Any
+    ) -> None:
+        """Set a value as the actual one, in the host data.
+
+        Args:
+            value (typing.Any): Value to set
+        """
+        cls.__ensure_exists_on_host()
+
+        host.host_data["mutablesecurity"][cls.IDENTIFIER] = value
 
     @staticmethod
     @abstractmethod
@@ -302,17 +341,24 @@ class InformationManager(BaseManager):
 
         # Get the concrete values
         for info in info_list:
-            if InformationProperties.CONFIGURATION not in info.PROPERTIES:
-                info.actual_value = host.get_fact(info.GETTER)  # type: ignore
+            info.set_actual_value(host.get_fact(info.GETTER))
 
         return self.represent_as_dict(identifier=identifier)
 
-    def set(self, identifier: str, value: typing.Any) -> None:
+    def set(
+        self,
+        identifier: str,
+        value: typing.Any,
+        only_local: typing.Optional[bool] = False,
+    ) -> None:
         """Set an information value.
 
         Args:
             identifier (str): Information identifier
             value (typing.Any): New value
+            only_local (typing.Optional[bool]): Boolean indicating if the
+                changes are local-only. Defaults to False, indicating the fact
+                that the remote host is involved in the process.
 
         Raises:
             SolutionInformationNotFoundException: The information identified
@@ -327,38 +373,41 @@ class InformationManager(BaseManager):
         except SolutionObjectNotFoundException as exception:
             raise SolutionInformationNotFoundException() from exception
 
-        actual_value = info.INFO_TYPE.convert_string(value)
-
         if InformationProperties.CONFIGURATION not in info.PROPERTIES:
             raise NonWritableInformationException()
 
+        actual_value = info.INFO_TYPE.convert_string(value)
         if not info.validate_value(actual_value):
             raise InvalidInformationValueException()
 
-        info.SETTER(actual_value)
-        info.actual_value = actual_value
+        if not only_local:
+            info.SETTER(actual_value)
 
-    def set_default_values(self) -> None:
-        """Set the default values to configuration."""
+        info.set_actual_value(actual_value)
+
+    def set_default_values_locally(self) -> None:
+        """Set the default values in the local configuration."""
         for _, raw_info in self.objects.items():
             info: BaseInformation = raw_info  # type: ignore
 
-            if InformationProperties.CONFIGURATION in info.PROPERTIES:
-                info.actual_value = info.DEFAULT_VALUE  # type: ignore
+            if InformationProperties.WITH_DEFAULT_VALUE in info.PROPERTIES:
+                info.set_actual_value(info.DEFAULT_VALUE)
 
-    def set_all_from_dict(self, export: dict) -> None:
-        """Set all the values from an export dictionary.
+    def set_all_from_dict_locally(self, export: dict) -> None:
+        """Set all the local values from an export dictionary.
 
         Args:
             export (dict): Previously exported dictionary
         """
         for key, value in export.items():
-            self.set(key, value)
+            self.set(key, value, only_local=True)
 
-    def validate(
+        self.validate_all()
+
+    def validate_all(
         self, filter_property: typing.Optional[InformationProperties] = None
     ) -> None:
-        """Check if all the information is set accordingly.
+        """Validate if the stored information is set accordingly as a whole.
 
         The value is not validated as an exception is already raised on setting
         methods.
@@ -379,7 +428,7 @@ class InformationManager(BaseManager):
 
             if (
                 InformationProperties.MANDATORY in info.PROPERTIES
-                and not info.actual_value
+                and not info.get_actual_value()
             ):
                 raise MandatoryAspectLeftUnsetException()
 
@@ -409,6 +458,6 @@ class InformationManager(BaseManager):
             if filter_property and filter_property not in info.PROPERTIES:
                 continue
 
-            result[key] = info.actual_value
+            result[key] = info.get_actual_value()
 
         return result
