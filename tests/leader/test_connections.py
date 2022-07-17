@@ -7,7 +7,7 @@ import pytest
 from mutablesecurity.helpers.exceptions import (
     InvalidConnectionDetailsException,
 )
-from mutablesecurity.leader.connections import ConnectionFactory
+from mutablesecurity.leader import ConnectionFactory
 
 
 def test_create_connections() -> None:
@@ -42,8 +42,8 @@ def test_create_connections() -> None:
     )
     assert (
         exported_connection[0] == hostname
-        and ssh_details["ssh_port"] == port
-        and ssh_details["ssh_user"] == username
+        and ssh_details["ssh_port"] == port  # type: ignore
+        and ssh_details["ssh_user"] == username  # type: ignore
     ), (
         "The exported remote password-based connection is not correct:"
         f" {exported_connection}."
@@ -61,10 +61,10 @@ def test_create_connections() -> None:
     )
     assert (
         exported_connection[0] == hostname
-        and ssh_details["ssh_port"] == port
-        and ssh_details["ssh_user"] == username
-        and ssh_details["ssh_key"] == key
-        and ssh_details["ssh_key_password"] == password
+        and ssh_details["ssh_port"] == port  # type: ignore
+        and ssh_details["ssh_user"] == username  # type: ignore
+        and ssh_details["ssh_key"] == key  # type: ignore
+        and ssh_details["ssh_key_password"] == password  # type: ignore
     ), (
         "The exported remote key-based connection is not correct:"
         f" {exported_connection}."

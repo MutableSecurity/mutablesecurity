@@ -9,8 +9,8 @@ from mutablesecurity.helpers.exceptions import (
     OperationNotImplementedException,
     SolutionNotPresentException,
 )
-from mutablesecurity.helpers.python import find_decorated_methods
-from mutablesecurity.solutions.base import BaseSolution, exported_functionality
+from mutablesecurity.helpers.python import find_public_methods
+from mutablesecurity.solutions.base import BaseSolution
 
 
 class SolutionsManager:
@@ -139,9 +139,7 @@ class SolutionsManager:
         Returns:
             typing.List[str]: List of operations' names
         """
-        exported_methods = find_decorated_methods(
-            BaseSolution, exported_functionality
-        )
+        exported_methods = find_public_methods(BaseSolution)
         operations = [
             self.__translate_operation_name_to_id(method)
             for method in exported_methods
@@ -150,12 +148,14 @@ class SolutionsManager:
         return operations
 
     def get_operation_by_id(
-        self, solution: BaseSolution, operation_id: str
+        self,
+        solution: typing.Union[BaseSolution, typing.Type[BaseSolution]],
+        operation_id: str,
     ) -> typing.Callable:
         """Retrieve an operation by its name.
 
         Args:
-            solution (BaseSolution): Solution
+            solution (typing.Type[BaseSolution]): Solution or solution class
             operation_id (str): Operation's name
 
         Raises:

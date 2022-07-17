@@ -1,6 +1,9 @@
 """Module for testing the Python helper module."""
 
-from mutablesecurity.helpers.python import find_decorated_methods
+from mutablesecurity.helpers.python import (
+    find_decorated_methods,
+    find_public_methods,
+)
 
 
 class ClassWithStaticMethods:
@@ -34,9 +37,24 @@ class ClassWithStaticMethods:
 
 def test_find_decorated_methods() -> None:
     """Test the finding of decorated functions."""
-    methods = find_decorated_methods(ClassWithStaticMethods, staticmethod)
+    methods = find_decorated_methods(ClassWithStaticMethods, "staticmethod")
 
     for static_method in ["set_class_member", "unset_class_member"]:
         assert (
             static_method in methods
         ), f"Method {static_method} was not detected as decorated."
+
+
+def test_find_public_methods() -> None:
+    """Test the finding of public functions."""
+    methods = find_public_methods(ClassWithStaticMethods)
+
+    for public_method in [
+        "set_class_member",
+        "unset_class_member",
+        "set_instance_member",
+        "unset_instance_member",
+    ]:
+        assert (
+            public_method in methods
+        ), f"Method {public_method} was not detected as public."

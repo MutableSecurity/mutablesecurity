@@ -42,12 +42,12 @@ def test_common_functionality_in_managers() -> None:
         ), f"Invalid type returned by the manager {current_manager}"
 
         # Test the representations
-        representation = current_manager.represent_as_matrix()
+        descriptions = current_manager.objects_descriptions
         id_to_find = current_objects[0].IDENTIFIER
         present = False
-        for line in representation:
-            for element in line:
-                if element == id_to_find:
+        for current_object in descriptions:
+            for value in current_object.values():
+                if value == id_to_find:
                     present = True
                     break
 

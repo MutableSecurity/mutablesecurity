@@ -4,27 +4,24 @@ import inspect
 import typing
 
 
-def find_decorated_methods(
-    haystack_class: typing.Type[object], needle_decorator: typing.Callable
-) -> typing.List[str]:
-    """Traverse a class to find decorated methods.
+def __execute_for_each_function_in_class(
+    haystack_class: typing.Type[object], visit_function: typing.Callable
+) -> typing.List[typing.Any]:
+    """Call a function for each function definition in a class.
 
     Args:
         haystack_class (typing.Type[object]): Class to look in
-        needle_decorator (typing.Callable): Searched decorator
+        visit_function (typing.Callable): Function to be called
 
     Returns:
-        typing.List[str]: List of methods' names
+        typing.List[typing.Any]: List of methods'
     """
-    found_function = []
+    result = []
 
     def __visit(node: ast.FunctionDef) -> None:
-        for subnode in node.decorator_list:
-            ast_dump = ast.dump(subnode)
-
-            if f"id='{needle_decorator.__name__}'" in ast_dump:
-                found_function.append(node.name)
-                return
+        current_result = visit_function(node)
+        if current_result:
+            result.append(current_result)
 
     visitor = ast.NodeVisitor()
     visitor.visit_FunctionDef = __visit  # type: ignore
@@ -34,4 +31,59 @@ def find_decorated_methods(
         )
     )
 
-    return found_function
+    return result
+
+
+def find_public_methods(
+    haystack_class: typing.Type[object],
+) -> typing.List[str]:
+    """Traverse a class to find its public methods.
+
+    Args:
+        haystack_class (typing.Type[object]): Class to look in
+
+    Returns:
+        typing.List[str]: List of methods' names
+    """
+
+    def __visit(node: ast.FunctionDef) -> typing.Optional[str]:
+        name = node.name
+        if not name.startswith("_"):
+            return name
+        else:
+            return None
+
+    return __execute_for_each_function_in_class(haystack_class, __visit)
+
+
+def find_decorated_methods(
+    haystack_class: typing.Type[object], needle_decorator: str
+) -> typing.List[str]:
+    """Traverse a class to find decorated methods.
+
+    Args:
+        haystack_class (typing.Type[object]): Class to look in
+        needle_decorator (str): Searched decorator
+
+    Returns:
+        typing.List[str]: List of methods' names
+    """
+
+    def __visit(node: ast.FunctionDef) -> typing.Optional[str]:
+        for subnode in node.decorator_list:
+            ast_dump = ast.dump(subnode)
+
+            if f"id='{needle_decorator}'" in ast_dump:
+                return node.name
+
+        return None
+
+    visitor = ast.NodeVisitor()
+    visitor.visit_FunctionDef = __visit  # type: ignore
+    visitor.visit(
+        compile(
+            inspect.getsource(haystack_class), "?", "exec", ast.PyCF_ONLY_AST
+        )
+    )
+
+    return __execute_for_each_function_in_class(haystack_class, __visit)

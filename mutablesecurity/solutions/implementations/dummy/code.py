@@ -106,8 +106,8 @@ class ContentLogs(BaseLog):
         command = "cat /tmp/dummy"
 
         @staticmethod
-        def process(output: typing.List[str]) -> typing.List[str]:
-            return output
+        def process(output: typing.List[str]) -> str:
+            return "".join(output)
 
     IDENTIFIER = "file_content"
     DESCRIPTION = "Get the file content."

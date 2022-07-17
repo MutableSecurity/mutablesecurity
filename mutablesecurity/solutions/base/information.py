@@ -17,6 +17,11 @@ from mutablesecurity.helpers.exceptions import (
     SolutionObjectNotFoundException,
 )
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
+from mutablesecurity.solutions.base.result import (
+    BaseConcreteResultObjects,
+    BaseGenericObjectsDescriptions,
+    KeysDescriptions,
+)
 
 Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
 
@@ -120,6 +125,22 @@ class InformationType:
         except (KeyError, ValueError) as exception:
             raise InvalidInformationValueToConvert() from exception
 
+    def __str__(self) -> str:
+        """Stringify the object.
+
+        Returns:
+            str: String representation
+        """
+        return self.INNER_TYPE.name
+
+    def __repr__(self) -> str:
+        """Represent the object.
+
+        Returns:
+            str: String representation
+        """
+        return self.INNER_TYPE.name
+
 
 class IntegerInformationType(InformationType):
     """Information type for integer."""
@@ -176,6 +197,22 @@ class InformationProperties(Enum):
     # With a default (recommended) value
     WITH_DEFAULT_VALUE = _CONFIGURATION_VALUE_GENERATION_BASE + 2
 
+    def __str__(self) -> str:
+        """Stringify the object.
+
+        Returns:
+            str: String representation
+        """
+        return self.name
+
+    def __repr__(self) -> str:
+        """Represent the object.
+
+        Returns:
+            str: String representation
+        """
+        return self.name
+
 
 class BaseInformation(BaseObject):
     """Abstract class modeling an information related to the solution."""
@@ -185,7 +222,7 @@ class BaseInformation(BaseObject):
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
     SETTER: Operation
-    actual_value: typing.Any = None
+    actual_value: typing.Any
 
     @staticmethod
     @abstractmethod
@@ -203,6 +240,15 @@ class BaseInformation(BaseObject):
 class InformationManager(BaseManager):
     """Class managing the information of a solution."""
 
+    objects_descriptions: BaseGenericObjectsDescriptions
+    KEYS_DESCRIPTIONS: KeysDescriptions = {
+        "identifier": "Identifier",
+        "description": "Description",
+        "type": "Type",
+        "properties": "Properties",
+        "default_value": "Default Value",
+    }
+
     def __init__(self, information: typing.Sequence[BaseInformation]) -> None:
         """Initialize the instance.
 
@@ -212,7 +258,20 @@ class InformationManager(BaseManager):
         """
         super().__init__(information)
 
-    def get(self, identifier: typing.Optional[str]) -> typing.Any:
+        self.objects_descriptions = [
+            {
+                "identifier": info.IDENTIFIER,
+                "description": info.DESCRIPTION,
+                "type": info.INFO_TYPE,
+                "properties": info.PROPERTIES,
+                "default_value": info.DEFAULT_VALUE,
+            }
+            for info in information
+        ]
+
+    def get(
+        self, identifier: typing.Optional[str]
+    ) -> BaseConcreteResultObjects:
         """Get a specific information or all of them.
 
         Args:
@@ -224,9 +283,10 @@ class InformationManager(BaseManager):
                 correspond to any information.
 
         Returns:
-            typing.Any: Information value or dictionary with keys - information
-                value
+            BaseConcreteResultObjects: Result containing the requested
+                information
         """
+        # Get the information list
         if identifier:
             try:
                 info: BaseInformation = self.get_object_by_identifier(
@@ -240,36 +300,12 @@ class InformationManager(BaseManager):
         else:
             info_list = list(self.objects.values())  # type: ignore
 
+        # Get the concrete values
         for info in info_list:
             if InformationProperties.CONFIGURATION not in info.PROPERTIES:
                 info.actual_value = host.get_fact(info.GETTER)  # type: ignore
 
-        if identifier:
-            return info_list[0].actual_value
-
-        return self.get_all_as_dict()
-
-    def get_all_as_dict(
-        self, filter_property: typing.Optional[InformationProperties] = None
-    ) -> dict:
-        """Get the (filtered) information as a dictionary.
-
-        Args:
-            filter_property (InformationProperties, optional): Mandatory
-                properties for the information returned. Defaults to None.
-
-        Returns:
-            dict: Resulted dictionary
-        """
-        result = {}
-        for key, current_info in self.objects.items():
-            info: BaseInformation = current_info  # type: ignore
-            if filter_property and filter_property not in info.PROPERTIES:
-                continue
-
-            result[key] = info.actual_value
-
-        return result
+        return self.represent_as_dict(identifier=identifier)
 
     def set(self, identifier: str, value: typing.Any) -> None:
         """Set an information value.
@@ -347,49 +383,32 @@ class InformationManager(BaseManager):
             ):
                 raise MandatoryAspectLeftUnsetException()
 
-    def represent_as_matrix(
+    def represent_as_dict(
         self,
-        generic: bool = False,
-    ) -> typing.List[typing.List[str]]:
-        """Represent the information as a matrix.
+        identifier: str = None,
+        filter_property: typing.Optional[InformationProperties] = None,
+    ) -> BaseConcreteResultObjects:
+        """Get the (filtered) information as a dictionary.
 
         Args:
-            generic (bool): Boolean indicating if the matrix representation is
-                generic, without any concrete value (for example, the actual
-                value) included. Defaults to False.
+            filter_property (InformationProperties, optional): Mandatory
+                properties for the information returned. Defaults to None.
+            identifier (str): Identifier of the single information to represent
+                in the string. Defaults to None.
 
         Returns:
-            typing.List[typing.List[str]]: Matrix with details about the
-                solution's information.
+            BaseConcreteResultObjects: Resulted dictionary
         """
-        header = [
-            "Identifier",
-            "Description",
-            "Type",
-            "Properties",
-            "Default Value",
-        ]
-        if not generic:
-            header.append("Actual Value")
+        result = {}
+        for key, current_info in self.objects.items():
+            info: BaseInformation = current_info  # type: ignore
 
-        result = [header]
-        for key, raw_info in self.objects.items():
-            info: BaseInformation = raw_info  # type: ignore
-            properties = ", ".join([prop.name for prop in info.PROPERTIES])
-            default_value = (
-                str(info.DEFAULT_VALUE) if info.DEFAULT_VALUE else "-"
-            )
+            if identifier and info.IDENTIFIER != identifier:
+                continue
 
-            row = [
-                key,
-                info.DESCRIPTION,
-                info.INFO_TYPE.name(),
-                properties,
-                default_value,
-            ]
+            if filter_property and filter_property not in info.PROPERTIES:
+                continue
 
-            if not generic:
-                row.append(str(info.actual_value))
-            result.append(row)
+            result[key] = info.actual_value
 
         return result

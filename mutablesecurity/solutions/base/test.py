@@ -6,9 +6,16 @@ from pyinfra import host
 from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.exceptions import (
-    FailedSolutionTestException, SolutionObjectNotFoundException,
-    SolutionTestNotFoundException)
+    FailedSolutionTestException,
+    SolutionObjectNotFoundException,
+    SolutionTestNotFoundException,
+)
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
+from mutablesecurity.solutions.base.result import (
+    BaseConcreteResultObjects,
+    BaseGenericObjectsDescriptions,
+    KeysDescriptions,
+)
 
 
 class TestType(Enum):
@@ -33,31 +40,25 @@ class TestType(Enum):
 
 
 class BaseTest(BaseObject):
-    """Abstract class modeling an atomic step for testing the solution."""
+    """Abstract class modeling an atomic step for testing the solution.
+
+    The tests does not includes a success code because they are ephemeral. The
+    old response, once returned, can be discarded.
+    """
 
     TEST_TYPE: TestType
     FACT: FactBase
 
 
-class TestResult:
-    """Class for storing the result of a test."""
-
-    identifier: str
-    status: bool
-
-    def __init__(self, identifier: str, status: bool) -> None:
-        """Initialize the instance.
-
-        Args:
-            identifier (str): Identifier
-            status (bool): Status
-        """
-        self.identifier = identifier
-        self.status = status
-
-
 class TestsManager(BaseManager):
     """Class managing the tests of a solution."""
+
+    objects_descriptions: BaseGenericObjectsDescriptions
+    KEYS_DESCRIPTIONS: KeysDescriptions = {
+        "identifier": "Identifier",
+        "description": "Description",
+        "type": "Type",
+    }
 
     def __init__(self, tests: typing.Sequence[BaseTest]) -> None:
         """Initialize the instance.
@@ -67,12 +68,21 @@ class TestsManager(BaseManager):
         """
         super().__init__(tests)
 
+        self.objects_descriptions = [
+            {
+                "identifier": test.IDENTIFIER,
+                "description": test.DESCRIPTION,
+                "type": test.TEST_TYPE.name,
+            }
+            for test in tests
+        ]
+
     def test(
         self,
         identifier: typing.Optional[str] = None,
         filter_type: typing.Optional[TestType] = None,
         only_check: typing.Optional[bool] = False,
-    ) -> typing.List[TestResult]:
+    ) -> BaseConcreteResultObjects:
         """Make a test or all the testsuite.
 
         Args:
@@ -87,9 +97,9 @@ class TestsManager(BaseManager):
             FailedSolutionTestException: A test failed.
 
         Returns:
-            typing.List[TestResult]: List of results, only if the only_check
-                parameter is set
+            BaseConcreteResultObjects: Result with the tests success indicators
         """
+        # Get only the tests of interest
         tests_list = []
         if identifier:
             try:
@@ -109,27 +119,13 @@ class TestsManager(BaseManager):
         else:
             tests_list = list(self.objects.values())  # type: ignore
 
-        result = []
+        # Execute the tests
+        result = {}
         for test in tests_list:
             check = host.get_fact(test.FACT)
             if only_check:
-                result.append(TestResult(test.IDENTIFIER, check))
+                result[test.IDENTIFIER] = check
             elif not check:
                 raise FailedSolutionTestException()
-
-        return result
-
-    def represent_as_matrix(self) -> typing.List[typing.List[str]]:
-        """Represent the tests as a matrix.
-
-        Returns:
-            typing.List[typing.List[str]]: Matrix with tests
-        """
-        result = [["Identifier", "Description", "Type"]]
-
-        for key, raw_test in self.objects.items():
-            test: BaseTest = raw_test  # type: ignore
-
-            result.append([key, test.DESCRIPTION, test.TEST_TYPE.name])
 
         return result

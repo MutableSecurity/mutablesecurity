@@ -16,74 +16,31 @@ from enum import Enum
 from pyinfra import host
 from pyinfra.api.deploy import deploy
 
-from mutablesecurity.helpers.exceptions import (FailedSolutionTestException,
-                                                InvalidMetaException,
-                                                MutableSecurityException,
-                                                RequirementsNotMetException,
-                                                SolutionNotInstalledException,
-                                                YAMLKeyMissingException)
+from mutablesecurity.helpers.exceptions import (
+    FailedSolutionTestException,
+    InvalidMetaException,
+    RequirementsNotMetException,
+    SolutionNotInstalledException,
+    YAMLKeyMissingException,
+)
 from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
-from mutablesecurity.leader import Leader
-from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
-from mutablesecurity.solutions.base.information import (BaseInformation,
-                                                        InformationManager,
-                                                        InformationProperties)
+from mutablesecurity.solutions.base.information import (
+    BaseInformation,
+    InformationManager,
+    InformationProperties,
+)
 from mutablesecurity.solutions.base.log import BaseLog, LogsManager
-from mutablesecurity.solutions.base.test import (BaseTest, TestResult,
-                                                 TestsManager, TestType)
-
-
-def exported_functionality(function: typing.Callable) -> typing.Callable:
-    """Decorate an exported solution method.
-
-    It includes:
-    - Catching and reraising MutableSecurityException exceptions
-    - Passing required keyword arguments.
-
-    Args:
-        function (typing.Callable): Function to decorate
-
-    Returns:
-        typing.Callable: Decorator
-    """
-
-    def inner(*args: tuple, **kwargs: typing.Any) -> None:
-        """Catch MutableSecurityException exceptions.
-
-        Args:
-            args (tuple): Decorated function positional arguments
-            kwargs (typing.Any): Decorated function keyword arguments
-        """
-        # Extract only the keyword parameters needed by the function
-        signature = inspect.signature(function.__func__)  # type: ignore
-        parameters = signature.parameters
-        required_kwargs = {}
-        if len(parameters) > 1:
-            for key, _ in parameters.items():
-                if key == "self" or key == "cls":
-                    continue
-
-                required_kwargs[key] = kwargs[key]
-
-        try:
-            raw_result = function.__func__(  # type: ignore
-                *args, **required_kwargs
-            )
-
-            # Store the result into the leader module
-            result = SecurityDeploymentResult(
-                str(host), ResponseTypes.SUCCESS, "Success", raw_result
-            )
-            Leader().publish_result(result)
-        except MutableSecurityException as exception:
-            # Store the result into the leader module
-            result = SecurityDeploymentResult(
-                str(host), ResponseTypes.ERROR, str(exception)
-            )
-            Leader().publish_result(result)
-
-    return inner
+from mutablesecurity.solutions.base.object import BaseManager
+from mutablesecurity.solutions.base.result import (
+    BaseConcreteResultObjects,
+    ConcreteObjectsResult,
+)
+from mutablesecurity.solutions.base.test import (
+    BaseTest,
+    TestsManager,
+    TestType,
+)
 
 
 class BaseSolution(ABC):
@@ -145,6 +102,18 @@ class BaseSolution(ABC):
         return instance
 
     @classmethod
+    def __build_manager_result(
+        cls: typing.Type["BaseSolution"],
+        manager: BaseManager,
+        concrete_results: BaseConcreteResultObjects,
+    ) -> ConcreteObjectsResult:
+        return ConcreteObjectsResult(
+            manager.KEYS_DESCRIPTIONS,
+            manager.objects_descriptions,
+            concrete_results,
+        )
+
+    @classmethod
     def __load_meta(cls: typing.Type["BaseSolution"]) -> None:
         """Load the meta YAML file containing the solution details.
 
@@ -184,8 +153,8 @@ class BaseSolution(ABC):
         cls: typing.Type["BaseSolution"],
     ) -> None:
         """Save the current configuration as a file."""
-        configuration = cls.INFORMATION_MANAGER.get_all_as_dict(
-            InformationProperties.CONFIGURATION
+        configuration = cls.INFORMATION_MANAGER.represent_as_dict(
+            filter_property=InformationProperties.CONFIGURATION
         )
         dump_to_file(configuration, cls.__get_configuration_filename())
 
@@ -244,7 +213,6 @@ class BaseSolution(ABC):
     def _update() -> None:
         """Update the already-installed solution."""
 
-    @exported_functionality
     @classmethod
     @deploy
     def init(cls: typing.Type["BaseSolution"]) -> None:
@@ -252,7 +220,6 @@ class BaseSolution(ABC):
         cls.INFORMATION_MANAGER.set_default_values()
         cls.__save_current_configuration_as_file()
 
-    @exported_functionality
     @classmethod
     @deploy
     def install(cls: typing.Type["BaseSolution"]) -> None:
@@ -265,19 +232,18 @@ class BaseSolution(ABC):
 
         # Ensure that the requirements are met
         try:
-            cls.TESTS_MANAGER.test(None, TestType.PRESENCE)
+            cls.TESTS_MANAGER.test(None, TestType.REQUIREMENT)
         except FailedSolutionTestException as exception:
             raise RequirementsNotMetException() from exception
 
         cls._install()
 
-    @exported_functionality
     @classmethod
     @deploy
     def get_information(
         cls: typing.Type["BaseSolution"],
         identifier: typing.Optional[str] = None,
-    ) -> typing.Any:
+    ) -> ConcreteObjectsResult:
         """Get an information from a target host.
 
         Args:
@@ -285,13 +251,14 @@ class BaseSolution(ABC):
                 Defaults to None.
 
         Returns:
-            typing.Any: Information value
+            ConcreteObjectsResult: Response with the requested information
         """
         cls.__ensure_installed()
 
-        return cls.INFORMATION_MANAGER.get(identifier)
+        results = cls.INFORMATION_MANAGER.get(identifier)
 
-    @exported_functionality
+        return cls.__build_manager_result(cls.INFORMATION_MANAGER, results)
+
     @classmethod
     @deploy
     def set_information(
@@ -312,13 +279,12 @@ class BaseSolution(ABC):
 
         cls.__save_current_configuration_as_file()
 
-    @exported_functionality
     @classmethod
     @deploy
     def test(
         cls: typing.Type["BaseSolution"],
         identifier: typing.Optional[str] = None,
-    ) -> typing.List[TestResult]:
+    ) -> ConcreteObjectsResult:
         """Run a test against a security solution.
 
         Args:
@@ -326,22 +292,21 @@ class BaseSolution(ABC):
                 None.
 
         Returns:
-            typing.List[str]: List of results
+            ConcreteObjectsResult: Result with tests results
         """
         cls.__ensure_installed()
         cls.__get_information_from_remote()
 
-        result = cls.TESTS_MANAGER.test(identifier, only_check=True)
+        results = cls.TESTS_MANAGER.test(identifier, only_check=True)
 
-        return result
+        return cls.__build_manager_result(cls.TESTS_MANAGER, results)
 
-    @exported_functionality
     @classmethod
     @deploy
     def get_logs(
         cls: typing.Type["BaseSolution"],
         identifier: typing.Optional[str] = None,
-    ) -> typing.Any:
+    ) -> ConcreteObjectsResult:
         """Get logs from a target host.
 
         Args:
@@ -349,13 +314,14 @@ class BaseSolution(ABC):
                 Defaults to None.
 
         Returns:
-            typing.Any: Logs
+            ConcreteObjectsResult: Result with the requested logs
         """
         cls.__ensure_installed()
 
-        return cls.LOGS_MANAGER.get_content(identifier)
+        results = cls.LOGS_MANAGER.get_content(identifier)
 
-    @exported_functionality
+        return cls.__build_manager_result(cls.LOGS_MANAGER, results)
+
     @classmethod
     @deploy
     def update(cls: typing.Type["BaseSolution"]) -> None:
@@ -365,7 +331,6 @@ class BaseSolution(ABC):
 
         cls._update()
 
-    @exported_functionality
     @classmethod
     @deploy
     def uninstall(cls: typing.Type["BaseSolution"]) -> None:
@@ -375,7 +340,6 @@ class BaseSolution(ABC):
 
         cls._uninstall()
 
-    @exported_functionality
     @classmethod
     @deploy
     def execute(

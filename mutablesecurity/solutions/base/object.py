@@ -4,6 +4,10 @@ import typing
 from abc import ABC
 
 from mutablesecurity.helpers.exceptions import SolutionObjectNotFoundException
+from mutablesecurity.solutions.base.result import (
+    BaseGenericObjectsDescriptions,
+    KeysDescriptions,
+)
 
 
 class BaseObject(ABC):
@@ -16,7 +20,12 @@ class BaseObject(ABC):
 class BaseManager:
     """Class managing objects."""
 
+    KEYS_DESCRIPTIONS: KeysDescriptions = {
+        "identifier": "Identifier",
+        "description": "Description",
+    }
     objects: typing.Dict[str, BaseObject]
+    objects_descriptions: BaseGenericObjectsDescriptions
 
     def __init__(self, objects: typing.Sequence[BaseObject]) -> None:
         """Initialize the instance.
@@ -28,19 +37,13 @@ class BaseManager:
             current_object.IDENTIFIER: current_object
             for current_object in objects
         }
-
-    def represent_as_matrix(self) -> typing.List[typing.List[str]]:
-        """Represent the objects as a matrix.
-
-        Returns:
-            typing.List[typing.List[str]]: Matrix with objects' details
-        """
-        result = [["Identifier", "Description"]]
-
-        for key, current_object in self.objects.items():
-            result.append([key, current_object.DESCRIPTION])
-
-        return result
+        self.objects_descriptions = [
+            {
+                "identifier": current_object.IDENTIFIER,
+                "description": current_object.DESCRIPTION,
+            }
+            for current_object in objects
+        ]
 
     def get_object_by_identifier(self, identifier: str) -> BaseObject:
         """Search an object by its identifier.

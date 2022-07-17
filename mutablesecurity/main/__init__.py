@@ -4,4 +4,4 @@ from mutablesecurity.main.deployments import (
     ResponseTypes,
     SecurityDeploymentResult,
 )
-from mutablesecurity.main.main import Main
+from mutablesecurity.main.main import Main, exported_functionality

@@ -108,7 +108,7 @@ def test_successful_dummy_deploy_and_manage(
         ), "An error was generated despite the correct command."
 
         # Check that the help page or a success message is printed
-        assert "Success" in result.output or (
+        assert "successfully" in result.output or (
             "Dummy" in result.output and "Error" not in result.output
         ), "The canary string is not present in the command's output."
 

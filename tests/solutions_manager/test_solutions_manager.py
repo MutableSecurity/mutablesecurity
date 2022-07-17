@@ -1,6 +1,5 @@
 """Module for testing the management of solutions."""
 
-
 import pytest
 
 from mutablesecurity.helpers.exceptions import (

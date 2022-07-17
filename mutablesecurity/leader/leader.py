@@ -14,7 +14,9 @@ from mutablesecurity.helpers.exceptions import (
     FailedExecutionException,
 )
 from mutablesecurity.leader.connections import Connection
-from mutablesecurity.main.deployments import SecurityDeploymentResult
+
+if typing.TYPE_CHECKING:
+    from mutablesecurity.main import SecurityDeploymentResult
 
 
 class Leader(object, metaclass=Singleton):
@@ -24,7 +26,7 @@ class Leader(object, metaclass=Singleton):
     inventory: Inventory
     state: State
     unique_password: str  # TODO: Remove after having passwords for each host
-    results: typing.List[SecurityDeploymentResult]
+    results: typing.List["SecurityDeploymentResult"]
 
     def __init__(self) -> None:
         """Initialize the object."""
@@ -94,7 +96,7 @@ class Leader(object, metaclass=Singleton):
         except PyinfraError as exception:
             raise FailedExecutionException() from exception
 
-    def publish_result(self, result: SecurityDeploymentResult) -> None:
+    def publish_result(self, result: "SecurityDeploymentResult") -> None:
         """Publish a deployment result.
 
         Args:

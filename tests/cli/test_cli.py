@@ -5,8 +5,7 @@ import pytest
 from click.testing import CliRunner
 
 from mutablesecurity.cli.cli import __run_command
-from mutablesecurity.main.deployments import (ResponseTypes,
-                                              SecurityDeploymentResult)
+from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 
 
 def __mock_dummy_password(message: str, password: bool) -> str:

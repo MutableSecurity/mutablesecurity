@@ -14,7 +14,15 @@ from rich.text import Text
 from mutablesecurity.cli.messages import MessageFactory, MessageTypes
 from mutablesecurity.helpers.exceptions import CLIException
 from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
+from mutablesecurity.solutions.base.result import (
+    BaseConcreteResultObjects,
+    BaseGenericObjectsDescriptions,
+    ConcreteObjectsResult,
+    KeysDescriptions,
+)
 from mutablesecurity.solutions_manager import SolutionsManager
+
+PrintableMatrix = typing.List[typing.List[str]]
 
 
 class Printer:
@@ -86,6 +94,24 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         """
         self.console = console
 
+    def __to_str(self, obj: typing.Any) -> str:
+        """Stringify an object.
+
+        Args:
+            obj (typing.Any): Any object
+
+        Returns:
+            str: String representation
+        """
+        if obj is None:
+            return ""
+        elif isinstance(obj, type):
+            return obj.__name__
+        elif isinstance(obj, list):
+            return ", ".join([self.__to_str(elem) for elem in obj])
+
+        return str(obj)
+
     def __create_banner(self) -> Text:
         """Create the banner based on logo and motto.
 
@@ -118,21 +144,71 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
 
         return result[:-1]
 
-    def __represent_matrix(
-        self, matrix: typing.List[typing.List[str]]
-    ) -> Table:
-        """Convert a matrix into its table representation.
+    def __create_solution_matrix(
+        self,
+        keys_descriptions: KeysDescriptions,
+        generic_objects_descriptions: BaseGenericObjectsDescriptions,
+        concrete_objects: typing.Optional[BaseConcreteResultObjects] = None,
+    ) -> PrintableMatrix:
+        """Create a matrix based on information specific to a solution.
+
+        Args:
+            keys_descriptions (KeysDescriptions): Description of keys present
+                in the descriptions
+            generic_objects_descriptions (BaseGenericObjectsDescriptions):
+                Generic description to each object stored in the solution
+            concrete_objects (BaseConcreteResultObjects, optional): If a result
+                is printed, then some concrete values of the objects are stored
+                here. Defaults to None.
+
+        Returns:
+            PrintableMatrix: Matrix representation
+        """
+        matrix = []
+
+        # Create the header
+        headers = list(keys_descriptions.values())
+        if concrete_objects:
+            headers.append("Value")
+        matrix.append(headers)
+
+        # Create the body
+        keys_ids = list(keys_descriptions.keys())
+        id_key = keys_ids[0]
+        if concrete_objects:
+            for key, value in concrete_objects.items():
+                description = [
+                    elem
+                    for elem in generic_objects_descriptions
+                    if elem[id_key] == key
+                ][0]
+
+                row = [self.__to_str(elem) for elem in description.values()]
+                row.append(self.__to_str(value))
+                matrix.append(row)
+        else:
+            for current_object in generic_objects_descriptions:
+                row = []
+                for key in keys_ids:
+                    row.append(self.__to_str(current_object[key]))
+
+                matrix.append(row)
+
+        return matrix
+
+    def __represent_table(self, string_table: PrintableMatrix) -> Table:
+        """Convert a table into its table representation.
 
         The first line is considered to be the headers one.
 
         Args:
-            matrix (typing.List[typing.List[str]]): Matrix to be converted
+            string_table (PrintableMatrix): Table to be converted
 
         Returns:
             Table: Resulted table representation
         """
         table = Table()
-        for line_index, line in enumerate(matrix):
+        for line_index, line in enumerate(string_table):
             if line_index == 0:
                 for element_index, element in enumerate(line):
                     if element_index == 0:
@@ -229,18 +305,28 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         solution_class = SolutionsManager().get_solution_by_id(solution_id)
         solution = solution_class()
 
-        information_matrix = solution.INFORMATION_MANAGER.represent_as_matrix(
-            generic=True
+        information_matrix = self.__create_solution_matrix(
+            solution.INFORMATION_MANAGER.KEYS_DESCRIPTIONS,
+            solution.INFORMATION_MANAGER.objects_descriptions,
         )
-        tests_matrix = solution.TESTS_MANAGER.represent_as_matrix()
-        logs_matrix = solution.LOGS_MANAGER.represent_as_matrix()
-        actions_matrix = solution.ACTIONS_MANAGER.represent_as_matrix()
+        tests_matrix = self.__create_solution_matrix(
+            solution.TESTS_MANAGER.KEYS_DESCRIPTIONS,
+            solution.TESTS_MANAGER.objects_descriptions,
+        )
+        logs_matrix = self.__create_solution_matrix(
+            solution.LOGS_MANAGER.KEYS_DESCRIPTIONS,
+            solution.LOGS_MANAGER.objects_descriptions,
+        )
+        actions_matrix = self.__create_solution_matrix(
+            solution.ACTIONS_MANAGER.KEYS_DESCRIPTIONS,
+            solution.ACTIONS_MANAGER.objects_descriptions,
+        )
 
-        information_repr = self.__represent_matrix(information_matrix)
+        information_repr = self.__represent_table(information_matrix)
         references_repr = self.__represent_unordered_list(solution.REFERENCES)
-        tests_repr = self.__represent_matrix(tests_matrix)
-        logs_repr = self.__represent_matrix(logs_matrix)
-        actions_repr = self.__represent_matrix(actions_matrix)
+        tests_repr = self.__represent_table(tests_matrix)
+        logs_repr = self.__represent_table(logs_matrix)
+        actions_repr = self.__represent_table(actions_matrix)
 
         self.print_banner()
         self.__formatted_print(
@@ -286,9 +372,16 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                 )
             self.console.print(message.to_text())
 
-            # TODO: Process the additional data returned in the result.
-            self.console.print("\n\nAdditional Information (TODO):")
-            self.console.print(response.additional_data)
+            if getattr(response, "additional_data", None):
+                result: ConcreteObjectsResult = response.additional_data
+                matrix = self.__create_solution_matrix(
+                    result.keys_descriptions,
+                    result.generic_objects_descriptions,
+                    result.concrete_objects,
+                )
+
+                self.console.print("")
+                self.console.print(self.__represent_table(matrix))
 
     def print_feedback_and_ask(self) -> str:
         """Print the feedback form description and ask for an email address.

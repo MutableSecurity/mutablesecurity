@@ -13,6 +13,8 @@ from mutablesecurity.helpers.exceptions import (
 from mutablesecurity.helpers.files import read_file_lines
 from mutablesecurity.helpers.parsers import parse_connection_string
 
+PyinfraConnectionDump = typing.Union[str, typing.Tuple[str, dict]]
+
 
 class Connection:
     """Base class for connection types."""
@@ -28,7 +30,7 @@ class Connection:
         self.password = password
 
     @abc.abstractmethod
-    def export(self) -> typing.Union[str, tuple]:
+    def export(self) -> PyinfraConnectionDump:
         """Export the host details as a tuple.
 
         Raises:
@@ -40,11 +42,11 @@ class Connection:
 class LocalPasswordConnection(Connection):
     """Class for managing a connection to the local host."""
 
-    def export(self) -> str:
+    def export(self) -> PyinfraConnectionDump:
         """Export the host details as a tuple.
 
         Returns:
-            str: Host details
+            PyinfraConnectionDump: Host details
         """
         return "@local"
 
@@ -82,11 +84,11 @@ class RemoteConnection(Connection):  # pylint: disable=abstract-method
         self.username = username
         self.additional_parameters = additional_parameters
 
-    def export(self) -> tuple:
+    def export(self) -> PyinfraConnectionDump:
         """Export the host details as a tuple.
 
         Returns:
-            tuple: Host details
+            PyinfraConnectionDump: Host details
         """
         ssh_connection_details = {
             "ssh_port": self.port,

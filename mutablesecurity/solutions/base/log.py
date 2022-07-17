@@ -5,8 +5,11 @@ from pyinfra import host
 from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.exceptions import (
-    SolutionLogNotFoundException, SolutionObjectNotFoundException)
+    SolutionLogNotFoundException,
+    SolutionObjectNotFoundException,
+)
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
+from mutablesecurity.solutions.base.result import BaseConcreteResultObjects
 
 
 class BaseLog(BaseObject):
@@ -26,7 +29,9 @@ class LogsManager(BaseManager):
         """
         super().__init__(logs)
 
-    def get_content(self, identifier: typing.Optional[str]) -> typing.Any:
+    def get_content(
+        self, identifier: typing.Optional[str]
+    ) -> BaseConcreteResultObjects:
         """Execute a specific action, with the given arguments.
 
         Args:
@@ -38,9 +43,9 @@ class LogsManager(BaseManager):
                 to any log source.
 
         Returns:
-            typing.Any: If identifier, log source content. Else dictionary with
-                keys - log source content
+            BaseConcreteResultObjects: Content of log sources
         """
+        log_list = []
         if identifier:
             try:
                 log: BaseLog = self.get_object_by_identifier(
@@ -49,10 +54,8 @@ class LogsManager(BaseManager):
             except SolutionObjectNotFoundException as exception:
                 raise SolutionLogNotFoundException() from exception
 
-            return host.get_fact(log.FACT)
-
+            log_list = [log]
         else:
-            return {
-                log.IDENTIFIER: host.get_fact(log.FACT)  # type: ignore
-                for log in self.objects.values()
-            }
+            log_list = list(self.objects.values())  # type: ignore
+
+        return {log.IDENTIFIER: host.get_fact(log.FACT) for log in log_list}

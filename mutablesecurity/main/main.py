@@ -1,14 +1,24 @@
 """Module for orchestrating all the other modules."""
+import inspect
 import typing
+
+from pyinfra import host
 
 from mutablesecurity.helpers.exceptions import (
     FailedConnectionToHostsException,
     FailedExecutionException,
+    MutableSecurityException,
 )
 from mutablesecurity.leader import Connection, Leader
 from mutablesecurity.logger import Logger
-from mutablesecurity.main.deployments import SecurityDeploymentResult
+from mutablesecurity.main.deployments import (
+    ResponseTypes,
+    SecurityDeploymentResult,
+)
 from mutablesecurity.solutions_manager import SolutionsManager
+
+if typing.TYPE_CHECKING:
+    from mutablesecurity.solutions.base import BaseSolution
 
 
 class Main:
@@ -70,8 +80,69 @@ class Main:
             solution, operation_name
         )
         try:
-            leader_module.run_operation(operation, **additional_arguments)
+            guarded_operation = exported_functionality(operation, solution)
+            leader_module.run_operation(
+                guarded_operation, **additional_arguments
+            )
         except FailedExecutionException as exception:
             raise exception
 
         return leader_module.results
+
+
+def exported_functionality(
+    function: typing.Callable, solution: "BaseSolution"
+) -> typing.Callable:
+    """Decorate an exported solution method.
+
+    It includes:
+    - Catching and reraising MutableSecurityException exceptions
+    - Passing required keyword arguments.
+
+    Args:
+        function (typing.Callable): Function to decorate
+        solution (BaseSolution): Solution
+
+    Returns:
+        typing.Callable: Decorator
+    """
+
+    def inner(*args: tuple, **kwargs: typing.Any) -> None:
+        """Execute the ones mentioned above.
+
+        Args:
+            args (tuple): Decorated function positional arguments
+            kwargs (typing.Any): Decorated function keyword arguments
+        """
+        # Extract only the keyword parameters needed by the function
+        signature = inspect.signature(function.__func__)  # type: ignore
+        parameters = signature.parameters
+        required_kwargs = {}
+        if len(parameters) > 1:
+            for key, _ in parameters.items():
+                if key == "self" or key == "cls":
+                    continue
+
+                required_kwargs[key] = kwargs[key]
+
+        try:
+            raw_result = function.__func__(  # type: ignore
+                solution, *args, **required_kwargs
+            )
+
+            # Store the result into the leader module
+            result = SecurityDeploymentResult(
+                str(host),
+                ResponseTypes.SUCCESS,
+                "The operation was successfully executed!",
+                raw_result,
+            )
+            Leader().publish_result(result)
+        except MutableSecurityException as exception:
+            # Store the result into the leader module
+            result = SecurityDeploymentResult(
+                str(host), ResponseTypes.ERROR, str(exception)
+            )
+            Leader().publish_result(result)
+
+    return inner

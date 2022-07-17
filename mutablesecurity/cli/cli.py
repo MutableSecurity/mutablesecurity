@@ -17,7 +17,7 @@ from rich.traceback import install
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
 from mutablesecurity.helpers.exceptions import UnsupportedPythonVersion
-from mutablesecurity.leader.connections import ConnectionFactory
+from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
 from mutablesecurity.solutions_manager import SolutionsManager
 
