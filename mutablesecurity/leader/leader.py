@@ -57,7 +57,7 @@ class Leader(object, metaclass=Singleton):
         """
         self.hosts.append(host.export())
 
-        # TODO: Remove after the TODO above
+        # TODO: Remove after the above one
         self.unique_password = host.password
 
     def connect(self) -> None:

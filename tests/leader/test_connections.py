@@ -12,7 +12,7 @@ from mutablesecurity.leader import ConnectionFactory
 
 def test_create_connections() -> None:
     """Test the creation of connections."""
-    password = "password"
+    password = "password"  # noqa: S105
     hostname = "1.1.1.1"
     username = "administrator"
     port = 10022
@@ -42,8 +42,8 @@ def test_create_connections() -> None:
     )
     assert (
         exported_connection[0] == hostname
-        and ssh_details["ssh_port"] == port  # type: ignore
-        and ssh_details["ssh_user"] == username  # type: ignore
+        and ssh_details["ssh_port"] == port  # type: ignore[index]
+        and ssh_details["ssh_user"] == username  # type: ignore[index]
     ), (
         "The exported remote password-based connection is not correct:"
         f" {exported_connection}."
@@ -61,10 +61,10 @@ def test_create_connections() -> None:
     )
     assert (
         exported_connection[0] == hostname
-        and ssh_details["ssh_port"] == port  # type: ignore
-        and ssh_details["ssh_user"] == username  # type: ignore
-        and ssh_details["ssh_key"] == key  # type: ignore
-        and ssh_details["ssh_key_password"] == password  # type: ignore
+        and ssh_details["ssh_port"] == port  # type: ignore[index]
+        and ssh_details["ssh_user"] == username  # type: ignore[index]
+        and ssh_details["ssh_key"] == key  # type: ignore[index]
+        and ssh_details["ssh_key_password"] == password  # type: ignore[index]
     ), (
         "The exported remote key-based connection is not correct:"
         f" {exported_connection}."
@@ -77,7 +77,7 @@ def test_create_connections_from_file() -> None:
         "administrator@8.8.8.8:22",
         "dns-master@1.1.1.1:13377",
     ]
-    password = "password"
+    password = "password"  # noqa: S105
 
     file_content = "\n".join(connection_strings)
     temp_file = tempfile.NamedTemporaryFile("w")
@@ -101,7 +101,7 @@ def test_create_invalid_connection() -> None:
         factory.create_connection(
             "password",
             "dns-master@dns-server",
-            Path("/tmp/ssh.key"),
+            Path("/tmp/ssh.key"),  # noqa: S108
             "password_again",
         )
 

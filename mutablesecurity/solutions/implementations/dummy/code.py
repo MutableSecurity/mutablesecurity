@@ -132,13 +132,20 @@ class ContentLogs(BaseLog):
 
 class Dummy(BaseSolution):
     INFORMATION = [
-        FileSizeInformation,  # type: ignore
-        CurrentUserInformation,  # type: ignore
-        MachineIDInformation,  # type: ignore
+        FileSizeInformation,  # type: ignore[list-item]
+        CurrentUserInformation,  # type: ignore[list-item]
+        MachineIDInformation,  # type: ignore[list-item]
     ]
-    TESTS = [UbuntuRequirement, PresenceTest]  # type: ignore
-    LOGS = [ContentLogs]  # type: ignore
-    ACTIONS = [AppendToFileAction]  # type: ignore
+    TESTS = [
+        UbuntuRequirement,  # type: ignore[list-item]
+        PresenceTest,  # type: ignore[list-item]
+    ]
+    LOGS = [
+        ContentLogs,  # type: ignore[list-item]
+    ]
+    ACTIONS = [
+        AppendToFileAction,  # type: ignore[list-item]
+    ]
 
     @staticmethod
     @deploy

@@ -48,23 +48,23 @@ class FuncCallVisitor(ast.NodeVisitor):
         """Delete the constructed name."""
         self._name.clear()
 
-    def visit_Name(self, node: ast.AST) -> None:
+    def visit_Name(self, node: ast.Name) -> None:  # noqa: N802
         """Visit node's name.
 
         Args:
             node (ast.AST): Current node
         """
-        self._name.appendleft(node.id)  # type: ignore
+        self._name.appendleft(node.id)
 
-    def visit_Attribute(self, node: ast.AST) -> None:
+    def visit_Attribute(self, node: ast.Attribute) -> None:  # noqa: N802
         """Visit node's attributes.
 
         Args:
             node (ast.AST): Current node
         """
         try:
-            self._name.appendleft(node.attr)  # type: ignore
-            self._name.appendleft(node.value.id)  # type: ignore
+            self._name.appendleft(node.attr)
+            self._name.appendleft(node.value.id)  # type: ignore[attr-defined]
         except AttributeError:
             self.generic_visit(node)
 
@@ -94,12 +94,12 @@ def get_cls_func_calls(tree: ast.AST) -> typing.List[str]:
 
 
 def get_functions_defines(
-    tree: ast.AST,
+    tree: ast.Module,
 ) -> typing.Generator[ast.FunctionDef, None, None]:
     """Traverse the BaseSolution definition to get its function definitions.
 
     Args:
-        tree (ast.AST): Abstract syntax tree of the BaseSolution class
+        tree (ast.Module): Abstract syntax tree of the BaseSolution class
 
     Yields:
         typing.Generator[ast.FunctionDef, None, None]: Generator of function
@@ -108,7 +108,7 @@ def get_functions_defines(
     # Get the class definition
     class_def = [
         elem
-        for elem in tree.body  # type: ignore
+        for elem in tree.body
         if isinstance(elem, ast.ClassDef) and elem.name == "BaseSolution"
     ][0]
 

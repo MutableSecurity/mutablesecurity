@@ -79,7 +79,7 @@ class ActionsManager(BaseManager):
         try:
             action: BaseAction = self.get_object_by_identifier(
                 identifier
-            )  # type: ignore
+            )  # type: ignore[assignment]
         except SolutionObjectNotFoundException as exception:
             raise SolutionActionNotFoundException() from exception
 

@@ -1,6 +1,5 @@
 """Module for testing the feedback form."""
 
-import os
 import typing
 
 import pytest
@@ -64,15 +63,6 @@ def __mock_ask(message: str, password: bool) -> str:
         str: Constant string
     """
     return "hello@mutablesecurity.io"
-
-
-@pytest.fixture(autouse=True)
-def run_around_tests() -> typing.Generator:
-    """Delete the file created by the feedback form after each test."""
-    yield
-
-    if os.path.exists(FeedbackForm.FILENAME):
-        os.remove(FeedbackForm.FILENAME)
 
 
 def test_multiple_launches(

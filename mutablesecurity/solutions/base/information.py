@@ -332,14 +332,14 @@ class InformationManager(BaseManager):
             try:
                 info: BaseInformation = self.get_object_by_identifier(
                     identifier
-                )  # type: ignore
+                )  # type: ignore[assignment]
             except SolutionObjectNotFoundException as exception:
                 raise SolutionInformationNotFoundException() from exception
 
             info_list = [info]
 
         else:
-            info_list = list(self.objects.values())  # type: ignore
+            info_list = list(self.objects.values())  # type: ignore[arg-type]
 
         # Get the concrete values
         for info in info_list:
@@ -371,7 +371,7 @@ class InformationManager(BaseManager):
         try:
             info: BaseInformation = self.get_object_by_identifier(
                 identifier
-            )  # type: ignore
+            )  # type: ignore[assignment]
         except SolutionObjectNotFoundException as exception:
             raise SolutionInformationNotFoundException() from exception
 
@@ -390,7 +390,7 @@ class InformationManager(BaseManager):
     def set_default_values_locally(self) -> None:
         """Set the default values in the local configuration."""
         for _, raw_info in self.objects.items():
-            info: BaseInformation = raw_info  # type: ignore
+            info: BaseInformation = raw_info  # type: ignore[assignment]
 
             if InformationProperties.WITH_DEFAULT_VALUE in info.PROPERTIES:
                 info.set_actual_value(info.DEFAULT_VALUE)
@@ -423,7 +423,7 @@ class InformationManager(BaseManager):
                 unset.
         """
         for _, raw_info in self.objects.items():
-            info: BaseInformation = raw_info  # type: ignore
+            info: BaseInformation = raw_info  # type: ignore[assignment]
 
             if filter_property and filter_property not in info.PROPERTIES:
                 continue
@@ -452,7 +452,7 @@ class InformationManager(BaseManager):
         """
         result = {}
         for key, current_info in self.objects.items():
-            info: BaseInformation = current_info  # type: ignore
+            info: BaseInformation = current_info  # type: ignore[assignment]
 
             if identifier and info.IDENTIFIER != identifier:
                 continue

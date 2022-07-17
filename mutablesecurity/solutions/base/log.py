@@ -53,12 +53,12 @@ class LogsManager(BaseManager):
             try:
                 log: BaseLog = self.get_object_by_identifier(
                     identifier
-                )  # type: ignore
+                )  # type: ignore[assignment]
             except SolutionObjectNotFoundException as exception:
                 raise SolutionLogNotFoundException() from exception
 
             log_list = [log]
         else:
-            log_list = list(self.objects.values())  # type: ignore
+            log_list = list(self.objects.values())  # type: ignore[arg-type]
 
         return {log.IDENTIFIER: host.get_fact(log.FACT) for log in log_list}

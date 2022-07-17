@@ -103,21 +103,21 @@ class TestsManager(BaseManager):
         tests_list = []
         if identifier:
             try:
-                test: BaseTest = self.get_object_by_identifier(
+                selected_test: BaseTest = self.get_object_by_identifier(
                     identifier
-                )  # type: ignore
+                )  # type: ignore[assignment]
             except SolutionObjectNotFoundException as exception:
                 raise SolutionTestNotFoundException() from exception
 
-            tests_list = [test]
+            tests_list = [selected_test]
         elif filter_type:
             for raw_test in self.objects.values():
-                test: BaseTest = raw_test  # type: ignore
+                test: BaseTest = raw_test  # type: ignore[assignment]
 
                 if test.TEST_TYPE == filter_type:
                     tests_list.append(test)
         else:
-            tests_list = list(self.objects.values())  # type: ignore
+            tests_list = list(self.objects.values())  # type: ignore[arg-type]
 
         # Execute the tests
         result = {}

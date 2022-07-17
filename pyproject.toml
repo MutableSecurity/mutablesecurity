@@ -30,15 +30,15 @@ include = [
 "Twitter" = "https://twitter.com/mutablesecurity/"
 
 [tool.poetry.dependencies]
-python = "^3.9"
-pyinfra = "^2.2"
 Click = "^8.0"
-PyYAML = "6.0"
-rich = "11.2.0"
 humanfriendly = "^10.0"
 packaging = "^21.3"
-requests = "^2.27.1"
+pyinfra = "^2.2"
 pypattyrn = "^1.2"
+python = "^3.9"
+PyYAML = "6.0"
+requests = "^2.27.1"
+rich = "11.2.0"
 
 [tool.poetry.scripts]
 mutablesecurity = "mutablesecurity.cli:main"
@@ -74,11 +74,18 @@ exclude = ".venv"
 inline-quotes = "double"
 extend-ignore = "ANN101,"
 per-file-ignores = """
+    # The __init__.py files only imports the modules defined in the package.
     ./**/__init__.py: F401
-    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
+
+    # The banned module logging is used only here.
     ./mutablesecurity/logger/logger.py: I251
-    ./tests/*: S101, S105, S108, DAR301
-    ./others/solutions_api_call_graph/generate.py: N802
+
+    # Ease the integration process by not requesting documentation via
+    # docstrings.
+    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
+
+    # All the pytest unit tests use asserts.
+    ./tests/*: S101
 """
 ban-relative-imports = true
 banned-modules = """
@@ -95,6 +102,7 @@ known_local_folder = ["src"]
 
 [tool.mypy]
 python_version = "3.9"
+show_error_codes = true
 
 [tool.pylint.MASTER]
 init-hook="import sys; sys.path.append('.')"

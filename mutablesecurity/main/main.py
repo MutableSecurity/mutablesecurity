@@ -21,6 +21,9 @@ if typing.TYPE_CHECKING:
     from mutablesecurity.solutions.base import BaseSolution
 
 
+Decorator = typing.Callable[..., typing.Callable[..., None]]
+
+
 class Main:
     """Class orchestrating all the other modules."""
 
@@ -91,7 +94,7 @@ class Main:
 
 
 def exported_functionality(
-    function: typing.Callable, solution: "BaseSolution"
+    decorated_func: Decorator, solution: "BaseSolution"
 ) -> typing.Callable:
     """Decorate an exported solution method.
 
@@ -100,7 +103,7 @@ def exported_functionality(
     - Passing required keyword arguments.
 
     Args:
-        function (typing.Callable): Function to decorate
+        decorated_func (Decorator): Function to decorate
         solution (BaseSolution): Solution
 
     Returns:
@@ -115,7 +118,9 @@ def exported_functionality(
             kwargs (typing.Any): Decorated function keyword arguments
         """
         # Extract only the keyword parameters needed by the function
-        signature = inspect.signature(function.__func__)  # type: ignore
+        signature = inspect.signature(
+            decorated_func.__func__,  # type: ignore[attr-defined]
+        )
         parameters = signature.parameters
         required_kwargs = {}
         if len(parameters) > 1:
@@ -126,7 +131,7 @@ def exported_functionality(
                 required_kwargs[key] = kwargs[key]
 
         try:
-            raw_result = function.__func__(  # type: ignore
+            raw_result = decorated_func.__func__(  # type: ignore[attr-defined]
                 solution, *args, **required_kwargs
             )
 

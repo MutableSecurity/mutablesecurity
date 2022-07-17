@@ -73,7 +73,7 @@ class BaseSolution(ABC):
         DESCRIPTION = "description"
         REFERENCES = "references"
 
-    def __new__(  # type: ignore
+    def __new__(
         cls: typing.Type["BaseSolution"],  # pylint: disable=unused-argument
         *args: tuple,
         **kwargs: typing.Any,

@@ -24,7 +24,9 @@ class Logger:
                 RichHandler(
                     console=Console(
                         file=open(
-                            "/tmp/mutablesecurity.log", "w", encoding="utf-8"
+                            "/tmp/mutablesecurity.log",  # noqa: S108
+                            "w",
+                            encoding="utf-8",
                         )
                     )
                 )

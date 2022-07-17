@@ -16,6 +16,7 @@ callee
 capsys
 capturefixture
 choco
+classdef
 cli
 codebase
 creational

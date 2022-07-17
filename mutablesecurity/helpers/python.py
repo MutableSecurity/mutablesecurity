@@ -24,7 +24,7 @@ def __execute_for_each_function_in_class(
             result.append(current_result)
 
     visitor = ast.NodeVisitor()
-    visitor.visit_FunctionDef = __visit  # type: ignore
+    visitor.visit_FunctionDef = __visit  # type: ignore[assignment]
     visitor.visit(
         compile(
             inspect.getsource(haystack_class), "?", "exec", ast.PyCF_ONLY_AST
@@ -79,7 +79,7 @@ def find_decorated_methods(
         return None
 
     visitor = ast.NodeVisitor()
-    visitor.visit_FunctionDef = __visit  # type: ignore
+    visitor.visit_FunctionDef = __visit  # type: ignore[assignment]
     visitor.visit(
         compile(
             inspect.getsource(haystack_class), "?", "exec", ast.PyCF_ONLY_AST
