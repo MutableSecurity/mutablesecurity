@@ -6,6 +6,7 @@ Raises:
     UnsupportedPythonVersion: The current Python version is unsupported
 """
 
+import os
 import pathlib
 import sys
 import typing
@@ -245,7 +246,17 @@ def main() -> None:
     __setup_pretty_traceback()
     __check_python_version()
 
-    __run_command()  # pylint: disable=no-value-for-parameter
+    try:
+        __run_command(  # pylint: disable=no-value-for-parameter
+            standalone_mode=False
+        )
+    except click.Abort:
+        Printer(console=console).print_keyboard_interrupt_message()
+
+        try:
+            sys.exit(1)
+        except SystemExit:
+            os._exit(1)  # pylint: disable=protected-access
 
 
 if __name__ == "__main__":

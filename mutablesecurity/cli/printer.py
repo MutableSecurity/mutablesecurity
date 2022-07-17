@@ -84,6 +84,14 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     )
     FEEDBACK_EMAIL_PROMPT = "\n  [bold][blue]Your Email Address"
 
+    HOST_MESSAGE = "{host} Host"
+
+    VERSION_ERROR_TEXT = (
+        "Please make sure that your Python version is at least"
+        " {major}.{minor} before executing MutableSecurity."
+    )
+    STOP_MESSAGE = "MutableSecurity has been stopped."
+
     console: Console
 
     def __init__(self, console: Console) -> None:
@@ -283,10 +291,17 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
 
         major, minor = min_py_version
 
+        message_text = self.VERSION_ERROR_TEXT.format(major=major, minor=minor)
+        message = MessageFactory().create_message(
+            MessageTypes.ERROR, message_text
+        )
+        self.console.print(message.to_text())
+
+    def print_keyboard_interrupt_message(self) -> None:
+        """Print the message for KeyboardInterrupt."""
         message = MessageFactory().create_message(
             MessageTypes.ERROR,
-            "Please make sure that your Python version is at least"
-            f" {major}.{minor} before executing MutableSecurity.",
+            self.STOP_MESSAGE,
         )
         self.console.print(message.to_text())
 
@@ -368,9 +383,9 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                 self.console.print("")
 
             # Print host information
+            host_text = self.HOST_MESSAGE.format(host=response.host_id)
             host_message = MessageFactory().create_message(
-                MessageTypes.COMPUTER_INFO,
-                f"Host {response.host_id}",
+                MessageTypes.COMPUTER_INFO, host_text
             )
             self.console.print(host_message.to_text())
 
