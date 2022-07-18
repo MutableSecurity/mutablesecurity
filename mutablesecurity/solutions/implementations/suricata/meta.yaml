@@ -3,3 +3,4 @@ description: Suricata is the leading independent open source threat detection en
 references:
   - https://suricata.io
   - https://github.com/OISF/suricata
+maturity: UNDER_DEVELOPMENT

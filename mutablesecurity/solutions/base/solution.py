@@ -45,6 +45,14 @@ from mutablesecurity.solutions.base.test import (
 )
 
 
+class SolutionMaturity(Enum):
+    """Enumeration for defining the solution's maturity."""
+
+    PRODUCTION = 0
+    DEV_ONLY = 1
+    UNDER_DEVELOPMENT = 2
+
+
 class BaseSolution(ABC):
     """Abstract class wrapping a security solution."""
 
@@ -53,6 +61,7 @@ class BaseSolution(ABC):
     FULL_NAME: str
     DESCRIPTION: str
     REFERENCES: typing.List[str]
+    MATURITY: SolutionMaturity
 
     # Class members declared explicitly in the child class
     INFORMATION: typing.List[BaseInformation]
@@ -72,6 +81,7 @@ class BaseSolution(ABC):
         FULL_NAME = "full_name"
         DESCRIPTION = "description"
         REFERENCES = "references"
+        MATURITY = "maturity"
 
     def __init_subclass__(cls: typing.Type["BaseSolution"]) -> None:
         """Initialize a subclass after definition."""
@@ -122,6 +132,10 @@ class BaseSolution(ABC):
         cls.FULL_NAME = meta[cls.MetaKeys.FULL_NAME.value]
         cls.DESCRIPTION = meta[cls.MetaKeys.DESCRIPTION.value]
         cls.REFERENCES = meta[cls.MetaKeys.REFERENCES.value]
+        try:
+            cls.MATURITY = SolutionMaturity[meta[cls.MetaKeys.MATURITY.value]]
+        except KeyError as exception:
+            raise InvalidMetaException() from exception
 
     @classmethod
     def __get_configuration_filename(cls: typing.Type["BaseSolution"]) -> str:
