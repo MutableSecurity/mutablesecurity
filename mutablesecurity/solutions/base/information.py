@@ -8,14 +8,13 @@ from pyinfra import host
 from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.exceptions import (
-    EnumTypeNotSetException,
     InvalidInformationValueException,
-    InvalidInformationValueToConvert,
     MandatoryAspectLeftUnsetException,
     NonWritableInformationException,
     SolutionInformationNotFoundException,
     SolutionObjectNotFoundException,
 )
+from mutablesecurity.solutions.base.data_type import DataType
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,
@@ -24,150 +23,6 @@ from mutablesecurity.solutions.base.result import (
 )
 
 Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
-
-
-class InnerInformationType(Enum):
-    """Enumeration for possible types for an information."""
-
-    __BASIC_TYPES_BASE = 0
-    INTEGER = __BASIC_TYPES_BASE + 1
-    STRING = __BASIC_TYPES_BASE + 2
-    ENUM = __BASIC_TYPES_BASE + 3
-
-    __LIST_BASE = 10
-    LIST_OF_INTEGERS = __LIST_BASE + 0
-    LIST_OF_STRINGS = __LIST_BASE + 1
-    LIST_OF_ENUMS = __LIST_BASE + 2
-
-
-class InformationType:
-    """Class for wrapping the information types."""
-
-    INNER_TYPE: InnerInformationType
-    BASE_ENUM: typing.Type[Enum]
-
-    def __new__(  # pylint: disable=unused-argument
-        cls: typing.Type["InformationType"], *args: tuple, **kwargs: typing.Any
-    ) -> "InformationType":
-        """Initialize the class after definition.
-
-        Args:
-            args (tuple): Positional arguments
-            kwargs (typing.Any): Keyword arguments
-
-        Raises:
-            EnumTypeNotSetException: The child type of exception is not
-                specified.
-
-        Returns:
-            InformationType: Class
-        """
-        if (
-            cls.INNER_TYPE
-            in [
-                InnerInformationType.ENUM,
-                InnerInformationType.LIST_OF_ENUMS,
-            ]
-            and cls.BASE_ENUM is None
-        ):
-            raise EnumTypeNotSetException()
-
-        instance: "InformationType" = super(InformationType, cls).__new__(cls)
-
-        return instance
-
-    @classmethod
-    def name(cls: typing.Type["InformationType"]) -> str:
-        """Get the name of the underlying type.
-
-        Returns:
-            str: Name
-        """
-        return cls.INNER_TYPE.name
-
-    @classmethod
-    def convert_string(
-        cls: typing.Type["InformationType"],
-        string: str,
-    ) -> typing.Union[
-        int, str, Enum, typing.List[int], typing.List[str], typing.List[Enum]
-    ]:
-        """Convert a string into its original representation.
-
-        Args:
-            string (str): Stringified information value
-
-        Raises:
-            InvalidInformationValueToConvert: The provided value is invalid.
-
-        Returns:
-            typing.Union[ int, str, Enum, typing.List[int], typing.List[str], \
-                typing.List[Enum] ]: Converted value
-        """
-        try:
-            if cls.INNER_TYPE == InnerInformationType.INTEGER:
-                return int(string)
-            elif cls.INNER_TYPE == InnerInformationType.ENUM:
-                return cls.BASE_ENUM(string)
-            elif cls.INNER_TYPE == InnerInformationType.LIST_OF_INTEGERS:
-                int_list = string.split(",")
-
-                return [int(elem) for elem in int_list]
-            elif cls.INNER_TYPE == InnerInformationType.LIST_OF_STRINGS:
-                return string.split(",")
-            elif cls.INNER_TYPE == InnerInformationType.LIST_OF_ENUMS:
-                enum_list = string.split(",")
-
-                return [cls.BASE_ENUM(elem) for elem in enum_list]
-
-            return string
-
-        except (KeyError, ValueError) as exception:
-            raise InvalidInformationValueToConvert() from exception
-
-    def __str__(self) -> str:
-        """Stringify the object.
-
-        Returns:
-            str: String representation
-        """
-        return self.INNER_TYPE.name
-
-    def __repr__(self) -> str:
-        """Represent the object.
-
-        Returns:
-            str: String representation
-        """
-        return self.INNER_TYPE.name
-
-
-class IntegerInformationType(InformationType):
-    """Information type for integer."""
-
-    ALIAS = "INTEGER"
-    INNER_TYPE = InnerInformationType.INTEGER
-
-
-class StringInformationType(InformationType):
-    """Information type for strings."""
-
-    ALIAS = "STRING"
-    INNER_TYPE = InnerInformationType.STRING
-
-
-class IntegerListInformationType(InformationType):
-    """Information type for list of integers."""
-
-    ALIAS = "LIST OF INTEGERS"
-    INNER_TYPE = InnerInformationType.LIST_OF_INTEGERS
-
-
-class StringListInformationType(InformationType):
-    """Information type for list of strings."""
-
-    ALIAS = "LIST OF STRINGS"
-    INNER_TYPE = InnerInformationType.LIST_OF_STRINGS
 
 
 class InformationProperties(Enum):
@@ -227,7 +82,7 @@ class BaseInformation(BaseObject):
     """
 
     DEFAULT_VALUE: typing.Any
-    INFO_TYPE: typing.Type[InformationType]
+    INFO_TYPE: typing.Type[DataType]
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
     SETTER: Operation

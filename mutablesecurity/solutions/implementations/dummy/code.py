@@ -15,8 +15,8 @@ from mutablesecurity.solutions.base import (
     BaseSolution,
     BaseTest,
     InformationProperties,
-    IntegerInformationType,
-    StringInformationType,
+    IntegerDataType,
+    StringDataType,
     TestType,
 )
 
@@ -24,8 +24,8 @@ from mutablesecurity.solutions.base import (
 class AppendToFileAction(BaseAction):
     @staticmethod
     @deploy
-    def append_to_file(content: str) -> None:
-        shell([f"echo '{content}' >> /tmp/dummy"])
+    def append_to_file(content: str, number: int) -> None:
+        shell([f"echo '{content}' >> /tmp/dummy.{number}"])
 
     IDENTIFIER = "append_to_file"
     DESCRIPTION = "Append a text to a file."
@@ -42,7 +42,7 @@ class FileSizeInformation(BaseInformation):
 
     IDENTIFIER = "file_size"
     DESCRIPTION = "Get the file size."
-    INFO_TYPE = IntegerInformationType
+    INFO_TYPE = IntegerDataType
     PROPERTIES = [InformationProperties.METRIC]
     DEFAULT_VALUE = None
     GETTER = GetFileSize
@@ -58,7 +58,7 @@ class MachineIDInformation(BaseInformation):
 
     IDENTIFIER = "machine_id"
     DESCRIPTION = "Get the machine ID."
-    INFO_TYPE = StringInformationType
+    INFO_TYPE = StringDataType
     PROPERTIES = [InformationProperties.METRIC]
     DEFAULT_VALUE = None
     GETTER = GetMachineID
@@ -78,7 +78,7 @@ class CurrentUserInformation(BaseInformation):
 
     IDENTIFIER = "current_user"
     DESCRIPTION = "Get the user under which the automation is ran."
-    INFO_TYPE = StringInformationType
+    INFO_TYPE = StringDataType
     PROPERTIES = [InformationProperties.CONFIGURATION]
     DEFAULT_VALUE = None
     GETTER = GetCurrentUser

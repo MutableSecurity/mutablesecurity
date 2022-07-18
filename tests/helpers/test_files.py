@@ -6,7 +6,7 @@ from pathlib import Path
 import pytest
 
 from mutablesecurity.helpers.exceptions import (
-    FileNotExists,
+    FileNotExistsException,
     ImproperPermissionsException,
 )
 from mutablesecurity.helpers.files import read_file_lines
@@ -32,7 +32,7 @@ def test_read_file_lines_from_inexistent_file() -> None:
     path = Path("/root/another_file_that_i_am_quite_sure_it_not_exists.txt")
 
     with pytest.raises(
-        (ImproperPermissionsException, FileNotExists)
+        (ImproperPermissionsException, FileNotExistsException)
     ) as execution:
         read_file_lines(path)
 

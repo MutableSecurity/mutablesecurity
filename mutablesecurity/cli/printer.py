@@ -85,7 +85,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         "\n  [bold]Many thanks! One of our staff members will contact you as"
         " soon as possible."
     )
-    FEEDBACK_EMAIL_PROMPT = "\n  [bold][blue]Your Email Address"
+    FEEDBACK_EMAIL_PROMPT = "[bold][blue]Your Email Address"
 
     HOST_MESSAGE = "Host {host}"
 

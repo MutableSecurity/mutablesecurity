@@ -4,7 +4,7 @@ import pathlib
 import typing
 
 from mutablesecurity.helpers.exceptions import (
-    ConnectionExportMethodNotImplemented,
+    ConnectionExportMethodNotImplementedException,
     InvalidConnectionDetailsException,
     InvalidConnectionStringException,
     InvalidConnectionStringsFileException,
@@ -34,9 +34,9 @@ class Connection:
         """Export the host details as a tuple.
 
         Raises:
-            ConnectionExportMethodNotImplemented: Method is not implemented.
+            ConnectionExportMethodNotImplementedException: Method is not implemented.
         """
-        raise ConnectionExportMethodNotImplemented()
+        raise ConnectionExportMethodNotImplementedException()
 
 
 class LocalPasswordConnection(Connection):

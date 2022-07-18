@@ -73,20 +73,10 @@ class BaseSolution(ABC):
         DESCRIPTION = "description"
         REFERENCES = "references"
 
-    def __new__(
-        cls: typing.Type["BaseSolution"],  # pylint: disable=unused-argument
-        *args: tuple,
-        **kwargs: typing.Any,
-    ) -> "BaseSolution":
-        """Initialize the class after definition.
+    def __init_subclass__(cls: typing.Type["BaseSolution"]) -> None:
+        """Initialize a subclass after definition."""
+        super().__init_subclass__()
 
-        Args:
-            args (tuple): Positional arguments
-            kwargs (typing.Any): Keyword arguments
-
-        Returns:
-            BaseSolution: Class
-        """
         cls.__load_meta()
 
         cls.IDENTIFIER = cls.__module__.split(".")[-2]
@@ -96,10 +86,6 @@ class BaseSolution(ABC):
         cls.TESTS_MANAGER = TestsManager(cls.TESTS)
         cls.LOGS_MANAGER = LogsManager(cls.LOGS)
         cls.ACTIONS_MANAGER = ActionsManager(cls.ACTIONS)
-
-        instance: "BaseSolution" = super(BaseSolution, cls).__new__(cls)
-
-        return instance
 
     @classmethod
     def __build_manager_result(

@@ -27,6 +27,7 @@ datefmt
 deleter
 deque
 dirname
+docstring
 docstrings
 enum
 enums
@@ -53,6 +54,8 @@ mimiking
 monkeypatch
 mutablesecurity
 optionality
+param
+params
 parsers
 pathlib
 pencolor

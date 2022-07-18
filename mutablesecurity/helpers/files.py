@@ -4,7 +4,7 @@ import pathlib
 import typing
 
 from mutablesecurity.helpers.exceptions import (
-    FileNotExists,
+    FileNotExistsException,
     ImproperPermissionsException,
 )
 
@@ -21,7 +21,7 @@ def read_file_lines(
         path (pathlib.Path): Path to existent file
 
     Raises:
-        FileNotExists: File does not exists.
+        FileNotExistsException: File does not exists.
         ImproperPermissionsException: Improper permissions
 
     Returns:
@@ -29,7 +29,7 @@ def read_file_lines(
     """
     try:
         if not path.exists():
-            raise FileNotExists()
+            raise FileNotExistsException()
     except PermissionError as exception:
         raise ImproperPermissionsException() from exception
 

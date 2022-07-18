@@ -3,7 +3,7 @@
 import pytest
 
 from mutablesecurity.helpers.exceptions import (
-    GitHubAPIError,
+    GitHubAPIException,
     NoIdentifiedAssetException,
 )
 from mutablesecurity.helpers.github import (
@@ -21,7 +21,7 @@ def test_get_latest_release_name() -> None:
 
 def test_get_latest_release_name_for_invalid_repository() -> None:
     """Test if an exception is raised when passing an invalid repository."""
-    with pytest.raises(GitHubAPIError) as execution:
+    with pytest.raises(GitHubAPIException) as execution:
         get_latest_release_name("mutablesecurity", "mutablesecurity-gui")
 
     exception_raised = execution.value

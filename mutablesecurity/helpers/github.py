@@ -4,7 +4,7 @@ import json
 import requests
 
 from mutablesecurity.helpers.exceptions import (
-    GitHubAPIError,
+    GitHubAPIException,
     NoIdentifiedAssetException,
 )
 
@@ -17,7 +17,7 @@ def __get_latest_release(username: str, repository: str) -> dict:
         repository (str): Repository's name
 
     Raises:
-        GitHubAPIError: The GitHub response is not successful.
+        GitHubAPIException: The GitHub response is not successful.
 
     Returns:
         dict: Returned dictionary
@@ -26,7 +26,7 @@ def __get_latest_release(username: str, repository: str) -> dict:
         f"https://api.github.com/repos/{username}/{repository}/releases/latest"
     )
     if connection.status_code != 200:
-        raise GitHubAPIError()
+        raise GitHubAPIException()
 
     return json.loads(connection.content)
 

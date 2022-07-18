@@ -3,7 +3,8 @@
 """Module for implementing the CLI.
 
 Raises:
-    UnsupportedPythonVersion: The current Python version is unsupported
+    UnsupportedPythonVersionException: The current Python version is
+        unsupported
 """
 
 import os
@@ -19,7 +20,7 @@ from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
 from mutablesecurity.helpers.exceptions import (
     MutableSecurityException,
-    UnsupportedPythonVersion,
+    UnsupportedPythonVersionException,
 )
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
@@ -230,13 +231,13 @@ def __check_python_version() -> None:
     """Check if the Python version is compatible.
 
     Raises:
-        UnsupportedPythonVersion: The version is not compatible.
+        UnsupportedPythonVersionException: The version is not compatible.
     """
     # Check Python version
     if sys.version_info < MIN_PYTHON_VERSION:
         Printer(console=console).print_version_error(MIN_PYTHON_VERSION)
 
-        raise UnsupportedPythonVersion()
+        raise UnsupportedPythonVersionException()
 
 
 def __setup_pretty_traceback() -> None:

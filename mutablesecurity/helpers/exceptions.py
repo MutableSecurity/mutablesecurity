@@ -1,24 +1,51 @@
 """Module defining exception."""
 
+import typing
+
+EXCEPTIONS_SUFFIX = "Exception"
+
 
 class MutableSecurityException(Exception):
     """Class defining a generic MutableSecurity exception."""
 
-    def __init__(self) -> None:
-        """Initialize the MutableSecurityException instance."""
-        if not self.__doc__:
+    def __init_subclass__(
+        cls: typing.Type["MutableSecurityException"],
+    ) -> None:
+        """Verify if the child name has a standard suffix.
+
+        Raises:
+            MutableSecurityException: The name does not ends with the standard
+                suffix.
+        """
+        super().__init_subclass__()
+
+        if not cls.__name__.endswith(EXCEPTIONS_SUFFIX):
+            raise MutableSecurityException(
+                message=(
+                    "The exception name needs to end with the suffix"
+                    f' "{EXCEPTIONS_SUFFIX}".'
+                )
+            )
+
+    def __init__(self, message: str = None) -> None:
+        """Initialize the MutableSecurityException instance.
+
+        The message is implicitly taken from class' docstring.
+
+        Args:
+            message (str): Alternative way to specify the message
+        """
+        if self.__doc__ and self.__doc__ != MutableSecurityException.__doc__:
+            message = self.__doc__
+        elif message is None:
             return
 
-        documentation = self.__doc__.replace("\n", "")
-        super().__init__(documentation)
+        message = message.replace("\n", "")
+        super().__init__(message)
 
 
 class MandatoryAspectLeftUnsetException(MutableSecurityException):
     """A mandatory aspect of the default configuration was left unset."""
-
-
-class SameSetConfigurationValue(MutableSecurityException):
-    """The value set in the configuration is the same with the old one."""
 
 
 class ParserException(MutableSecurityException):
@@ -49,7 +76,7 @@ class FilesException(MutableSecurityException):
     """An error occurred when processing a file."""
 
 
-class FileNotExists(FilesException):
+class FileNotExistsException(FilesException):
     """The provided file does not exists."""
 
 
@@ -61,7 +88,7 @@ class GitHubException(MutableSecurityException):
     """An error occurred when communicating with GitHub API."""
 
 
-class GitHubAPIError(GitHubException):
+class GitHubAPIException(GitHubException):
     """The result from GitHub API is not successful."""
 
 
@@ -73,7 +100,7 @@ class CLIException(MutableSecurityException):
     """An error occurred in the CLI module."""
 
 
-class UnsupportedPythonVersion(CLIException):
+class UnsupportedPythonVersionException(CLIException):
     """This version if Python is not supported."""
 
 
@@ -81,7 +108,9 @@ class HostsOrchestrationException(MutableSecurityException):
     """An error occurred in the module connecting to target hosts."""
 
 
-class ConnectionExportMethodNotImplemented(HostsOrchestrationException):
+class ConnectionExportMethodNotImplementedException(
+    HostsOrchestrationException
+):
     """The connection export method is not implemented."""
 
 
@@ -154,8 +183,12 @@ class EnumTypeNotSetException(SolutionException):
     """The child type was not set in the information using enumerations."""
 
 
-class InvalidInformationValueToConvert(SolutionException):
+class InvalidDataValueToConvertException(SolutionException):
     """The provided value is not a stringified version of the set type."""
+
+
+class NoDataTypeWithAnnotationException(SolutionException):
+    """There is no data type with the provided annotation."""
 
 
 class NonWritableInformationException(SolutionException):
@@ -172,6 +205,19 @@ class SolutionLogNotFoundException(SolutionException):
 
 class SolutionActionNotFoundException(SolutionException):
     """The selected action does not exist in solution's context."""
+
+
+class InvalidNumberOfActionArgumentsException(SolutionException):
+    """The number of arguments provided for executing the action is invalid."""
+
+
+class ActionArgumentNotPresentException(SolutionException):
+    """A mandatory argument of the action was not provided."""
+
+
+class InvalidValueForActionArgumentException(SolutionException):
+    """One of the provided arguments could not be converted to its real type.\
+"""
 
 
 class InvalidInformationValueException(SolutionException):

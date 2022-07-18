@@ -90,7 +90,7 @@ def test_successful_dummy_deploy_and_manage(
         f" -o SET_INFORMATION -i {user_info_id} -v ",
         " -o GET_LOGS",
         f" -o GET_LOGS -i {logs_id}",
-        f" -o EXECUTE -i {action_id} -a content=dummy",
+        f" -o EXECUTE -i {action_id} -a content=dummy -a number=1",
         " -o UNINSTALL",
     ]
     commands = [command_base + command for command in commands]
@@ -143,6 +143,9 @@ def test_bad_dummy_deploy_and_manage(
         " -o SET_INFORMATION -i get_me_if_u_can -v dummy",
         " -o GET_LOGS -i logs",
         " -o EXECUTE -i action_to_do_nothing -a content=dummy",
+        " -o EXECUTE -i append_to_file -a content=a -a number=1 -a surplus=a",
+        " -o EXECUTE -i append_to_file -a content=a",
+        " -o EXECUTE -i append_to_file -a content=a -a number=a",
     ]
     invalid_start_index = 2
     commands = [command_base + command for command in commands]

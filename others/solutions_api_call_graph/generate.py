@@ -18,7 +18,7 @@ from collections import deque
 import graphviz
 
 SOLUTION_API_PATH = "mutablesecurity/solutions/base/solution.py"
-SKIPPED_FUNCTION = ["__new__"]
+SKIPPED_FUNCTION = ["__init_subclass__"]
 EXPORT_FOLDER = "exports"
 
 
