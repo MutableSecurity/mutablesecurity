@@ -49,11 +49,13 @@ isfile
 isfunction
 kwargs
 lifecycle
+logrecord
 lowercased
 lowercases
 metaclass
 mimiking
 monkeypatch
+msg
 mutablesecurity
 optionality
 param
@@ -81,6 +83,7 @@ subgraph
 subnode
 sudo
 suricata
+syslog
 teler
 testsuite
 traceback

@@ -78,14 +78,14 @@ per-file-ignores = """
     ./**/__init__.py: F401
 
     # The banned module logging is used only here.
-    ./mutablesecurity/logger/logger.py: I251
+    ./mutablesecurity/logger/**: I251
 
     # Ease the integration process by not requesting documentation via
     # docstrings.
     ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
 
     # All the pytest unit tests use asserts.
-    ./tests/*: S101
+    ./tests/**: S101
 """
 ban-relative-imports = true
 banned-modules = """

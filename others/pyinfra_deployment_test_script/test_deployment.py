@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
+
 """Python 3 script for connecting to a local WinRM instance via pyinfra.
 
-This script requires to be ran with: poetry run <path_to_script>.
+This script requires to be ran with:
+    poetry run <path_to_script>.
 
 For Windows, you need to firstly enable WinRM by using the Powershell script
 from the same directory.

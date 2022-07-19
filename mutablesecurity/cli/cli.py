@@ -1,11 +1,6 @@
 #!/usr/bin/env python3
 
-"""Module for implementing the CLI.
-
-Raises:
-    UnsupportedPythonVersionException: The current Python version is
-        unsupported
-"""
+"""Module for implementing the CLI."""
 
 import os
 import pathlib

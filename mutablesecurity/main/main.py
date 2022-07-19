@@ -38,7 +38,9 @@ class Main:
                 Defaults to True.
             dev_mode (bool): Boolean indicating if running in developer mode
         """
-        self.logger = Logger(verbose)
+        logger = Logger()
+        logger.set_verbosity(verbose)
+
         self.dev_mode = dev_mode
 
     def run(

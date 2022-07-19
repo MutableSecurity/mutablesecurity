@@ -1,40 +1,72 @@
 """Module implementing a logger."""
 import logging
+import logging.handlers
+import re
+import typing
 
-from rich.console import Console
-from rich.logging import RichHandler
+from pypattyrn.creational.singleton import Singleton
 
 
-class Logger:
+class Logger(metaclass=Singleton):
     """Class modeling a logger."""
 
-    def __init__(self, verbose: bool) -> None:
-        """Initialize the object.
+    PASSWORD_REPLACEMENT_STRING = "REDACTED"  # noqa: S105
+    logger: logging.Logger
+    old_factory: typing.Any
+
+    @staticmethod
+    def remove_pyinfra_password(
+        *args: tuple, **kwargs: dict
+    ) -> logging.LogRecord:
+        """Remove the passwords embedded in logs by pyinfra.
 
         Args:
-            verbose (bool): Boolean indicating if the logging needs to be
-                verbose
+            args (tuple): Unused
+            kwargs (dict): Unused
+
+        Returns:
+            logging.LogRecord: Modified logs
         """
-        # Enable rich logging
-        logging.basicConfig(
-            level=logging.DEBUG,
-            format="%(message)s",
-            datefmt="[%X]",
-            handlers=[
-                RichHandler(
-                    console=Console(
-                        file=open(
-                            "/tmp/mutablesecurity.log",  # noqa: S108
-                            "w",
-                            encoding="utf-8",
-                        )
-                    )
-                )
-            ],
+        record = Logger().old_factory(*args, **kwargs)
+        record.msg = re.sub(
+            r"'use_sudo_password': '.*', ",
+            f"'use_sudo_password': '{Logger.PASSWORD_REPLACEMENT_STRING}', ",
+            record.msg,
         )
 
-        # Set the logging level according to the option
+        return record
+
+    def __init__(self) -> None:
+        """Initialize the object."""
+        # Create a syslog handler and a logger
+        handler = logging.handlers.SysLogHandler(address="/dev/log")
+        logging.basicConfig(
+            level=logging.INFO,
+            format=(
+                "mutablesecurity: %(process)d: %(pathname)s: %(lineno)d: "
+                " %(levelname)s: %(message)s"
+            ),
+            datefmt="[%X]",
+            handlers=[handler],
+        )
+
+        # Get the MutableSecurity logger
+        self.logger = logging.getLogger()
+
+        # Log a message
+        logging.debug("The logger was initialized.")
+
+        # Remove the embedded password
+        self.old_factory = logging.getLogRecordFactory()
+        logging.setLogRecordFactory(self.remove_pyinfra_password)
+
+    def set_verbosity(self, verbose: bool) -> None:
+        """Set the logger to be verbose.
+
+        Args:
+            verbose (bool): Boolean indicating if the logging is verbose
+        """
         if verbose:
-            logging.getLogger("mutablesecurity").setLevel(logging.INFO)
+            self.logger.setLevel(logging.INFO)
         else:
-            logging.getLogger("mutablesecurity").setLevel(logging.DEBUG)
+            self.logger.setLevel(logging.DEBUG)
