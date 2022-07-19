@@ -62,6 +62,7 @@ parsers
 pathlib
 pencolor
 png
+powershell
 pycf
 pyinfra
 pylint
