@@ -17,6 +17,7 @@ from mutablesecurity.helpers.exceptions import (
     BadArgumentException,
     MutableSecurityException,
     StoppedMutableSecurityException,
+    UnexpectedBehaviorException,
     UnsupportedPythonVersionException,
 )
 from mutablesecurity.leader import ConnectionFactory
@@ -70,6 +71,27 @@ def __split_arguments(arguments: typing.Tuple[str]) -> typing.Dict[str, str]:
         result[argument_split[0]] = argument_split[1]
 
     return result
+
+
+def __ask_for_password(
+    remote: str, remote_list: pathlib.Path
+) -> typing.Optional[str]:
+    """May ask for a password.
+
+    If no remote/remote list is specified (local execution) and the effective
+    user ID is 0 (root-specific), skip asking for a password.
+
+    Args:
+        remote (str): Information about the remote target host
+        remote_list (pathlib.Path): List of remote target hosts
+
+    Returns:
+        typing.Optional[str]: [description]
+    """
+    if remote is None and remote_list is None and os.geteuid() == 0:
+        return None
+    else:
+        return Printer(console).ask_for_connection_password()
 
 
 class CommandWithBanner(click.Command):
@@ -198,8 +220,11 @@ def __run_command(
         return
 
     # Attach the password and key to each connection
-    password = printer.ask_for_connection_password()
+    password = __ask_for_password(remote, remote_list)
     if remote_list:
+        if password is None:
+            raise UnexpectedBehaviorException()
+
         connections = ConnectionFactory().create_connections_from_file(
             remote_list, password, key, None
         )

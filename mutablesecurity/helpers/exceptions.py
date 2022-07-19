@@ -53,6 +53,10 @@ class BadArgumentException(MutableSecurityException):
 """
 
 
+class UnexpectedBehaviorException(MutableSecurityException):
+    """The codebase behaves strangely."""
+
+
 class MandatoryAspectLeftUnsetException(MutableSecurityException):
     """A mandatory aspect of the default configuration was left unset."""
 

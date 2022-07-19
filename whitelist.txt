@@ -37,6 +37,7 @@ formatter
 func
 functiondef
 getattribute
+geteuid
 getmembers
 getmodule
 getsource

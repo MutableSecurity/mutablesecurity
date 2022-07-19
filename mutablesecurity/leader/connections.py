@@ -8,6 +8,7 @@ from mutablesecurity.helpers.exceptions import (
     InvalidConnectionDetailsException,
     InvalidConnectionStringException,
     InvalidConnectionStringsFileException,
+    UnexpectedBehaviorException,
     UnknownConnectionTypeException,
 )
 from mutablesecurity.helpers.files import read_file_lines
@@ -19,13 +20,14 @@ PyinfraConnectionDump = typing.Union[str, typing.Tuple[str, dict]]
 class Connection:
     """Base class for connection types."""
 
-    password: str
+    password: typing.Optional[str]
 
-    def __init__(self, password: str) -> None:
+    def __init__(self, password: typing.Optional[str]) -> None:
         """Initialize a connection.
 
         Args:
-            password (str): Local user password
+            password (str): Local user password. Can be None if the deployment
+                is done as root.
         """
         self.password = password
 
@@ -34,7 +36,8 @@ class Connection:
         """Export the host details as a tuple.
 
         Raises:
-            ConnectionExportMethodNotImplementedException: Method is not implemented.
+            ConnectionExportMethodNotImplementedException: Method is not
+                implemented.
         """
         raise ConnectionExportMethodNotImplementedException()
 
@@ -175,7 +178,7 @@ class ConnectionFactory:
 
     def create_connection(
         self,
-        user_password: str,
+        user_password: typing.Optional[str],
         connection_string: typing.Optional[str] = None,
         key: typing.Optional[pathlib.Path] = None,
         key_password: typing.Optional[str] = None,
@@ -195,6 +198,8 @@ class ConnectionFactory:
                 be parsed.
             UnknownConnectionTypeException: The type of the connection could
                 not be established.
+            UnexpectedBehaviorException: A password that must be set is not
+                set.
 
         Returns:
             Connection: Resulted connection
@@ -209,6 +214,9 @@ class ConnectionFactory:
         except InvalidConnectionStringException as exception:
             raise InvalidConnectionDetailsException() from exception
         else:
+            if user_password is None:
+                raise UnexpectedBehaviorException()
+
             if key is None:
                 return PasswordSSHRemoteConnection(
                     hostname,
