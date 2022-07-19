@@ -41,9 +41,7 @@ def test_no_feedback_email(
     printer = Printer(console)
     with pytest.raises(NoEmailProvidedException) as execution:
         printer.print_feedback_and_ask()
-
-    exception_raised = execution.value
-    assert exception_raised, "Exception not raised when providing no email."
+    assert execution.value, "Exception not raised when providing no email."
 
 
 def test_simple_prints() -> None:

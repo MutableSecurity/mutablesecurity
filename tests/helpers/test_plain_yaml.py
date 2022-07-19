@@ -39,18 +39,14 @@ def test_invalid_multilevel_dict() -> None:
 
     with pytest.raises(NotPlainDictionaryException) as execution:
         dump_to_file(test_dict, temp_file.name)
-
-    exception_raised = execution.value
-    assert exception_raised, "The multi-level dictionary was not detected."
+    assert execution.value, "The multi-level dictionary was not detected."
 
 
 def test_no_input_file() -> None:
     """Test if an exception is raised when opening an inexistent file."""
     with pytest.raises(YAMLFileNotExistsException) as execution:
         load_from_file("/root/pretty_sure_this_not_exists.yaml")
-
-    exception_raised = execution.value
-    assert exception_raised, "The non-existent YAML file was not detected."
+    assert execution.value, "The non-existent YAML file was not detected."
 
 
 def test_missing_required_key() -> None:
@@ -61,7 +57,5 @@ def test_missing_required_key() -> None:
     dump_to_file(test_dict, temp_file.name)
 
     with pytest.raises(YAMLKeyMissingException) as execution:
-        load_from_file(temp_file.name, ["key", "error"])
-
-    exception_raised = execution.value
-    assert exception_raised, "The missing required key was not detected."
+        load_from_file(temp_file.name, mandatory_keys=["key", "error"])
+    assert execution.value, "The missing required key was not detected."

@@ -35,6 +35,4 @@ def test_read_file_lines_from_inexistent_file() -> None:
         (ImproperPermissionsException, FileNotExistsException)
     ) as execution:
         read_file_lines(path)
-
-    exception_raised = execution.value
-    assert exception_raised, "The inexistent file was actually manipulated."
+    assert execution.value, "The inexistent file was actually manipulated."

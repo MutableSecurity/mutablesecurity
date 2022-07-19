@@ -7,6 +7,7 @@ from enum import Enum
 from pyinfra import host
 from pyinfra.api import FactBase
 
+from mutablesecurity.helpers.data_type import DataType
 from mutablesecurity.helpers.exceptions import (
     InvalidInformationValueException,
     MandatoryAspectLeftUnsetException,
@@ -14,7 +15,6 @@ from mutablesecurity.helpers.exceptions import (
     SolutionInformationNotFoundException,
     SolutionObjectNotFoundException,
 )
-from mutablesecurity.solutions.base.data_type import DataType
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,

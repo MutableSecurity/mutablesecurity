@@ -11,6 +11,7 @@ from rich.prompt import Prompt
 from rich.table import Table
 from rich.text import Text
 
+from mutablesecurity import config
 from mutablesecurity.cli.messages import MessageFactory, MessageTypes
 from mutablesecurity.helpers.exceptions import (
     CLIException,
@@ -63,6 +64,8 @@ Actions:
 {actions}
 """
 
+    SOLUTION_HELP_DEV_EXTENSION = """Maturity: {maturity}\n"""
+
     PASSWORD_PROMPT = "[bold][blue]Password"  # noqa: S105
 
     FEEDBACK_TITLE = "[bold][blue]We'd Love To Hear From You "
@@ -93,7 +96,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         "Please make sure that your Python version is at least"
         " {major}.{minor} before executing MutableSecurity."
     )
-    STOP_MESSAGE = "MutableSecurity has been stopped."
 
     console: Console
 
@@ -300,14 +302,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         )
         self.console.print(message.to_text())
 
-    def print_keyboard_interrupt_message(self) -> None:
-        """Print the message for KeyboardInterrupt."""
-        message = MessageFactory().create_message(
-            MessageTypes.ERROR,
-            self.STOP_MESSAGE,
-        )
-        self.console.print(message.to_text())
-
     def print_exception(self, exception: MutableSecurityException) -> None:
         """Print a MutableSecurity exception to stdout.
 
@@ -375,6 +369,12 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
             logs=logs_repr,
             actions=actions_repr,
         )
+
+        if config.developer_mode:
+            self.__formatted_print(
+                self.SOLUTION_HELP_DEV_EXTENSION,
+                maturity=solution.MATURITY.name,
+            )
 
     def ask_for_connection_password(self) -> str:
         """Asks for a connection password.

@@ -2,11 +2,11 @@
 
 import typing
 
-EXCEPTIONS_SUFFIX = "Exception"
-
 
 class MutableSecurityException(Exception):
     """Class defining a generic MutableSecurity exception."""
+
+    EXCEPTIONS_SUFFIX = "Exception"
 
     def __init_subclass__(
         cls: typing.Type["MutableSecurityException"],
@@ -19,11 +19,11 @@ class MutableSecurityException(Exception):
         """
         super().__init_subclass__()
 
-        if not cls.__name__.endswith(EXCEPTIONS_SUFFIX):
+        if not cls.__name__.endswith(cls.EXCEPTIONS_SUFFIX):
             raise MutableSecurityException(
                 message=(
                     "The exception name needs to end with the suffix"
-                    f' "{EXCEPTIONS_SUFFIX}".'
+                    f' "{cls.EXCEPTIONS_SUFFIX}".'
                 )
             )
 
@@ -44,6 +44,15 @@ class MutableSecurityException(Exception):
         super().__init__(message)
 
 
+class StoppedMutableSecurityException(MutableSecurityException):
+    """MutableSecurity has been stopped."""
+
+
+class BadArgumentException(MutableSecurityException):
+    """MutableSecurity received a bad argument. Verify the command and re-run.\
+"""
+
+
 class MandatoryAspectLeftUnsetException(MutableSecurityException):
     """A mandatory aspect of the default configuration was left unset."""
 
@@ -54,6 +63,26 @@ class ParserException(MutableSecurityException):
 
 class InvalidConnectionStringException(ParserException):
     """The provided connection string is invalid."""
+
+
+class DataTypeException(MutableSecurityException):
+    """The data type handling process failed."""
+
+
+class EnumTypeNotSetException(DataTypeException):
+    """The child type was not set in the information using enumerations."""
+
+
+class InvalidDataValueToConvertException(DataTypeException):
+    """The provided value is not a stringified version of the set type."""
+
+
+class NoDataTypeWithAnnotationException(DataTypeException):
+    """There is no data type with the provided annotation."""
+
+
+class InvalidBooleanValueException(DataTypeException):
+    """The value does not correspond to any boolean value."""
 
 
 class PlainYAMLException(MutableSecurityException):
@@ -70,6 +99,27 @@ class YAMLKeyMissingException(PlainYAMLException):
 
 class NotPlainDictionaryException(PlainYAMLException):
     """The dictionary is not a plain YAML representation."""
+
+
+class LocalConfigException(MutableSecurityException):
+    """An error occurred when processing the user-defined configuration."""
+
+
+class NoKeyInLocalConfigException(LocalConfigException):
+    """The accesses key was not found in the local configuration."""
+
+
+class InvalidStructureOfLocalConfigException(LocalConfigException):
+    """The structure of the local configuration file needs to be single-level.\
+"""
+
+
+class InvalidValueInLocalConfigException(LocalConfigException):
+    """A key in the local configuration is invalid."""
+
+
+class InvalidValueToSetInLocalConfigException(LocalConfigException):
+    """The value to set in the local configuration is invalid."""
 
 
 class FilesException(MutableSecurityException):
@@ -142,6 +192,10 @@ class SolutionsManagerException(MutableSecurityException):
     """An error occurred in the solutions manager module."""
 
 
+class UnacceptedSolutionMaturityException(SolutionsManagerException):
+    """The maturity of the solution is not accepted by your user profile."""
+
+
 class SolutionNotPresentException(SolutionsManagerException):
     """The given solution is not present locally."""
 
@@ -158,7 +212,7 @@ class InvalidMetaException(SolutionException):
     """The meta of the package containing the solution is invalid."""
 
 
-class NoLocalConfigurationFileException(SolutionException):
+class NoSolutionConfigurationFileException(SolutionException):
     """No local configuration file for the given solution was found. Maybe you \
 should initialize it first."""
 
@@ -177,18 +231,6 @@ class SolutionObjectNotFoundException(SolutionException):
 
 class SolutionInformationNotFoundException(SolutionException):
     """The selected information does not exist in solution's context."""
-
-
-class EnumTypeNotSetException(SolutionException):
-    """The child type was not set in the information using enumerations."""
-
-
-class InvalidDataValueToConvertException(SolutionException):
-    """The provided value is not a stringified version of the set type."""
-
-
-class NoDataTypeWithAnnotationException(SolutionException):
-    """There is no data type with the provided annotation."""
 
 
 class NonWritableInformationException(SolutionException):

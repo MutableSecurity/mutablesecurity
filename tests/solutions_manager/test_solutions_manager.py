@@ -50,9 +50,7 @@ def test_get_solution_by_invalid_id() -> None:
 
     with pytest.raises(SolutionNotPresentException) as execution:
         manager.get_solution_by_id("security_panacea_free")
-
-    exception_raised = execution.value
-    assert exception_raised, "A security solution panacea was found!"
+    assert execution.value, "A security solution panacea was found!"
 
 
 def test_get_operation_by_invalid_id() -> None:
@@ -65,9 +63,7 @@ def test_get_operation_by_invalid_id() -> None:
 
     with pytest.raises(OperationNotImplementedException) as execution:
         manager.get_operation_by_id(solution, "PROTECT_ALL")
-
-    exception_raised = execution.value
-    assert exception_raised, (
+    assert execution.value, (
         "An exception was not raised when retrieving an operation by an"
         " invalid ID!"
     )

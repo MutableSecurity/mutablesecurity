@@ -71,7 +71,6 @@ def load_from_file(
     with open(filename, mode="r", encoding="utf-8") as yaml_file:
         raw_content = yaml_file.read()
         content = yaml.safe_load(raw_content)
-
         if not __is_plain_dict(content):
             raise NotPlainDictionaryException()
 

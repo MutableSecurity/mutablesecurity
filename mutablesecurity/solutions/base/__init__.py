@@ -1,7 +1,6 @@
 """Package for containing the base components defining a solution."""
 
-from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
-from mutablesecurity.solutions.base.data_type import (
+from mutablesecurity.helpers.data_type import (
     DataType,
     InnerDataType,
     IntegerDataType,
@@ -9,6 +8,7 @@ from mutablesecurity.solutions.base.data_type import (
     StringDataType,
     StringListDataType,
 )
+from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
 from mutablesecurity.solutions.base.exception import BaseSolutionException
 from mutablesecurity.solutions.base.information import (
     BaseInformation,
@@ -22,7 +22,10 @@ from mutablesecurity.solutions.base.result import (
     ConcreteObjectsResult,
     KeysDescriptions,
 )
-from mutablesecurity.solutions.base.solution import BaseSolution
+from mutablesecurity.solutions.base.solution import (
+    BaseSolution,
+    SolutionMaturity,
+)
 from mutablesecurity.solutions.base.test import (
     BaseTest,
     TestsManager,

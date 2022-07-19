@@ -2,6 +2,7 @@
 import inspect
 import typing
 
+from mutablesecurity.helpers.data_type import DataType, DataTypeFactory
 from mutablesecurity.helpers.exceptions import (
     ActionArgumentNotPresentException,
     InvalidDataValueToConvertException,
@@ -10,7 +11,6 @@ from mutablesecurity.helpers.exceptions import (
     SolutionActionNotFoundException,
     SolutionObjectNotFoundException,
 )
-from mutablesecurity.solutions.base.data_type import DataType, DataTypeFactory
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseGenericObjectsDescriptions,

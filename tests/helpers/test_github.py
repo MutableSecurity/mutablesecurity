@@ -23,9 +23,7 @@ def test_get_latest_release_name_for_invalid_repository() -> None:
     """Test if an exception is raised when passing an invalid repository."""
     with pytest.raises(GitHubAPIException) as execution:
         get_latest_release_name("mutablesecurity", "mutablesecurity-gui")
-
-    exception_raised = execution.value
-    assert exception_raised, "The inexistent repository was not detected."
+    assert execution.value, "The inexistent repository was not detected."
 
 
 def test_get_asset_from_latest_release() -> None:

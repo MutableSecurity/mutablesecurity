@@ -2,10 +2,10 @@
 
 import pytest
 
+from mutablesecurity.helpers.data_type import DataType, DataTypeFactory
 from mutablesecurity.helpers.exceptions import (
     NoDataTypeWithAnnotationException,
 )
-from mutablesecurity.solutions.base.data_type import DataType, DataTypeFactory
 
 
 class InvalidClassUsedForAnnotation:

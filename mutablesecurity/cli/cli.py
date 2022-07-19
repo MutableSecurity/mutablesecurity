@@ -19,7 +19,9 @@ from rich.traceback import install
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
 from mutablesecurity.helpers.exceptions import (
+    BadArgumentException,
     MutableSecurityException,
+    StoppedMutableSecurityException,
     UnsupportedPythonVersionException,
 )
 from mutablesecurity.leader import ConnectionFactory
@@ -257,12 +259,18 @@ def main() -> None:
     except MutableSecurityException as exception:
         Printer(console=console).print_exception(exception)
     except click.Abort:
-        Printer(console=console).print_keyboard_interrupt_message()
+        Printer(console=console).print_exception(
+            StoppedMutableSecurityException()
+        )
+    except click.BadParameter:
+        Printer(console=console).print_exception(BadArgumentException())
+    else:
+        return
 
-        try:
-            sys.exit(1)
-        except SystemExit:
-            os._exit(1)  # pylint: disable=protected-access
+    try:
+        sys.exit(1)
+    except SystemExit:
+        os._exit(1)  # pylint: disable=protected-access
 
 
 if __name__ == "__main__":

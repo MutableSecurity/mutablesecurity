@@ -19,7 +19,7 @@ from pyinfra.api.deploy import deploy
 from mutablesecurity.helpers.exceptions import (
     FailedSolutionTestException,
     InvalidMetaException,
-    NoLocalConfigurationFileException,
+    NoSolutionConfigurationFileException,
     RequirementsNotMetException,
     SolutionNotInstalledException,
     YAMLFileNotExistsException,
@@ -124,7 +124,7 @@ class BaseSolution(ABC):
         meta_filename = os.path.join(module_path, "meta.yaml")
         mandatory_keys = [key.value for key in cls.MetaKeys]
         try:
-            meta = load_from_file(meta_filename, mandatory_keys)
+            meta = load_from_file(meta_filename, mandatory_keys=mandatory_keys)
         except YAMLKeyMissingException as exception:
             raise InvalidMetaException() from exception
 
@@ -148,7 +148,7 @@ class BaseSolution(ABC):
         try:
             configuration = load_from_file(cls.__get_configuration_filename())
         except YAMLFileNotExistsException as exception:
-            raise NoLocalConfigurationFileException() from exception
+            raise NoSolutionConfigurationFileException() from exception
 
         cls.INFORMATION_MANAGER.set_all_from_dict_locally(configuration)
 

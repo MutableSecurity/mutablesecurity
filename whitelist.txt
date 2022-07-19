@@ -11,6 +11,7 @@ basesolution
 basetest
 bgcolor
 bool
+boolean
 booleans
 callee
 capsys
@@ -35,6 +36,7 @@ fontcolor
 formatter
 func
 functiondef
+getattribute
 getmembers
 getmodule
 getsource
@@ -77,6 +79,8 @@ stringify
 subgraph
 subnode
 sudo
+suricata
+teler
 testsuite
 traceback
 tui

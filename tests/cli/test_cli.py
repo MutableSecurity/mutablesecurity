@@ -45,7 +45,7 @@ def test_error_exit() -> None:
     """Test errors raising when passing bad arguments combinations."""
     bad_combos = [
         ["--solution"],
-        ["--solution", "TELER"],
+        ["--solution", "SECURITY_PANACEA"],
         ["--solution", "TELER", "--operation"],
     ]
 
