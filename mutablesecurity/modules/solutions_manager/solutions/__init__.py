@@ -7,3 +7,4 @@ class AvailableSolution(Enum):
     SURICATA = ("suricata", "Suricata")
     TELER = ("teler", "Teler")
     LETS_ENCRYPT = ("lets_encrypt", "LetsEncrypt")
+    CLAMAV = ("clamav", "ClamAV")
