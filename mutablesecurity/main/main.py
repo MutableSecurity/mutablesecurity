@@ -100,6 +100,9 @@ def exported_functionality(
 ) -> typing.Callable:
     """Decorate an exported solution method.
 
+    Due to circular imports. this was moved from solutions' implementation file
+    here.
+
     It includes:
     - Catching and reraising MutableSecurityException exceptions
     - Passing required keyword arguments.

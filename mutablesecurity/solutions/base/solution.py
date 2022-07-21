@@ -102,11 +102,13 @@ class BaseSolution(ABC):
         cls: typing.Type["BaseSolution"],
         manager: BaseManager,
         concrete_results: BaseConcreteResultObjects,
+        is_long_output: bool = False,
     ) -> ConcreteObjectsResult:
         return ConcreteObjectsResult(
             manager.KEYS_DESCRIPTIONS,
             manager.objects_descriptions,
             concrete_results,
+            is_long_output,
         )
 
     @classmethod
@@ -335,7 +337,7 @@ class BaseSolution(ABC):
 
         results = cls.LOGS_MANAGER.get_content(identifier)
 
-        return cls.__build_manager_result(cls.LOGS_MANAGER, results)
+        return cls.__build_manager_result(cls.LOGS_MANAGER, results, True)
 
     @classmethod
     @deploy

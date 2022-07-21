@@ -224,18 +224,61 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
 
         return matrix
 
-    def __represent_table(self, string_table: PrintableMatrix) -> Table:
+    def __create_object_description_table(
+        self,
+        keys_descriptions: KeysDescriptions,
+        generic_objects_descriptions: BaseGenericObjectsDescriptions,
+        key: str,
+    ) -> PrintableMatrix:
+        """Create a table describing only an object.
+
+        The function considers that the first column contains the unique
+        identifiers.
+
+        Args:
+            keys_descriptions (KeysDescriptions): Description of keys present
+                in the descriptions
+            generic_objects_descriptions (BaseGenericObjectsDescriptions):
+                Generic description to each object stored in the solution
+            key (str): Key of object to put in the output
+
+        Returns:
+            PrintableMatrix: Matrix representation
+        """
+        # Create a matrix with its headers
+        keys = list(keys_descriptions.values())
+
+        # Get the key containing the identifier
+        keys_ids = list(keys_descriptions.keys())
+        id_key = keys_ids[0]
+
+        # Add the generic object description
+        description = [
+            elem
+            for elem in generic_objects_descriptions
+            if elem[id_key] == key
+        ][0]
+        values = [self.__to_str(elem) for elem in description.values()]
+
+        return [[key, value] for key, value in zip(keys, values)]
+
+    def __represent_table(
+        self, string_table: PrintableMatrix, full_width: bool = False
+    ) -> Table:
         """Convert a table into its table representation.
 
         The first line is considered to be the headers one.
 
         Args:
             string_table (PrintableMatrix): Table to be converted
+            full_width (bool): Boolean indicating if the table should be
+                printed as full width
 
         Returns:
             Table: Resulted table representation
         """
-        table = Table(show_lines=True)
+        min_width = 1000 if full_width else None
+        table = Table(show_lines=True, min_width=min_width)
         for line_index, line in enumerate(string_table):
             if line_index == 0:
                 for element_index, element in enumerate(line):
@@ -424,15 +467,33 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                 )
             self.console.print(message.to_text())
 
-            if getattr(response, "additional_data", None):
+            if (
+                hasattr(response, "additional_data")
+                and response.additional_data is not None
+            ):
                 result: ConcreteObjectsResult = response.additional_data
-                matrix = self.__create_solution_matrix(
-                    result.keys_descriptions,
-                    result.generic_objects_descriptions,
-                    result.concrete_objects,
-                )
+                if result.is_long_output:
+                    for key, content in result.concrete_objects.items():
+                        with self.console.pager():
+                            matrix = self.__create_object_description_table(
+                                result.keys_descriptions,
+                                result.generic_objects_descriptions,
+                                key,
+                            )
+                            self.console.print(
+                                self.__represent_table(matrix, full_width=True)
+                            )
 
-                self.console.print(self.__represent_table(matrix))
+                            self.console.print("")
+                            self.console.print(content)
+                else:
+                    matrix = self.__create_solution_matrix(
+                        result.keys_descriptions,
+                        result.generic_objects_descriptions,
+                        result.concrete_objects,
+                    )
+
+                    self.console.print(self.__represent_table(matrix))
 
     def print_feedback_and_ask(self) -> str:
         """Print the feedback form description and ask for an email address.

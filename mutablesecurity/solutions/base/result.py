@@ -33,6 +33,10 @@ class ConcreteObjectsResult:
         {
             "uid": 0
         }
+
+    - Is concrete a long output?
+
+        No
     """
 
     keys_descriptions: KeysDescriptions
@@ -44,6 +48,7 @@ class ConcreteObjectsResult:
         keys_descriptions: KeysDescriptions,
         generic_objects_descriptions: BaseGenericObjectsDescriptions,
         concrete_objects: BaseConcreteResultObjects,
+        is_long_output: bool,
     ) -> None:
         """Initialize an instance.
 
@@ -54,7 +59,10 @@ class ConcreteObjectsResult:
                 Static descriptions of object
             concrete_objects (BaseConcreteResultObjects): Concrete, dynamic
                 values of the objects
+            is_long_output (bool): Boolean indicating if the concrete objects
+                can contain long output and should be processed accordingly
         """
         self.keys_descriptions = keys_descriptions
         self.generic_objects_descriptions = generic_objects_descriptions
         self.concrete_objects = concrete_objects
+        self.is_long_output = is_long_output

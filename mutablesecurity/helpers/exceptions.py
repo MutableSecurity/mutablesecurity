@@ -252,6 +252,10 @@ class SolutionLogNotFoundException(SolutionException):
     """The selected log source does not exist in solution's context."""
 
 
+class SolutionLogIdentifierNotSpecifiedException(SolutionException):
+    """No identifier was provided for the log source to be retrieved."""
+
+
 class SolutionActionNotFoundException(SolutionException):
     """The selected action does not exist in solution's context."""
 

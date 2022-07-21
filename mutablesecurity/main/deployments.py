@@ -22,7 +22,7 @@ class SecurityDeploymentResult:
     host_id: str
     response_type: ResponseTypes
     message: str
-    additional_data: ConcreteObjectsResult
+    additional_data: typing.Optional[ConcreteObjectsResult]
 
     def __init__(
         self,

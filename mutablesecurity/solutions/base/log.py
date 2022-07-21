@@ -5,6 +5,7 @@ from pyinfra import host
 from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.exceptions import (
+    SolutionLogIdentifierNotSpecifiedException,
     SolutionLogNotFoundException,
     SolutionObjectNotFoundException,
 )
@@ -44,21 +45,23 @@ class LogsManager(BaseManager):
         Raises:
             SolutionLogNotFoundException: The identifier does not correspond
                 to any log source.
+            SolutionLogIdentifierNotSpecifiedException: No identifier was
+                provided.
 
         Returns:
             BaseConcreteResultObjects: Content of log sources
         """
-        log_list = []
-        if identifier:
-            try:
-                log: BaseLog = self.get_object_by_identifier(
-                    identifier
-                )  # type: ignore[assignment]
-            except SolutionObjectNotFoundException as exception:
-                raise SolutionLogNotFoundException() from exception
+        if not identifier:
+            raise SolutionLogIdentifierNotSpecifiedException()
 
-            log_list = [log]
-        else:
-            log_list = list(self.objects.values())  # type: ignore[arg-type]
+        log_list = []
+        try:
+            log: BaseLog = self.get_object_by_identifier(
+                identifier
+            )  # type: ignore[assignment]
+        except SolutionObjectNotFoundException as exception:
+            raise SolutionLogNotFoundException() from exception
+
+        log_list = [log]
 
         return {log.IDENTIFIER: host.get_fact(log.FACT) for log in log_list}
