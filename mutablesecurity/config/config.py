@@ -35,8 +35,8 @@ class ConfigurationKey:
         Args:
             key (str): Key in the YAML configuration file
             data_type (typing.Type[DataType]): Value type
-            default_value (typing.Any, optional): Default value when the key is
-                not specified. Defaults to None.
+            default_value (typing.Any): Default value when the key is not
+                specified. Defaults to None.
         """
         self.key = key
         self.data_type = data_type

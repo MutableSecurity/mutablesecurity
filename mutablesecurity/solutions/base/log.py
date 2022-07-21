@@ -34,13 +34,13 @@ class LogsManager(BaseManager):
         super().__init__(logs)
 
     def get_content(
-        self, identifier: typing.Optional[str]
+        self, identifier: typing.Optional[str] = None
     ) -> BaseConcreteResultObjects:
         """Execute a specific action, with the given arguments.
 
         Args:
-            identifier (str, optional): Log source identifier. Defaults to
-                None in case all the information will be retrieved.
+            identifier (str): Log source identifier. Defaults to None in case
+                all the information will be retrieved.
 
         Raises:
             SolutionLogNotFoundException: The identifier does not correspond

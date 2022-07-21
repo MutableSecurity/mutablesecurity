@@ -7,6 +7,7 @@ from mutablesecurity.helpers.exceptions import (
     FailedExecutionException,
     MutableSecurityException,
 )
+from mutablesecurity.helpers.type_hints import Decorator
 from mutablesecurity.leader import Connection, Leader, get_connection_for_host
 from mutablesecurity.logger import Logger
 from mutablesecurity.main.deployments import (
@@ -17,9 +18,6 @@ from mutablesecurity.solutions_manager import SolutionsManager
 
 if typing.TYPE_CHECKING:
     from mutablesecurity.solutions.base import BaseSolution
-
-
-Decorator = typing.Callable[..., typing.Callable[..., None]]
 
 
 class Main:

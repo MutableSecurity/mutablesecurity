@@ -16,13 +16,13 @@ class Logger(metaclass=Singleton):
 
     @staticmethod
     def remove_pyinfra_password(
-        *args: tuple, **kwargs: dict
+        *args: tuple, **kwargs: typing.Any
     ) -> logging.LogRecord:
         """Remove the passwords embedded in logs by pyinfra.
 
         Args:
             args (tuple): Unused
-            kwargs (dict): Unused
+            kwargs (typing.Any): Unused
 
         Returns:
             logging.LogRecord: Modified logs

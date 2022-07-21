@@ -78,6 +78,7 @@ png
 powershell
 pycf
 pyinfra
+pyinfrahosttuple
 pylint
 pypattyrn
 pytest

@@ -23,8 +23,7 @@ from pyinfra.api.facts import FactBase
 from pyinfra.api.operations import run_ops
 from pyinfra.operations.server import shell
 
-HostTuple = typing.Union[typing.Tuple[str, dict], str]
-HostTupleList = typing.List[HostTuple]
+from mutablesecurity.helpers.type_hints import PyinfraHostTuple
 
 
 class DummyFact(FactBase):
@@ -48,11 +47,13 @@ class DummyFact(FactBase):
         return "\n".join(output)
 
 
-def __make_inventory(hosts: HostTupleList) -> Inventory:
+def __make_inventory(
+    hosts: typing.List[PyinfraHostTuple],
+) -> Inventory:
     """Create a pyinfra inventory.
 
     Args:
-        hosts (HostTupleList): Hosts information
+        hosts (typing.List[PyinfraHostTuple]): Hosts information
 
     Returns:
         Inventory: Created inventory

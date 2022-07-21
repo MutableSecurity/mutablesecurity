@@ -54,8 +54,8 @@ def load_from_file(
 
     Args:
         filename (str): YAML filename
-        mandatory_keys (typing.List[str], optional): List of mandatory keys
-            present in the loaded content. Defaults to None.
+        mandatory_keys (typing.List[str]): List of mandatory keys present in
+            the loaded content. Defaults to None.
 
     Raises:
         YAMLFileNotExistsException: The file does not exists.

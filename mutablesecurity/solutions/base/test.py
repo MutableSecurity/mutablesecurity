@@ -12,14 +12,13 @@ from mutablesecurity.helpers.exceptions import (
     SolutionObjectNotFoundException,
     SolutionTestNotFoundException,
 )
+from mutablesecurity.helpers.type_hints import PyinfraOperation
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,
     BaseGenericObjectsDescriptions,
     KeysDescriptions,
 )
-
-Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
 
 
 class TestType(Enum):
@@ -53,7 +52,7 @@ class BaseTest(BaseObject):
     TEST_TYPE: TestType
     FACT: FactBase
     FACT_ARGS: tuple
-    TRIGGER: Operation
+    TRIGGER: PyinfraOperation
 
 
 class TestsManager(BaseManager):
@@ -87,8 +86,8 @@ class TestsManager(BaseManager):
         self,
         identifier: typing.Optional[str] = None,
         filter_type: typing.Optional[TestType] = None,
-        only_check: typing.Optional[bool] = False,
-        expected_value: typing.Optional[bool] = True,
+        only_check: bool = False,
+        expected_value: bool = True,
         exception_when_fail: typing.Type[
             MutableSecurityException
         ] = FailedSolutionTestException,
@@ -96,16 +95,17 @@ class TestsManager(BaseManager):
         """Make a test or all the testsuite.
 
         Args:
-            identifier (str, optional): Test identifier.
-                Defaults to None if all the testsuite is executed.
-            filter_type (TestType, optional): Test type used as a filter
-            only_check (bool, optional): Boolean indicating if the tests raises
-                an exception if they not pass
-            expected_value: Value to be returned by the facts. Defaults to
-                True.
-            exception_when_fail (typing.Type[MutableSecurityException],
-                optional): Exception type to instantiate and raise when a test
-                fails (only when only_check is False). Defaults to
+            identifier (str): Test identifier. Defaults to None if all the
+                testsuite is executed.
+            filter_type (TestType): Test type used as a filter. Defaults to
+                None.
+            only_check (bool): Boolean indicating if the tests raises an
+                exception if they not pass
+            expected_value (bool): Value to be returned by the facts. Defaults
+                to True.
+            exception_when_fail (typing.Type[MutableSecurityException]):
+                Exception type to instantiate and raise when a test fails (only
+                when only_check is False). Defaults to
                 FailedSolutionTestException.
 
         Raises:

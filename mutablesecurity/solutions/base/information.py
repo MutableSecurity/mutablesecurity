@@ -1,7 +1,6 @@
 """Module defining an abstract information."""
 
 import typing
-from abc import abstractmethod
 from enum import Enum
 
 from pyinfra import host
@@ -15,14 +14,13 @@ from mutablesecurity.helpers.exceptions import (
     SolutionInformationNotFoundException,
     SolutionObjectNotFoundException,
 )
+from mutablesecurity.helpers.type_hints import PyinfraOperation
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,
     BaseGenericObjectsDescriptions,
     KeysDescriptions,
 )
-
-SetOperation = typing.Annotated[typing.Callable, "pyinfra set operation"]
 
 
 class InformationProperties(Enum):
@@ -124,7 +122,7 @@ class BaseInformation(BaseObject):
     INFO_TYPE: typing.Type[DataType]
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
-    SETTER: typing.Optional[SetOperation]
+    SETTER: typing.Optional[PyinfraOperation]
 
     @staticmethod
     def __ensure_exists_on_host() -> None:
@@ -160,7 +158,9 @@ class BaseInformation(BaseObject):
         host.host_data["mutablesecurity"][cls.IDENTIFIER] = value
 
     @staticmethod
-    def validate_value(value: typing.Any) -> bool:
+    def validate_value(
+        value: typing.Any,  # pylint: disable=unused-argument
+    ) -> bool:
         """Validate if the information's value is valid.
 
         Args:
@@ -205,13 +205,13 @@ class InformationManager(BaseManager):
         ]
 
     def get(
-        self, identifier: typing.Optional[str]
+        self, identifier: typing.Optional[str] = None
     ) -> BaseConcreteResultObjects:
         """Get a specific information or all of them.
 
         Args:
-            identifier (str, optional): Information identifier. Defaults to
-                None in case all the information will be retrieved.
+            identifier (str): Information identifier. Defaults to None in case
+                all the information will be retrieved.
 
         Raises:
             SolutionInformationNotFoundException: The identifier does not
@@ -246,16 +246,16 @@ class InformationManager(BaseManager):
         self,
         identifier: str,
         value: typing.Any,
-        only_local: typing.Optional[bool] = False,
+        only_local: bool = False,
     ) -> None:
         """Set an information value.
 
         Args:
             identifier (str): Information identifier
             value (typing.Any): New value
-            only_local (typing.Optional[bool]): Boolean indicating if the
-                changes are local-only. Defaults to False, indicating the fact
-                that the remote host is involved in the process.
+            only_local (bool): Boolean indicating if the changes are
+                local-only. Defaults to False, indicating the fact that the
+                remote host is involved in the process.
 
         Raises:
             SolutionInformationNotFoundException: The information identified
@@ -300,15 +300,13 @@ class InformationManager(BaseManager):
             ):
                 info.set_actual_value(host.get_fact(info.GETTER))
 
-    def populate(
-        self, export: dict, post_installation: typing.Optional[bool] = True
-    ) -> None:
+    def populate(self, export: dict, post_installation: bool = True) -> None:
         """Set all the local values from an export dictionary.
 
         Args:
             export (dict): Previously exported dictionary
-            post_installation (bool, optional): Boolean indicating if the
-                installation was already done
+            post_installation (bool): Boolean indicating if the installation
+                was already done
         """
         # Populate from passed dictionary
         for key, value in export.items():
@@ -341,8 +339,8 @@ class InformationManager(BaseManager):
         methods.
 
         Args:
-            filter_property (InformationProperties, optional): Filter for
-                information stored in the manager
+            filter_property (InformationProperties): Filter for information
+                stored in the manager. Defaults to None.
 
         Raises:
             MandatoryAspectLeftUnsetException: One mandatory aspect is left
@@ -370,9 +368,8 @@ class InformationManager(BaseManager):
         """Get the (filtered) information as a dictionary.
 
         Args:
-            filter_properties (typing.List[InformationProperties], optional):
-                Mandatory properties for the information returned. Defaults to
-                None.
+            filter_properties (typing.List[InformationProperties]): Mandatory
+                properties for the information returned. Defaults to None.
             identifier (str): Identifier of the single information to represent
                 in the string. Defaults to None.
 

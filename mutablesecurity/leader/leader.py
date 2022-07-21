@@ -36,15 +36,15 @@ class Leader(object, metaclass=Singleton):
         self.results = []
 
     def __make_inventory(
-        self, hosts: typing.Optional[tuple] = (), **kwargs: typing.Any
+        self, hosts: tuple, **kwargs: typing.Any
     ) -> Inventory:
         """Create a pyinfra inventory.
 
         To be used only by children.
 
         Args:
-            hosts (tuple, optional): Hosts to connect to. Defaults to ().
-            kwargs (typing.Any, optional): Additional named arguments
+            hosts (tuple): Hosts to connect to
+            kwargs (typing.Any): Additional named arguments
 
         Returns:
             Inventory: pyinfra inventory

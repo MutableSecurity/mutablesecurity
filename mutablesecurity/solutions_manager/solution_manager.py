@@ -130,15 +130,15 @@ class SolutionsManager:
         return solutions
 
     def get_solution_by_id(
-        self, solution_id: str, maturity_check: typing.Optional[bool] = True
+        self, solution_id: str, maturity_check: bool = True
     ) -> typing.Type[BaseSolution]:
         """Get a solution class by its identifier.
 
         Args:
             solution_id (str): Solution's identifier
-            maturity_check (bool, optional): Boolean indicating if a maturity
-                check is executed. This is useful for developers, as this will
-                be bypassed. Defaults to True.
+            maturity_check (bool): Boolean indicating if a maturity check is
+                executed. This is useful for developers, as this will be
+                bypassed. Defaults to True.
 
         Raises:
             SolutionNotPresentException: The selected solution is not present

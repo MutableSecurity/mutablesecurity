@@ -178,8 +178,8 @@ class BaseSolution(ABC):
         """Get an information from a target host.
 
         Args:
-            identifier (str, optional): Key identifying the information.
-                Defaults to None.
+            identifier (str): Key identifying the information. Defaults to None
+                if all the information is retrieved.
 
         Returns:
             typing.Any: Information value
@@ -264,8 +264,8 @@ class BaseSolution(ABC):
         """Get an information from a target host.
 
         Args:
-            identifier (str, optional): Key identifying the information.
-                Defaults to None.
+            identifier (str): Key identifying the information. Defaults to None
+                if all the information needs to be retrieved.
 
         Returns:
             ConcreteObjectsResult: Response with the requested information
@@ -306,8 +306,8 @@ class BaseSolution(ABC):
         """Run a test against a security solution.
 
         Args:
-            identifier (str, optional): Key identifying the test. Defaults to
-                None.
+            identifier (str): Key identifying the test. Defaults to None if all
+                the tests needs to be executed.
 
         Returns:
             ConcreteObjectsResult: Result with tests results
@@ -328,8 +328,8 @@ class BaseSolution(ABC):
         """Get logs from a target host.
 
         Args:
-            identifier (str, optional): Key identifying the log source.
-                Defaults to None.
+            identifier (str): Key identifying the log source. Defaults to None
+                if all the logs needs to be retrieved.
 
         Returns:
             ConcreteObjectsResult: Result with the requested logs
@@ -371,7 +371,8 @@ class BaseSolution(ABC):
         Args:
             identifier (str): Key identifying the action
             args (typing.Dict[str, str]): Dictionary containing the arguments
-                of the action. Defaults to None.
+                of the action. Defaults to None if all actions needs to be
+                executed.
         """
         cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()

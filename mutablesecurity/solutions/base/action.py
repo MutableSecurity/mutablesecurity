@@ -11,13 +11,12 @@ from mutablesecurity.helpers.exceptions import (
     SolutionActionNotFoundException,
     SolutionObjectNotFoundException,
 )
+from mutablesecurity.helpers.type_hints import PyinfraOperation
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
     BaseGenericObjectsDescriptions,
     KeysDescriptions,
 )
-
-Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
 
 
 class BaseAction(BaseObject):
@@ -26,7 +25,7 @@ class BaseAction(BaseObject):
     This class is stateless.
     """
 
-    ACT: Operation
+    ACT: PyinfraOperation
     PARAMETERS_DATA_TYPES: typing.Dict[str, typing.Type[DataType]]
 
     def __init_subclass__(

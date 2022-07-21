@@ -15,8 +15,7 @@ from mutablesecurity.helpers.exceptions import (
 )
 from mutablesecurity.helpers.files import read_file_lines
 from mutablesecurity.helpers.parsers import parse_connection_string
-
-PyinfraConnectionDump = typing.Union[str, typing.Tuple[str, dict]]
+from mutablesecurity.helpers.type_hints import PyinfraConnectionDump
 
 CONNECTION_KEY_IN_HOST_DATA = "connection"
 
@@ -204,7 +203,7 @@ class ConnectionFactory:
 
     def create_connection(
         self,
-        user_password: typing.Optional[str],
+        user_password: typing.Optional[str] = None,
         connection_string: typing.Optional[str] = None,
         key: typing.Optional[pathlib.Path] = None,
         key_password: typing.Optional[str] = None,
@@ -212,12 +211,11 @@ class ConnectionFactory:
         """Create a single connection.
 
         Args:
-            user_password (str): Password of user's account
-            connection_string (str, optional): Connection string. Defaults to
-                None.
-            key (pathlib.Path, optional): Path to SSH key. Defaults to None
-            key_password (str, optional): Password for SSH key. Defaults to
-                None
+            user_password (str): Password of user's account. Defaults to None
+                if the connection is local and the tool is ran with sudo.
+            connection_string (str): Connection string. Defaults to None.
+            key (pathlib.Path): Path to SSH key. Defaults to None.
+            key_password (str): Password for SSH key. Defaults to None.
 
         Raises:
             InvalidConnectionDetailsException: The connection string could not
@@ -275,9 +273,8 @@ class ConnectionFactory:
             connection_strings_file (pathlib.Path): Path to file with
                 connection strings
             user_password (str): Password of user's account
-            key (pathlib.Path, optional): Path to SSH key. Defaults to None
-            key_password (str, optional): Password for SSH key. Defaults to
-                None
+            key (pathlib.Path): Path to SSH key. Defaults to None.
+            key_password (str): Password for SSH key. Defaults to None.
 
         Raises:
             InvalidConnectionStringsFileException: The provided file with

@@ -179,8 +179,8 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                 in the descriptions
             generic_objects_descriptions (BaseGenericObjectsDescriptions):
                 Generic description to each object stored in the solution
-            concrete_objects (BaseConcreteResultObjects, optional): If a result
-                is printed, then some concrete values of the objects are stored
+            concrete_objects (BaseConcreteResultObjects): If a result is
+                printed, then some concrete values of the objects are stored
                 here. Defaults to None.
 
         Returns:

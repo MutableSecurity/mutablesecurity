@@ -191,7 +191,7 @@ class BinaryArchitectureFact(FactBase):
     command = "dpkg --print-architecture"
 
     @staticmethod
-    def process(output: typing.List[str]) -> typing.Optional[str]:
+    def process(output: typing.List[str]) -> str:
         architecture = output[0]
 
         if architecture in ["386", "amd64", "arm64", "armv6"]:

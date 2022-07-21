@@ -68,8 +68,8 @@ class FeedbackForm:
         parameter needs to be explicitly set.
 
         Args:
-            no_check (bool, optional): Boolean indicating if the form needs to
-                be shown anytime. Defaults to False.
+            no_check (bool): Boolean indicating if the form needs to be shown
+                anytime. Defaults to False.
 
         Raises:
             FeedbackNotSentException: Feedback could no be sent

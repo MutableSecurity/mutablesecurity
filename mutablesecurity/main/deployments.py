@@ -37,7 +37,7 @@ class SecurityDeploymentResult:
             host_id (str): String identifier of the host
             response_type (ResponseTypes): Type of result
             message (str): Result's message
-            additional_data (ConcreteObjectsResult, optional): Additional data
+            additional_data (ConcreteObjectsResult): Additional data
                 accompanying the result. Defaults to None.
         """
         self.host_id = host_id

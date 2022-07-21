@@ -50,7 +50,7 @@ def __lower_str_callback(argument: str) -> typing.Optional[str]:
         argument (str): String to transform
 
     Returns:
-        str, optional: Lowercased string
+        str: Lowercased string
     """
     if argument:
         return argument.lower()
