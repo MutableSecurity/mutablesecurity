@@ -90,7 +90,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     )
     FEEDBACK_EMAIL_PROMPT = "[bold][blue]Your Email Address"
 
-    HOST_MESSAGE = "Host {host}"
+    HOST_MESSAGE = "Connection {host}"
 
     VERSION_ERROR_TEXT = (
         "Please make sure that your Python version is at least"

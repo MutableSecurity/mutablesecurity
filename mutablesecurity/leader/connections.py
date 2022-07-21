@@ -3,6 +3,8 @@ import abc
 import pathlib
 import typing
 
+from pyinfra import host
+
 from mutablesecurity.helpers.exceptions import (
     ConnectionExportMethodNotImplementedException,
     InvalidConnectionDetailsException,
@@ -15,6 +17,8 @@ from mutablesecurity.helpers.files import read_file_lines
 from mutablesecurity.helpers.parsers import parse_connection_string
 
 PyinfraConnectionDump = typing.Union[str, typing.Tuple[str, dict]]
+
+CONNECTION_KEY_IN_HOST_DATA = "connection"
 
 
 class Connection:
@@ -51,7 +55,20 @@ class LocalPasswordConnection(Connection):
         Returns:
             PyinfraConnectionDump: Host details
         """
-        return "@local"
+        return (
+            "@local",
+            {
+                CONNECTION_KEY_IN_HOST_DATA: self,
+            },
+        )
+
+    def __str__(self) -> str:
+        """Stringify the connection.
+
+        Returns:
+            str: Stringified connection
+        """
+        return "root@localhost"
 
 
 class RemoteConnection(Connection):  # pylint: disable=abstract-method
@@ -97,6 +114,7 @@ class RemoteConnection(Connection):  # pylint: disable=abstract-method
             "ssh_port": self.port,
             "ssh_user": self.username,
             "allow_agent": False,
+            CONNECTION_KEY_IN_HOST_DATA: self,
         }
         ssh_connection_details |= self.additional_parameters
 
@@ -104,6 +122,14 @@ class RemoteConnection(Connection):  # pylint: disable=abstract-method
             self.hostname,
             ssh_connection_details,
         )
+
+    def __str__(self) -> str:
+        """Stringify the connection.
+
+        Returns:
+            str: Stringified connection
+        """
+        return f"{self.username}@{self.hostname}:{self.port}"
 
 
 class PasswordSSHRemoteConnection(RemoteConnection):
@@ -276,3 +302,12 @@ class ConnectionFactory:
                 connections.append(connection)
 
         return connections
+
+
+def get_connection_for_host() -> Connection:
+    """Get the connection used to create the pyinfra host.
+
+    Returns:
+        Connection: Connection
+    """
+    return host.host_data[CONNECTION_KEY_IN_HOST_DATA]

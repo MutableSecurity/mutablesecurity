@@ -2,14 +2,12 @@
 import inspect
 import typing
 
-from pyinfra import host
-
 from mutablesecurity.helpers.exceptions import (
     FailedConnectionToHostsException,
     FailedExecutionException,
     MutableSecurityException,
 )
-from mutablesecurity.leader import Connection, Leader
+from mutablesecurity.leader import Connection, Leader, get_connection_for_host
 from mutablesecurity.logger import Logger
 from mutablesecurity.main.deployments import (
     ResponseTypes,
@@ -135,6 +133,7 @@ def exported_functionality(
 
                 required_kwargs[key] = kwargs[key]
 
+        host_id = get_connection_for_host()
         try:
             raw_result = decorated_func.__func__(  # type: ignore[attr-defined]
                 solution, *args, **required_kwargs
@@ -142,7 +141,7 @@ def exported_functionality(
 
             # Store the result into the leader module
             result = SecurityDeploymentResult(
-                str(host),
+                str(host_id),
                 ResponseTypes.SUCCESS,
                 "The operation was successfully executed!",
                 raw_result,
@@ -151,7 +150,7 @@ def exported_functionality(
         except MutableSecurityException as exception:
             # Store the result into the leader module
             result = SecurityDeploymentResult(
-                str(host), ResponseTypes.ERROR, str(exception)
+                str(host_id), ResponseTypes.ERROR, str(exception)
             )
             Leader().publish_result(result)
 

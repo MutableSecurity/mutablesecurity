@@ -13,7 +13,6 @@ import typing
 from abc import ABC, abstractmethod
 from enum import Enum
 
-from pyinfra import host
 from pyinfra.api.deploy import deploy
 
 from mutablesecurity.helpers.exceptions import (
@@ -26,6 +25,7 @@ from mutablesecurity.helpers.exceptions import (
     YAMLKeyMissingException,
 )
 from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
+from mutablesecurity.leader import get_connection_for_host
 from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
 from mutablesecurity.solutions.base.information import (
     BaseInformation,
@@ -141,7 +141,9 @@ class BaseSolution(ABC):
 
     @classmethod
     def __get_configuration_filename(cls: typing.Type["BaseSolution"]) -> str:
-        return f"{host}_{cls.IDENTIFIER}.yaml"
+        host_id = get_connection_for_host()
+
+        return f"{host_id}_{cls.IDENTIFIER}.yaml"
 
     @classmethod
     def __load_current_configuration_from_file(

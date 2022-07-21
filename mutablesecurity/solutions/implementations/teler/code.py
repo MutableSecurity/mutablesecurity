@@ -15,21 +15,34 @@ from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
-from mutablesecurity.helpers.data_type import (IntegerDataType, StringDataType,
-                                               StringListDataType)
-from mutablesecurity.helpers.github import (get_asset_from_latest_release,
-                                            get_latest_release_name)
-from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
-                                            BaseLog, BaseSolution,
-                                            BaseSolutionException, BaseTest,
-                                            InformationProperties, TestType)
+from mutablesecurity.helpers.data_type import (
+    IntegerDataType,
+    StringDataType,
+    StringListDataType,
+)
+from mutablesecurity.helpers.github import (
+    get_asset_from_latest_release,
+    get_latest_release_name,
+)
+from mutablesecurity.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseSolution,
+    BaseSolutionException,
+    BaseTest,
+    InformationProperties,
+    TestType,
+)
 from mutablesecurity.solutions.common.facts.files import PresenceTest
-from mutablesecurity.solutions.common.facts.networking import \
-    InternetConnection
+from mutablesecurity.solutions.common.facts.networking import (
+    InternetConnection,
+)
 from mutablesecurity.solutions.common.facts.process import ProcessRunning
 from mutablesecurity.solutions.common.facts.service import ActiveService
-from mutablesecurity.solutions.common.operations.crontab import \
-    remove_crontabs_by_part
+from mutablesecurity.solutions.common.operations.crontab import (
+    remove_crontabs_by_part,
+)
 
 REPOSITORY_DETAILS = ("kitabisa", "teler")
 
