@@ -171,6 +171,9 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     ) -> PrintableMatrix:
         """Create a matrix based on information specific to a solution.
 
+        The function considers that the first column contains the unique
+        identifiers.
+
         Args:
             keys_descriptions (KeysDescriptions): Description of keys present
                 in the descriptions
@@ -192,6 +195,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         matrix.append(headers)
 
         # Create the body
+        entries = []
         keys_ids = list(keys_descriptions.keys())
         id_key = keys_ids[0]
         if concrete_objects:
@@ -204,14 +208,19 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
 
                 row = [self.__to_str(elem) for elem in description.values()]
                 row.append(self.__to_str(value))
-                matrix.append(row)
+                entries.append(row)
         else:
             for current_object in generic_objects_descriptions:
                 row = []
                 for key in keys_ids:
                     row.append(self.__to_str(current_object[key]))
 
-                matrix.append(row)
+                entries.append(row)
+
+        # Sort the entries
+        entries.sort(key=lambda entry: entry[0])
+
+        matrix.extend(entries)
 
         return matrix
 
@@ -226,7 +235,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         Returns:
             Table: Resulted table representation
         """
-        table = Table()
+        table = Table(show_lines=True)
         for line_index, line in enumerate(string_table):
             if line_index == 0:
                 for element_index, element in enumerate(line):

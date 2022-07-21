@@ -8,6 +8,7 @@ import sys
 import typing
 
 import click
+import gevent.hub
 from rich.console import Console
 from rich.traceback import install
 
@@ -15,6 +16,7 @@ from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
 from mutablesecurity.helpers.exceptions import (
     BadArgumentException,
+    BadValueException,
     MutableSecurityException,
     StoppedMutableSecurityException,
     UnexpectedBehaviorException,
@@ -62,9 +64,15 @@ def __split_arguments(arguments: typing.Tuple[str]) -> typing.Dict[str, str]:
     Args:
         arguments (typing.Tuple[str]): Tuple to split
 
+    Raises:
+        BadValueException: The argument is invalid.
+
     Returns:
         typing.Dict[str, str]: Resulted dictionary
     """
+    if arguments and "=" not in arguments:
+        raise BadValueException()
+
     result = {}
     for argument in arguments:
         argument_split = argument.split("=")
@@ -86,7 +94,7 @@ def __ask_for_password(
         remote_list (pathlib.Path): List of remote target hosts
 
     Returns:
-        typing.Optional[str]: [description]
+        typing.Optional[str]: Read password
     """
     if remote is None and remote_list is None and os.geteuid() == 0:
         return None
@@ -267,10 +275,16 @@ def __setup_pretty_traceback() -> None:
     install(show_locals=True)
 
 
+def __patch_gevent() -> None:
+    """Patch Gevent to not print any error to stdout and stderr."""
+    gevent.hub.Hub.NOT_ERROR = (Exception, KeyboardInterrupt)
+
+
 def main() -> None:
     """Run the program."""
     __setup_pretty_traceback()
     __check_python_version()
+    __patch_gevent()
 
     try:
         __run_command(  # pylint: disable=no-value-for-parameter

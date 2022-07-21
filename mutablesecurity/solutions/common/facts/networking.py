@@ -10,17 +10,22 @@ class DefaultInterface(FactBase):
 
     command = "ip -p -j route show default"
 
-    def process(  # pylint:  disable=arguments-differ
-        self, output: typing.List[str]
+    @staticmethod
+    def process(
+        output: typing.List[str],
     ) -> str:
-        """Get the default interface from the JSON output.
-
-        Args:
-            output (typing.List[str]): List of lines
-
-        Returns:
-            str: Name of default interface
-        """
         interfaces = json.loads("\n".join(output))
 
         return interfaces[0]["dev"]
+
+
+class InternetConnection(FactBase):
+    """Fact for testing the Internet connection."""
+
+    command = "ping -c 1 8.8.8.8 | grep -c '100% packet loss' || true"
+
+    @staticmethod
+    def process(
+        output: typing.List[str],
+    ) -> bool:
+        return int(output[0]) == 0

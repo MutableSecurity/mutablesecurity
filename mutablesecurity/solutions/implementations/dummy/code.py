@@ -28,7 +28,7 @@ class AppendToFileAction(BaseAction):
         shell([f"echo '{content}' >> /tmp/dummy.{number}"])
 
     IDENTIFIER = "append_to_file"
-    DESCRIPTION = "Append a text to a file."
+    DESCRIPTION = "Appends a text to a file."
     ACT = append_to_file
 
 
@@ -41,9 +41,12 @@ class FileSizeInformation(BaseInformation):
             return int(output[0])
 
     IDENTIFIER = "file_size"
-    DESCRIPTION = "Get the file size."
+    DESCRIPTION = "File size"
     INFO_TYPE = IntegerDataType
-    PROPERTIES = [InformationProperties.METRIC]
+    PROPERTIES = [
+        InformationProperties.METRIC,
+        InformationProperties.READ_ONLY,
+    ]
     DEFAULT_VALUE = None
     GETTER = GetFileSize
 
@@ -57,9 +60,12 @@ class MachineIDInformation(BaseInformation):
             return output[0]
 
     IDENTIFIER = "machine_id"
-    DESCRIPTION = "Get the machine ID."
+    DESCRIPTION = "Machine ID"
     INFO_TYPE = StringDataType
-    PROPERTIES = [InformationProperties.METRIC]
+    PROPERTIES = [
+        InformationProperties.METRIC,
+        InformationProperties.READ_ONLY,
+    ]
     DEFAULT_VALUE = None
     GETTER = GetMachineID
 
@@ -73,20 +79,19 @@ class CurrentUserInformation(BaseInformation):
             return output[0]
 
     @staticmethod
-    def set_user(username: str) -> None:
-        shell(["echo {username}"])
+    def set_user(old_value: str, new_value: str) -> None:
+        shell(["echo {old_username} {new_username}"])
 
     IDENTIFIER = "current_user"
-    DESCRIPTION = "Get the user under which the automation is ran."
+    DESCRIPTION = "User under which the automation is ran"
     INFO_TYPE = StringDataType
-    PROPERTIES = [InformationProperties.CONFIGURATION]
+    PROPERTIES = [
+        InformationProperties.CONFIGURATION,
+        InformationProperties.WRITABLE,
+    ]
     DEFAULT_VALUE = None
     GETTER = GetCurrentUser
     SETTER = set_user
-
-    @staticmethod
-    def validate_value(value: typing.Any) -> bool:
-        return isinstance(value, str)
 
 
 class UbuntuRequirement(BaseTest):
@@ -98,7 +103,7 @@ class UbuntuRequirement(BaseTest):
             return "ubuntu" in "".join(output).lower()
 
     IDENTIFIER = "ubuntu"
-    DESCRIPTION = "Check if the operating system is Ubuntu."
+    DESCRIPTION = "Checks if the operating system is Ubuntu."
     TEST_TYPE = TestType.REQUIREMENT
     FACT = CheckIfUbuntu
 
@@ -112,7 +117,7 @@ class PresenceTest(BaseTest):
             return int(output[0]) == 1
 
     IDENTIFIER = "presence"
-    DESCRIPTION = "Check if a file is present."
+    DESCRIPTION = "Checks if a file is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = CheckIfPresent
 
@@ -126,7 +131,7 @@ class ContentLogs(BaseLog):
             return "".join(output)
 
     IDENTIFIER = "file_content"
-    DESCRIPTION = "Get the file content."
+    DESCRIPTION = "Gets the file content."
     FACT = GetContent
 
 

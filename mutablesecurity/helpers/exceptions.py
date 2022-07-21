@@ -48,11 +48,6 @@ class StoppedMutableSecurityException(MutableSecurityException):
     """MutableSecurity has been stopped."""
 
 
-class BadArgumentException(MutableSecurityException):
-    """MutableSecurity received a bad argument. Verify the command and re-run.\
-"""
-
-
 class UnexpectedBehaviorException(MutableSecurityException):
     """The codebase behaves strangely."""
 
@@ -156,6 +151,14 @@ class CLIException(MutableSecurityException):
 
 class UnsupportedPythonVersionException(CLIException):
     """This version if Python is not supported."""
+
+
+class BadArgumentException(CLIException):
+    """MutableSecurity received a bad argument. Verify the help and re-run."""
+
+
+class BadValueException(CLIException):
+    """The value provided as a CLI is invalid."""
 
 
 class HostsOrchestrationException(MutableSecurityException):

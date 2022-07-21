@@ -58,6 +58,11 @@ class BaseAction(BaseObject):
 
         return ", ".join(params_str)
 
+    @classmethod
+    def execute(cls: typing.Type["BaseAction"]) -> None:
+        """Execute the action."""
+        cls.ACT()
+
 
 class ActionsManager(BaseManager):
     """Class managing the actions of a solution."""

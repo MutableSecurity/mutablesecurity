@@ -17,10 +17,10 @@ from pyinfra import host
 from pyinfra.api.deploy import deploy
 
 from mutablesecurity.helpers.exceptions import (
-    FailedSolutionTestException,
     InvalidMetaException,
     NoSolutionConfigurationFileException,
     RequirementsNotMetException,
+    SolutionAlreadyInstalledException,
     SolutionNotInstalledException,
     YAMLFileNotExistsException,
     YAMLKeyMissingException,
@@ -143,14 +143,14 @@ class BaseSolution(ABC):
 
     @classmethod
     def __load_current_configuration_from_file(
-        cls: typing.Type["BaseSolution"],
+        cls: typing.Type["BaseSolution"], post_installation: bool
     ) -> None:
         try:
             configuration = load_from_file(cls.__get_configuration_filename())
         except YAMLFileNotExistsException as exception:
             raise NoSolutionConfigurationFileException() from exception
 
-        cls.INFORMATION_MANAGER.set_all_from_dict_locally(configuration)
+        cls.INFORMATION_MANAGER.populate(configuration, post_installation)
 
     @classmethod
     def __save_current_configuration_as_file(
@@ -158,7 +158,10 @@ class BaseSolution(ABC):
     ) -> None:
         """Save the current configuration as a file."""
         configuration = cls.INFORMATION_MANAGER.represent_as_dict(
-            filter_property=InformationProperties.CONFIGURATION
+            filter_properties=[
+                InformationProperties.CONFIGURATION,
+                InformationProperties.WRITABLE,
+            ]
         )
         dump_to_file(configuration, cls.__get_configuration_filename())
 
@@ -181,22 +184,31 @@ class BaseSolution(ABC):
 
     @classmethod
     @deploy
-    def __ensure_installed(cls: typing.Type["BaseSolution"]) -> None:
+    def __ensure_installation_state(
+        cls: typing.Type["BaseSolution"], installed: bool
+    ) -> None:
         """Ensure that the solution is installed.
 
         Mandatory executed when performing actions against an already-installed
         solution.
 
-        Raises:
-            SolutionNotInstalledException: The solution is not installed on the
-                system.
+        Args:
+            installed (bool): Boolean indicating if the solution needs to be
+                already installed or not on the system.
         """
-        cls.__load_current_configuration_from_file()
+        cls.__load_current_configuration_from_file(True)
 
-        try:
-            cls.TESTS_MANAGER.test(None, TestType.PRESENCE)
-        except FailedSolutionTestException as exception:
-            raise SolutionNotInstalledException() from exception
+        raised_exception = (
+            SolutionNotInstalledException
+            if installed
+            else SolutionAlreadyInstalledException
+        )
+        cls.TESTS_MANAGER.test(
+            None,
+            TestType.PRESENCE,
+            expected_value=installed,
+            exception_when_fail=raised_exception,
+        )
 
     @staticmethod
     @abstractmethod
@@ -225,18 +237,17 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def install(cls: typing.Type["BaseSolution"]) -> None:
-        """Install the security solution.
+        """Install the security solution."""
+        cls.__load_current_configuration_from_file(False)
 
-        Raises:
-            RequirementsNotMetException: The requirements are not met.
-        """
-        cls.__load_current_configuration_from_file()
+        cls.__ensure_installation_state(False)
 
         # Ensure that the requirements are met
-        try:
-            cls.TESTS_MANAGER.test(None, TestType.REQUIREMENT)
-        except FailedSolutionTestException as exception:
-            raise RequirementsNotMetException() from exception
+        cls.TESTS_MANAGER.test(
+            None,
+            TestType.REQUIREMENT,
+            exception_when_fail=RequirementsNotMetException,
+        )
 
         cls._install()
 
@@ -255,7 +266,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Response with the requested information
         """
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
 
         results = cls.INFORMATION_MANAGER.get(identifier)
         cls.__save_current_configuration_as_file()
@@ -275,7 +286,7 @@ class BaseSolution(ABC):
             identifier (str):  Key identifying the information
             value (typing.Any): New value of the information
         """
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls.INFORMATION_MANAGER.set(identifier, value)
@@ -297,7 +308,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Result with tests results
         """
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         results = cls.TESTS_MANAGER.test(identifier, only_check=True)
@@ -319,7 +330,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Result with the requested logs
         """
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         results = cls.LOGS_MANAGER.get_content(identifier)
@@ -330,7 +341,7 @@ class BaseSolution(ABC):
     @deploy
     def update(cls: typing.Type["BaseSolution"]) -> None:
         """Update the security solution."""
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls._update()
@@ -339,7 +350,7 @@ class BaseSolution(ABC):
     @deploy
     def uninstall(cls: typing.Type["BaseSolution"]) -> None:
         """Uninstall a security solution."""
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls._uninstall()
@@ -358,7 +369,7 @@ class BaseSolution(ABC):
             args (typing.Dict[str, str]): Dictionary containing the arguments
                 of the action. Defaults to None.
         """
-        cls.__ensure_installed()
+        cls.__ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls.ACTIONS_MANAGER.execute(identifier, args)

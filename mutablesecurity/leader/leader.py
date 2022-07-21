@@ -25,7 +25,9 @@ class Leader(object, metaclass=Singleton):
     hosts: list
     inventory: Inventory
     state: State
-    unique_password: str  # TODO: Remove after having passwords for each host
+    unique_password: typing.Optional[
+        str
+    ]  # TODO: Remove after having passwords for each host
     results: typing.List["SecurityDeploymentResult"]
 
     def __init__(self) -> None:

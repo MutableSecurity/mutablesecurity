@@ -84,6 +84,11 @@ per-file-ignores = """
     # docstrings.
     ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
 
+    # Ease the creation of facts and operations by not requesting functions
+    # documentations (only class)
+    ./mutablesecurity/solutions/common/facts/**: D102
+    ./mutablesecurity/solutions/common/operations/**: D103
+
     # All the pytest unit tests use asserts.
     ./tests/**: S101
 """

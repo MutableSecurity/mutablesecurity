@@ -118,6 +118,9 @@ class DataType:
                 typing.List[int], typing.List[str], typing.List[Enum]]:
                 Converted value
         """
+        if not string or not isinstance(string, str):
+            raise InvalidDataValueToConvertException()
+
         try:
             if cls.INNER_TYPE == InnerDataType.BOOLEAN:
                 return str_to_bool(string)

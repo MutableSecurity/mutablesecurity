@@ -22,39 +22,78 @@ from mutablesecurity.solutions.base.result import (
     KeysDescriptions,
 )
 
-Operation = typing.Annotated[typing.Callable, "pyinfra Operation"]
+SetOperation = typing.Annotated[typing.Callable, "pyinfra set operation"]
 
 
 class InformationProperties(Enum):
     """Enumeration for possible properties of an information."""
 
     # Base for information's type
-    __TYPE_BASE = 0
+    __TYPE_BASE = 1
 
-    # Writable information on which depends the functioning of the solution
+    # Description:  Information on which depends the functioning of the
+    #               solution
+    # Example:      Quarantine folder for an antivirus
     CONFIGURATION = __TYPE_BASE + 1
 
-    # Read-only information that is exposed by the solution, describing its
-    # functioning
+    # Description:  Read-only information that is exposed by the solution,
+    #               describing its functioning
+    # Requirements: READ_ONLY
+    # Example:      Number of blocked malware by an antivirus
     METRIC = __TYPE_BASE + 2
 
     # Base for configuration's optionality
     __CONFIGURATION_OPTIONALITY_BASE = 10
 
-    # Required to be set during the whole functioning of the solution
+    # Description:  Required to be set during the whole functioning of the
+    #               solution
+    # Requirements: CONFIGURATION
+    # Example:      Email where an XDR sends its critical alerts
     MANDATORY = __CONFIGURATION_OPTIONALITY_BASE + 1
 
-    # Optional to set
+    # Description:  Optional to set
+    # Requirements: CONFIGURATION
+    # Examples:     Additional threat hunting sources for an IDS
     OPTIONAL = __CONFIGURATION_OPTIONALITY_BASE + 2
 
     # Base for configuration's generation mechanism
-    _CONFIGURATION_VALUE_GENERATION_BASE = 100
+    _CONFIGURATION_VALUE_BASE = 20
 
-    # With a value auto-generated on installation
-    AUTO_GENERATED = _CONFIGURATION_VALUE_GENERATION_BASE + 1
+    # Description:  With a default (recommended) value. If it is not specified
+    #               in the local configuration file of the solution, this value
+    #               is used.
+    # Requirements: CONFIGURATION
+    # Example:      Default 443 port for a HTTPS web server
+    WITH_DEFAULT_VALUE = _CONFIGURATION_VALUE_BASE + 1
 
-    # With a default (recommended) value
-    WITH_DEFAULT_VALUE = _CONFIGURATION_VALUE_GENERATION_BASE + 2
+    # Description:  With a value that is not deductible from querying the host.
+    #               The only way  MutableSecurity finds its value is by
+    #               inspecting the local configuration file of the solution.
+    # Requirements: CONFIGURATION, MANDATORY
+    # Example:      Port on which a web server that needs to be protected
+    #               listens
+    NON_DEDUCTIBLE = _CONFIGURATION_VALUE_BASE + 2
+
+    # Description:  With a value auto-generated before installation
+    # Requirements: CONFIGURATION, READ_ONLY
+    # Example:      A random password, generated after installing Wazuh
+    AUTO_GENERATED_BEFORE_INSTALL = _CONFIGURATION_VALUE_BASE + 3
+
+    # Description:  With a value auto-generated after installation
+    # Requirements: CONFIGURATION, READ_ONLY
+    # Example:      A random password, generated after installing Wazuh
+    AUTO_GENERATED_AFTER_INSTALL = _CONFIGURATION_VALUE_BASE + 4
+
+    # Base for writability
+    _WRITABILITY_BASE = 30
+
+    # Description: The value could not be written, only read
+    # Example:     Any metric
+    READ_ONLY = _WRITABILITY_BASE + 1
+
+    # Description: The value could be written and read
+    # Example:     A server on which an agent reports
+    WRITABLE = _WRITABILITY_BASE + 2
 
     def __str__(self) -> str:
         """Stringify the object.
@@ -85,7 +124,7 @@ class BaseInformation(BaseObject):
     INFO_TYPE: typing.Type[DataType]
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
-    SETTER: Operation
+    SETTER: typing.Optional[SetOperation]
 
     @staticmethod
     def __ensure_exists_on_host() -> None:
@@ -94,7 +133,7 @@ class BaseInformation(BaseObject):
             host.host_data["mutablesecurity"] = {}
 
     @classmethod
-    def get_actual_value(cls: typing.Type["BaseInformation"]) -> typing.Any:
+    def get(cls: typing.Type["BaseInformation"]) -> typing.Any:
         """Get the actual value of the property, as stored in the host data.
 
         Returns:
@@ -121,7 +160,6 @@ class BaseInformation(BaseObject):
         host.host_data["mutablesecurity"][cls.IDENTIFIER] = value
 
     @staticmethod
-    @abstractmethod
     def validate_value(value: typing.Any) -> bool:
         """Validate if the information's value is valid.
 
@@ -131,6 +169,7 @@ class BaseInformation(BaseObject):
         Returns:
             bool: Boolean indicating if the information is valid
         """
+        return True
 
 
 class InformationManager(BaseManager):
@@ -198,7 +237,8 @@ class InformationManager(BaseManager):
 
         # Get the concrete values
         for info in info_list:
-            info.set_actual_value(host.get_fact(info.GETTER))
+            if InformationProperties.NON_DEDUCTIBLE not in info.PROPERTIES:
+                info.set_actual_value(host.get_fact(info.GETTER))
 
         return self.represent_as_dict(identifier=identifier)
 
@@ -233,31 +273,62 @@ class InformationManager(BaseManager):
         if InformationProperties.CONFIGURATION not in info.PROPERTIES:
             raise NonWritableInformationException()
 
-        actual_value = info.INFO_TYPE.convert_string(value)
-        if not info.validate_value(actual_value):
-            raise InvalidInformationValueException()
+        old_value = info.get()
+        new_value = value
 
-        if not only_local:
-            info.SETTER(actual_value)
+        if not info.validate_value(new_value):
+            new_value = info.INFO_TYPE.convert_string(value)
+            if not info.validate_value(new_value):
+                raise InvalidInformationValueException()
 
-        info.set_actual_value(actual_value)
+        if not only_local and info.SETTER:
+            info.SETTER(old_value, new_value)
+
+        info.set_actual_value(new_value)
 
     def set_default_values_locally(self) -> None:
         """Set the default values in the local configuration."""
-        for _, raw_info in self.objects.items():
+        for raw_info in self.objects.values():
             info: BaseInformation = raw_info  # type: ignore[assignment]
 
             if InformationProperties.WITH_DEFAULT_VALUE in info.PROPERTIES:
                 info.set_actual_value(info.DEFAULT_VALUE)
 
-    def set_all_from_dict_locally(self, export: dict) -> None:
+            if (
+                InformationProperties.AUTO_GENERATED_BEFORE_INSTALL
+                in info.PROPERTIES
+            ):
+                info.set_actual_value(host.get_fact(info.GETTER))
+
+    def populate(
+        self, export: dict, post_installation: typing.Optional[bool] = True
+    ) -> None:
         """Set all the local values from an export dictionary.
 
         Args:
             export (dict): Previously exported dictionary
+            post_installation (bool, optional): Boolean indicating if the
+                installation was already done
         """
+        # Populate from passed dictionary
         for key, value in export.items():
             self.set(key, value, only_local=True)
+
+        # Get the auto-generated values
+        for key, raw_info in self.objects.items():
+            info: BaseInformation = raw_info  # type: ignore[assignment]
+
+            if (
+                InformationProperties.AUTO_GENERATED_BEFORE_INSTALL
+                in info.PROPERTIES
+                or (
+                    post_installation
+                    and InformationProperties.AUTO_GENERATED_BEFORE_INSTALL
+                    in info.PROPERTIES
+                )
+            ):
+                value = host.get_fact(info.GETTER)
+                self.set(key, value, only_local=True)
 
         self.validate_all()
 
@@ -277,7 +348,7 @@ class InformationManager(BaseManager):
             MandatoryAspectLeftUnsetException: One mandatory aspect is left
                 unset.
         """
-        for _, raw_info in self.objects.items():
+        for raw_info in self.objects.values():
             info: BaseInformation = raw_info  # type: ignore[assignment]
 
             if filter_property and filter_property not in info.PROPERTIES:
@@ -285,20 +356,23 @@ class InformationManager(BaseManager):
 
             if (
                 InformationProperties.MANDATORY in info.PROPERTIES
-                and not info.get_actual_value()
+                and not info.get()
             ):
                 raise MandatoryAspectLeftUnsetException()
 
     def represent_as_dict(
         self,
         identifier: str = None,
-        filter_property: typing.Optional[InformationProperties] = None,
+        filter_properties: typing.Optional[
+            typing.List[InformationProperties]
+        ] = None,
     ) -> BaseConcreteResultObjects:
         """Get the (filtered) information as a dictionary.
 
         Args:
-            filter_property (InformationProperties, optional): Mandatory
-                properties for the information returned. Defaults to None.
+            filter_properties (typing.List[InformationProperties], optional):
+                Mandatory properties for the information returned. Defaults to
+                None.
             identifier (str): Identifier of the single information to represent
                 in the string. Defaults to None.
 
@@ -312,9 +386,11 @@ class InformationManager(BaseManager):
             if identifier and info.IDENTIFIER != identifier:
                 continue
 
-            if filter_property and filter_property not in info.PROPERTIES:
+            if filter_properties and not set(filter_properties).issubset(
+                info.PROPERTIES
+            ):
                 continue
 
-            result[key] = info.get_actual_value()
+            result[key] = info.get()
 
         return result
