@@ -45,12 +45,37 @@ from mutablesecurity.solutions.base.test import (
 )
 
 
-class SolutionMaturity(Enum):
-    """Enumeration for defining the solution's maturity."""
+class SolutionCategories(Enum):
+    """Enumeration for defining categories of security solutions."""
 
-    PRODUCTION = 0
-    DEV_ONLY = 1
-    UNDER_DEVELOPMENT = 2
+    WEB_IDS = "Web Intrusion Detection System"
+    NETWORK_IDPS = "Network Detection and Prevention System"
+    WEB_ENCRYPTION = "Encryption for Web Applications"
+    NONE = "No Security"
+
+    def __str__(self) -> str:
+        """Stringify a category.
+
+        Returns:
+            str: Stringified category
+        """
+        return self.value
+
+
+class SolutionMaturity(Enum):
+    """Enumeration for defining the solution's maturity level."""
+
+    PRODUCTION = "Production"
+    UNDER_DEVELOPMENT = "Under development"
+    DEV_ONLY = "Only for development and testing purposes"
+
+    def __str__(self) -> str:
+        """Stringify the maturity level.
+
+        Returns:
+            str: Stringified maturity level
+        """
+        return self.value
 
 
 class BaseSolution(ABC):
@@ -62,6 +87,7 @@ class BaseSolution(ABC):
     DESCRIPTION: str
     REFERENCES: typing.List[str]
     MATURITY: SolutionMaturity
+    CATEGORIES: typing.List[SolutionCategories]
 
     # Class members declared explicitly in the child class
     INFORMATION: typing.List[BaseInformation]
@@ -82,6 +108,7 @@ class BaseSolution(ABC):
         DESCRIPTION = "description"
         REFERENCES = "references"
         MATURITY = "maturity"
+        CATEGORIES = "categories"
 
     def __init_subclass__(cls: typing.Type["BaseSolution"]) -> None:
         """Initialize a subclass after definition."""
@@ -136,6 +163,10 @@ class BaseSolution(ABC):
         cls.REFERENCES = meta[cls.MetaKeys.REFERENCES.value]
         try:
             cls.MATURITY = SolutionMaturity[meta[cls.MetaKeys.MATURITY.value]]
+            cls.CATEGORIES = [
+                SolutionCategories[cat]
+                for cat in meta[cls.MetaKeys.CATEGORIES.value]
+            ]
         except KeyError as exception:
             raise InvalidMetaException() from exception
 

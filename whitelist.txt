@@ -49,6 +49,7 @@ greenlet
 helpformatter
 hostname
 hostnames
+idps
 inexistent
 informationproperties
 isfile

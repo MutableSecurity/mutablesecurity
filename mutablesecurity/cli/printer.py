@@ -48,6 +48,9 @@ class Printer:
     SOLUTION_HELP = """
 Full name: {full_name}
 
+Categories:
+{categories}
+
 Description:
 {description}
 
@@ -387,6 +390,8 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         solution_class = SolutionsManager().get_solution_by_id(solution_id)
         solution = solution_class()
 
+        categories = [str(cat) for cat in solution.CATEGORIES]
+
         information_matrix = self.__create_solution_matrix(
             solution.INFORMATION_MANAGER.KEYS_DESCRIPTIONS,
             solution.INFORMATION_MANAGER.objects_descriptions,
@@ -404,8 +409,9 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
             solution.ACTIONS_MANAGER.objects_descriptions,
         )
 
-        information_repr = self.__represent_table(information_matrix)
+        categories_repr = self.__represent_unordered_list(categories)
         references_repr = self.__represent_unordered_list(solution.REFERENCES)
+        information_repr = self.__represent_table(information_matrix)
         tests_repr = self.__represent_table(tests_matrix)
         logs_repr = self.__represent_table(logs_matrix)
         actions_repr = self.__represent_table(actions_matrix)
@@ -413,6 +419,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         self.print_banner()
         self.__formatted_print(
             self.SOLUTION_HELP,
+            categories=categories_repr,
             full_name=solution.FULL_NAME,
             description=solution.DESCRIPTION,
             references=references_repr,
@@ -425,7 +432,7 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         if config.developer_mode:
             self.__formatted_print(
                 self.SOLUTION_HELP_DEV_EXTENSION,
-                maturity=solution.MATURITY.name,
+                maturity=solution.MATURITY,
             )
 
     def ask_for_connection_password(self) -> str:

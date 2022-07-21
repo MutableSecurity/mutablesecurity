@@ -4,3 +4,5 @@ references:
   - https://suricata.io
   - https://github.com/OISF/suricata
 maturity: UNDER_DEVELOPMENT
+categories:
+  - NETWORK_IDPS

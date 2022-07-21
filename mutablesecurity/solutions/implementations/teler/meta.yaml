@@ -3,4 +3,6 @@ description: teler is an real-time intrusion detection and threat alert based on
 references:
   - https://teler.app
   - https://github.com/kitabisa/teler
-maturity: UNDER_DEVELOPMENT
+maturity: PRODUCTION
+categories:
+  - WEB_IDS

@@ -6,3 +6,5 @@ references:
   - https://certbot.eff.org/
   - https://github.com/certbot/certbot
 maturity: UNDER_DEVELOPMENT
+categories:
+  - WEB_ENCRYPTION
