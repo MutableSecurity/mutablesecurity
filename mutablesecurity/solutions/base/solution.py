@@ -131,6 +131,18 @@ class BaseSolution(ABC):
         concrete_results: BaseConcreteResultObjects,
         is_long_output: bool = False,
     ) -> ConcreteObjectsResult:
+        """Build a manager response based on several values.
+
+        Args:
+            manager (BaseManager): Parent manager
+            concrete_results (BaseConcreteResultObjects): Concrete results that
+                were produced
+            is_long_output (bool): Boolean indicating if the data stored in
+                each result has a big length. Defaults to False.
+
+        Returns:
+            ConcreteObjectsResult: Built results
+        """
         return ConcreteObjectsResult(
             manager.KEYS_DESCRIPTIONS,
             manager.objects_descriptions,
@@ -172,6 +184,14 @@ class BaseSolution(ABC):
 
     @classmethod
     def __get_configuration_filename(cls: typing.Type["BaseSolution"]) -> str:
+        """Create a filename for the solution's configuration file.
+
+        It considers the identifiers of the connection and of the connection
+        to uniquely identify the deployment.
+
+        Returns:
+            str: Configuration filename
+        """
         host_id = get_connection_for_host()
 
         return f"{host_id}_{cls.IDENTIFIER}.yaml"

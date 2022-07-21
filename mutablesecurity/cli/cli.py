@@ -213,6 +213,9 @@ def __run_command(
     dev: bool,
     help: bool,  # pylint: disable=redefined-builtin
 ) -> None:
+    # No docstring here, please check the arguments descriptions to get more
+    # context about their meaning
+
     FeedbackForm(console).launch(no_check=feedback)
 
     printer = Printer(console)
