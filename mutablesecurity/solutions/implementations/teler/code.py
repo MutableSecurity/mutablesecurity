@@ -3,7 +3,6 @@
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg
-# pylint: disable=protected-access
 
 import json
 import os

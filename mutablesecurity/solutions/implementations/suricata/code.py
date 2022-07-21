@@ -1,6 +1,8 @@
 """Module integrating Suricata."""
 
-# pylint: disable=missing-class-docstring,unused-argument
+# pylint: disable=missing-class-docstring
+# pylint: disable=unused-argument
+# pylint: disable=unexpected-keyword-arg
 
 from pyinfra.api.deploy import deploy
 

@@ -1,6 +1,8 @@
 """Module defining a dummy security solution, for testing purposes."""
 
-# pylint: disable=missing-class-docstring,unused-argument
+# pylint: disable=missing-class-docstring
+# pylint: disable=unused-argument
+# pylint: disable=unexpected-keyword-arg
 
 import typing
 
