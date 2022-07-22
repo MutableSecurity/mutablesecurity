@@ -26,6 +26,7 @@
         "dist": true,
         "poetry.lock": true,
         ".coverage": true,
-        "pyinfra-sudo-askpass": true
+        "pyinfra-sudo-askpass": true,
+        ".dccache": true
     },
 }

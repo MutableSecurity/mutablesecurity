@@ -48,7 +48,6 @@ class FeedbackForm:
         data = {"email": email_address, "message": "Want to help!"}
         headers = {
             "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*",
         }
 
         result = requests.post(

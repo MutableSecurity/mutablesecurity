@@ -19,3 +19,6 @@
 
 # Pyinfra
 /pyinfra-sudo-askpass
+
+# Snyk
+/.dccache
