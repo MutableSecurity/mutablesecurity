@@ -66,6 +66,7 @@ class SolutionMaturity(Enum):
     """Enumeration for defining the solution's maturity level."""
 
     PRODUCTION = "Production"
+    REFACTORING = "Under refactoring, but integrated in older versions"
     UNDER_DEVELOPMENT = "Under development"
     DEV_ONLY = "Only for development and testing purposes"
 
