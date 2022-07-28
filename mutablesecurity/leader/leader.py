@@ -38,17 +38,6 @@ class Leader(object, metaclass=Singleton):
     def __make_inventory(
         self, hosts: tuple, **kwargs: typing.Any
     ) -> Inventory:
-        """Create a pyinfra inventory.
-
-        To be used only by children.
-
-        Args:
-            hosts (tuple): Hosts to connect to
-            kwargs (typing.Any): Additional named arguments
-
-        Returns:
-            Inventory: pyinfra inventory
-        """
         return Inventory((hosts, {}), **kwargs)
 
     def attach_connection(self, host: Connection) -> None:

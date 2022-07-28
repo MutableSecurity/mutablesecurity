@@ -25,43 +25,16 @@ class BadResponse:
 
 def __mock_good_request(args: tuple, **kwargs: typing.Any) -> GoodResponse:
     # pylint: disable=unused-argument
-    """Return a good response.
-
-    Args:
-        args (tuple): Unused
-        kwargs (typing.Any): Unused
-
-    Returns:
-        GoodResponse: Response
-    """
     return GoodResponse()
 
 
 def __mock_bad_request(args: tuple, **kwargs: typing.Any) -> BadResponse:
     # pylint: disable=unused-argument
-    """Return a bad response.
-
-    Args:
-        args (tuple): Unused
-        kwargs (typing.Any): Unused
-
-    Returns:
-        BadResponse: Response
-    """
     return BadResponse()
 
 
 def __mock_ask(message: str, password: bool) -> str:
     # pylint: disable=unused-argument
-    """Mock the ask for an user input.
-
-    Args:
-        message (str): Unused
-        password (bool): Unused
-
-    Returns:
-        str: Constant string
-    """
     return "hello@mutablesecurity.io"
 
 

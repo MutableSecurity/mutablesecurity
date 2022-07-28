@@ -21,83 +21,26 @@ class SolutionsManager:
     def __translate_solution_module_to_id(
         self, solution_module_name: str
     ) -> str:
-        """Convert a solution module name into an identifier.
-
-        Args:
-            solution_module_name (str): Name of the module
-
-        Returns:
-            str: Identifier
-        """
         return solution_module_name.upper()
 
     def __translate_solution_id_to_class_name(self, solution_id: str) -> str:
-        """Translate the identifier of a solution into its class name.
-
-        Args:
-            solution_id (str): Solution's identifier
-
-        Returns:
-            str: Implementation class
-        """
         solution_id = solution_id.lower().capitalize()
 
         def convert_to_upper(match: re.Match) -> str:
-            """Convert a Regex match into its corresponding uppercase version.
-
-            Args:
-                match (re.Match): Regex match
-
-            Returns:
-                str: Uppercased result
-            """
             return match.group()[1].upper()
 
         return re.sub(r"_[a-z]", convert_to_upper, solution_id.capitalize())
 
     def __translate_solution_id_to_module_name(self, solution_id: str) -> str:
-        """Translate a solution identifier into a module name.
-
-        Args:
-            solution_id (str): Solution's identifier
-
-        Returns:
-            str: Module name
-        """
         return solution_id.lower()
 
     def __translate_operation_name_to_id(self, operation_name: str) -> str:
-        """Translate an operation name to an identifier.
-
-        It only uppercases all the letters.
-
-        Args:
-            operation_name (str): Operation's name
-
-        Returns:
-            str: Operation's identifier
-        """
         return operation_name.upper()
 
     def __translate_operation_id_to_name(self, operation_id: str) -> str:
-        """Translate an operation identifier to a name.
-
-        It only lowercases all the letters.
-
-        Args:
-            operation_id (str): Operation's identifier
-
-        Returns:
-            str: Operation's name
-        """
         return operation_id.lower()
 
     def __get_all_solutions_modules(self) -> typing.Generator[str, None, None]:
-        """Get the locally available solutions.
-
-        Yields:
-            str: Solution module
-        """
         solutions_folder = os.path.join(
             os.path.dirname(__file__), "../solutions/implementations"
         )

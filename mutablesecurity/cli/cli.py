@@ -32,26 +32,10 @@ console = Console()
 
 
 def __click_callback(callback: typing.Callable) -> typing.Callable:
-    """Convert a function into a click lambda function.
-
-    Args:
-        callback (typing.Callable): Callback function
-
-    Returns:
-        typing.Callable: Corresponding click lambda function
-    """
     return lambda _, __, value: callback(value)
 
 
 def __lower_str_callback(argument: str) -> typing.Optional[str]:
-    """Transform a string into lowercase.
-
-    Args:
-        argument (str): String to transform
-
-    Returns:
-        str: Lowercased string
-    """
     if argument:
         return argument.lower()
 
@@ -59,17 +43,6 @@ def __lower_str_callback(argument: str) -> typing.Optional[str]:
 
 
 def __split_arguments(arguments: typing.Tuple[str]) -> typing.Dict[str, str]:
-    """Split a tuple of strings in the format key=value.
-
-    Args:
-        arguments (typing.Tuple[str]): Tuple to split
-
-    Raises:
-        BadValueException: The argument is invalid.
-
-    Returns:
-        typing.Dict[str, str]: Resulted dictionary
-    """
     result = {}
     for argument in arguments:
         argument_split = argument.split("=")
@@ -82,21 +55,9 @@ def __split_arguments(arguments: typing.Tuple[str]) -> typing.Dict[str, str]:
     return result
 
 
-def __ask_for_password(
+def __ask_for_password_when_not_root(
     remote: str, remote_list: pathlib.Path
 ) -> typing.Optional[str]:
-    """May ask for a password.
-
-    If no remote/remote list is specified (local execution) and the effective
-    user ID is 0 (root-specific), skip asking for a password.
-
-    Args:
-        remote (str): Information about the remote target host
-        remote_list (pathlib.Path): List of remote target hosts
-
-    Returns:
-        typing.Optional[str]: Read password
-    """
     if remote is None and remote_list is None and os.geteuid() == 0:
         return None
     else:
@@ -232,7 +193,7 @@ def __run_command(
         return
 
     # Attach the password and key to each connection
-    password = __ask_for_password(remote, remote_list)
+    password = __ask_for_password_when_not_root(remote, remote_list)
     if remote_list:
         if password is None:
             raise UnexpectedBehaviorException()
@@ -262,11 +223,6 @@ def __run_command(
 
 
 def __check_python_version() -> None:
-    """Check if the Python version is compatible.
-
-    Raises:
-        UnsupportedPythonVersionException: The version is not compatible.
-    """
     # Check Python version
     if sys.version_info < MIN_PYTHON_VERSION:
         Printer(console=console).print_version_error(MIN_PYTHON_VERSION)
@@ -275,12 +231,10 @@ def __check_python_version() -> None:
 
 
 def __setup_pretty_traceback() -> None:
-    """Set up a replacement of the classic Python traceback."""
     install(show_locals=True)
 
 
 def __patch_gevent() -> None:
-    """Patch Gevent to not print any error to stdout and stderr."""
     gevent.hub.Hub.NOT_ERROR = (Exception, KeyboardInterrupt)
 
 

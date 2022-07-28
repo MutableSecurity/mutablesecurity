@@ -13,17 +13,12 @@ from rich.text import Text
 
 from mutablesecurity import config
 from mutablesecurity.cli.messages import MessageFactory, MessageTypes
-from mutablesecurity.helpers.exceptions import (
-    CLIException,
-    MutableSecurityException,
-)
+from mutablesecurity.helpers.exceptions import (CLIException,
+                                                MutableSecurityException)
 from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 from mutablesecurity.solutions.base.result import (
-    BaseConcreteResultObjects,
-    BaseGenericObjectsDescriptions,
-    ConcreteObjectsResult,
-    KeysDescriptions,
-)
+    BaseConcreteResultObjects, BaseGenericObjectsDescriptions,
+    ConcreteObjectsResult, KeysDescriptions)
 from mutablesecurity.solutions_manager import SolutionsManager
 
 PrintableMatrix = typing.List[typing.List[str]]
@@ -111,17 +106,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         self.console = console
 
     def __to_str(self, obj: typing.Any) -> str:
-        """Stringify an object.
-
-        The classes can be printed either by their implicit name or, if
-        defined, by a static member named ALIAS.
-
-        Args:
-            obj (typing.Any): Any object
-
-        Returns:
-            str: String representation
-        """
         if obj is None:
             return ""
         elif isinstance(obj, type):
@@ -135,11 +119,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         return str(obj)
 
     def __create_banner(self) -> Text:
-        """Create the banner based on logo and motto.
-
-        Returns:
-            Text: Banner
-        """
         parts = self.BANNER_FORMAT.split("{}")
 
         banner = Text()
@@ -152,14 +131,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     def __represent_unordered_list(
         self, unordered_list: typing.List[str]
     ) -> Text:
-        """Convert an unordered list into its text representation.
-
-        Args:
-            unordered_list (typing.List[str]): List to be converted
-
-        Returns:
-            Text: Resulted text representation
-        """
         result = Text()
         for element in unordered_list:
             result.append(f"- {element}\n")
@@ -172,23 +143,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         generic_objects_descriptions: BaseGenericObjectsDescriptions,
         concrete_objects: typing.Optional[BaseConcreteResultObjects] = None,
     ) -> PrintableMatrix:
-        """Create a matrix based on information specific to a solution.
-
-        The function considers that the first column contains the unique
-        identifiers.
-
-        Args:
-            keys_descriptions (KeysDescriptions): Description of keys present
-                in the descriptions
-            generic_objects_descriptions (BaseGenericObjectsDescriptions):
-                Generic description to each object stored in the solution
-            concrete_objects (BaseConcreteResultObjects): If a result is
-                printed, then some concrete values of the objects are stored
-                here. Defaults to None.
-
-        Returns:
-            PrintableMatrix: Matrix representation
-        """
         matrix = []
 
         # Create the header
@@ -233,21 +187,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         generic_objects_descriptions: BaseGenericObjectsDescriptions,
         key: str,
     ) -> PrintableMatrix:
-        """Create a table describing only an object.
-
-        The function considers that the first column contains the unique
-        identifiers.
-
-        Args:
-            keys_descriptions (KeysDescriptions): Description of keys present
-                in the descriptions
-            generic_objects_descriptions (BaseGenericObjectsDescriptions):
-                Generic description to each object stored in the solution
-            key (str): Key of object to put in the output
-
-        Returns:
-            PrintableMatrix: Matrix representation
-        """
         # Create a matrix with its headers
         keys = list(keys_descriptions.values())
 
@@ -268,18 +207,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     def __represent_table(
         self, string_table: PrintableMatrix, full_width: bool = False
     ) -> Table:
-        """Convert a table into its table representation.
-
-        The first line is considered to be the headers one.
-
-        Args:
-            string_table (PrintableMatrix): Table to be converted
-            full_width (bool): Boolean indicating if the table should be
-                printed as full width
-
-        Returns:
-            Table: Resulted table representation
-        """
         min_width = 1000 if full_width else None
         table = Table(show_lines=True, min_width=min_width)
         for line_index, line in enumerate(string_table):
@@ -305,12 +232,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
     def __formatted_print(
         self, format_string: str, **kwargs: typing.Any
     ) -> None:
-        """Print a string formatted with a series of arguments.
-
-        Args:
-            format_string (str): Format string, having inside {} placeholders
-            kwargs (typing.Any): Parameters for populating the format string
-        """
         items = re.split(r"\{|\}", format_string)
 
         for index, item in enumerate(items):
@@ -320,16 +241,6 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
                 self.console.print(kwargs[item], end="")
 
     def __ask(self, message: str, is_sensitive: bool = False) -> str:
-        """Ask for an input.
-
-        Args:
-            message (str): Prompt message
-            is_sensitive (bool): Boolean indicating if the read string is
-                sensitive
-
-        Returns:
-            str: Provided password
-        """
         decorated_message = (
             MessageFactory()
             .create_message(MessageTypes.QUESTION, message)

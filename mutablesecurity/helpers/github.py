@@ -10,18 +10,6 @@ from mutablesecurity.helpers.exceptions import (
 
 
 def __get_latest_release(username: str, repository: str) -> dict:
-    """Get the latest GitHub release.
-
-    Args:
-        username (str): GitHub user's name
-        repository (str): Repository's name
-
-    Raises:
-        GitHubAPIException: The GitHub response is not successful.
-
-    Returns:
-        dict: Returned dictionary
-    """
     connection = requests.get(
         f"https://api.github.com/repos/{username}/{repository}/releases/latest"
     )

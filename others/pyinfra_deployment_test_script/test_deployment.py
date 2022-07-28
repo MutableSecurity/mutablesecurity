@@ -50,14 +50,6 @@ class DummyFact(FactBase):
 def __make_inventory(
     hosts: typing.List[PyinfraHostTuple],
 ) -> Inventory:
-    """Create a pyinfra inventory.
-
-    Args:
-        hosts (typing.List[PyinfraHostTuple]): Hosts information
-
-    Returns:
-        Inventory: Created inventory
-    """
     return Inventory((hosts, {}))
 
 

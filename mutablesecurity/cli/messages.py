@@ -47,7 +47,6 @@ class Message:
         self.message = Text(message)
 
     def __justify_long_text(self) -> None:
-        """Prepare a long text for printing."""
         self.message = Text(str(self.message), justify="full")
 
     def to_text(self, justified: bool = True) -> Text:

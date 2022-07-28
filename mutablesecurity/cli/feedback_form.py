@@ -26,25 +26,12 @@ class FeedbackForm:
         self.console = console
 
     def __check_or_mark_shown_feedback(self) -> bool:
-        """Check if the feedback form was shown. If not, it marks as shown.
-
-        Returns:
-            bool: Boolean indicating if the feedback form was already shown
-        """
         if not (exists := os.path.isfile(self.FILENAME)):
             open(self.FILENAME, "w", encoding="utf-8").close()
 
         return exists
 
     def __send_feedback_form(self, email_address: str) -> None:
-        """Send the feedback form to a Google Cloud Function.
-
-        Args:
-            email_address (str): User's email address
-
-        Raises:
-            FeedbackNotSentException: Feedback could no be sent
-        """
         data = {"email": email_address, "message": "Want to help!"}
         headers = {
             "Content-Type": "application/json",

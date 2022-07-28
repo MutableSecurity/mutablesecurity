@@ -93,23 +93,6 @@ class ActionsManager(BaseManager):
     def __parse_arguments(
         self, action: BaseAction, args: dict
     ) -> typing.Dict[str, typing.Any]:
-        """Check and convert the parameters of an action.
-
-        Args:
-            action (BaseAction): Action whom parameters are verified
-            args (dict): Verified arguments
-
-        Raises:
-            InvalidNumberOfActionArgumentsException: The number of arguments is
-                invalid.
-            ActionArgumentNotPresentException: A mandatory argument is not
-                present.
-            InvalidValueForActionArgumentException: A value that was provided
-                for an argument is invalid.
-
-        Returns:
-            typing.Dict[str, typing.Any]: _description_
-        """
         signature = inspect.signature(action.ACT)
         params = signature.parameters
 

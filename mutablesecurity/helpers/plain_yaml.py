@@ -13,14 +13,6 @@ from mutablesecurity.helpers.exceptions import (
 
 
 def __is_plain_dict(dictionary: dict) -> bool:
-    """Check if a dictionary is plain.
-
-    Args:
-        dictionary (dict): Wanna-be plain dictionary
-
-    Returns:
-        bool: Boolean indicating if the dictionary is plain
-    """
     for key, value in dictionary.items():
         # Check the keys to be strings
         if not isinstance(key, str):

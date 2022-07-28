@@ -13,15 +13,6 @@ from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 
 def __mock_ask_with_no_input(message: str, password: bool) -> str:
     # pylint: disable=unused-argument
-    """Mock the ask for an user input and return an empty string.
-
-    Args:
-        message (str): Unused
-        password (bool): Unused
-
-    Returns:
-        str: Empty string
-    """
     return ""
 
 

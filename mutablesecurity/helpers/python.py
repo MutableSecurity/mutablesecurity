@@ -7,24 +7,9 @@ import typing
 def __execute_for_each_function_in_class(
     haystack_class: typing.Type[object], visit_function: typing.Callable
 ) -> typing.List[typing.Any]:
-    """Call a function for each function definition in a class.
-
-    Args:
-        haystack_class (typing.Type[object]): Class to look in
-        visit_function (typing.Callable): Function to be called
-
-    Returns:
-        typing.List[typing.Any]: List of methods
-    """
     result = []
 
     def __visit(node: ast.FunctionDef) -> None:
-        """Execute a function for each function definition.
-
-        Args:
-            node (ast.FunctionDef): Node in the AST, representing a function
-                definition
-        """
         current_result = visit_function(node)
         if current_result:
             result.append(current_result)
@@ -53,15 +38,6 @@ def find_public_methods(
     """
 
     def __visit(node: ast.FunctionDef) -> typing.Optional[str]:
-        """Check a function definition to be public.
-
-        Args:
-            node (ast.FunctionDef): Node in the AST, representing a function
-                definition
-
-        Returns:
-            typing.Optional[str]: Function name, only if it is public
-        """
         name = node.name
         if not name.startswith("_"):
             return name
@@ -85,16 +61,6 @@ def find_decorated_methods(
     """
 
     def __visit(node: ast.FunctionDef) -> typing.Optional[str]:
-        """Check a function definition to have a decorator.
-
-        Args:
-            node (ast.FunctionDef): Node in the AST, representing a function
-                definition
-
-        Returns:
-            typing.Optional[str]: Function name, only if it has a specific
-                decorator
-        """
         for subnode in node.decorator_list:
             ast_dump = ast.dump(subnode)
 

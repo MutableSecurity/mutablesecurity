@@ -10,15 +10,6 @@ from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 
 def __mock_dummy_password(message: str, password: bool) -> str:
     # pylint: disable=unused-argument
-    """Mock a password input.
-
-    Args:
-        message (str): Unused
-        password (bool): Unused
-
-    Returns:
-        str: Dummy password
-    """
     return "password"
 
 
@@ -29,11 +20,6 @@ def __mock_run(
     _____: typing.Any,
     ______: typing.Any,
 ) -> typing.List[SecurityDeploymentResult]:
-    """Mock the run of the main module.
-
-    Returns:
-        typing.List[SecurityDeploymentResult]: Dummy deployments results
-    """
     return [
         SecurityDeploymentResult(
             "local", ResponseTypes.SUCCESS, "Success", None

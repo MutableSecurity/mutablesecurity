@@ -20,11 +20,6 @@ class InvalidType:
 
 
 def __place_text_config(text_config: str) -> None:
-    """Place a stringified YAML configuration into its file.
-
-    Args:
-        text_config (str):  Stringified YAML configuration
-    """
     with open(
         ConfigurationManager.CONFIGURATION_FILENAME, "w", encoding="utf-8"
     ) as config_file:

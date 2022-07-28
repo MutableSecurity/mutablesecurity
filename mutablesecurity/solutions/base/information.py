@@ -126,7 +126,6 @@ class BaseInformation(BaseObject):
 
     @staticmethod
     def __ensure_exists_on_host() -> None:
-        """Ensure that the information can be stored in the host data."""
         if "mutablesecurity" not in host.host_data:
             host.host_data["mutablesecurity"] = {}
 
