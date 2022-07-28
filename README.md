@@ -110,4 +110,4 @@ If you have any type of suggestion (for example, proposals for new functionaliti
 
 # Contributing
 
-To find out how you can contribute to this project, check out our [contribution guide](CONTRIBUTING.md).
+To find out how you can contribute to this project, check out our [contribution guide](.github/CONTRIBUTING.md).
