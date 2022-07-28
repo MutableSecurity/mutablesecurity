@@ -104,6 +104,7 @@ traceback
 tui
 uid
 unflatten
+uninstallation
 unsets
 uppercased
 uppercases

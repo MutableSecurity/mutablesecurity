@@ -70,12 +70,13 @@ def __split_arguments(arguments: typing.Tuple[str]) -> typing.Dict[str, str]:
     Returns:
         typing.Dict[str, str]: Resulted dictionary
     """
-    if arguments and "=" not in arguments:
-        raise BadValueException()
-
     result = {}
     for argument in arguments:
         argument_split = argument.split("=")
+
+        if len(argument_split) != 2:
+            raise BadValueException()
+
         result[argument_split[0]] = argument_split[1]
 
     return result

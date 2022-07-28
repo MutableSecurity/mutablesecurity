@@ -8,7 +8,7 @@ from mutablesecurity.solutions.implementations.dummy.code import (
     ContentLogs,
     CurrentUserInformation,
     FileSizeInformation,
-    PresenceTest,
+    FilePresenceTest,
     UbuntuRequirement,
 )
 
@@ -17,7 +17,7 @@ def test_common_functionality_in_managers() -> None:
     """Test the common functionality in all the managers."""
     actions = [AppendToFileAction]
     information = [CurrentUserInformation, FileSizeInformation]
-    tests = [PresenceTest, UbuntuRequirement]
+    tests = [FilePresenceTest, UbuntuRequirement]
     logs = [ContentLogs]
     objects = [actions, information, tests, logs]
 

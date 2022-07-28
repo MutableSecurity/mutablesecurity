@@ -108,7 +108,7 @@ def test_networking_issues(
     form = FeedbackForm(console)
 
     with pytest.raises(FeedbackNotSentException) as execution:
-        form.launch()
+        form.launch(no_check=True)
 
     exception_raised = execution.value
     assert (

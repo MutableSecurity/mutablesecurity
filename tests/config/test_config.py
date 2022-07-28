@@ -31,25 +31,6 @@ def __place_text_config(text_config: str) -> None:
         config_file.write(text_config)
 
 
-def test_valid_configuration() -> None:
-    """Test the dumping, loading and setting of a plain dictionary."""
-    text_config = f"{DEV_KEY}: True"
-    __place_text_config(text_config)
-
-    config.reload()
-
-    assert getattr(
-        config, DEV_KEY
-    ), f"The key {DEV_KEY} was not saved and returned correctly."
-
-    setattr(config, DEV_KEY, False)
-
-    assert not getattr(config, DEV_KEY), (
-        f"The key {DEV_KEY} was not saved and returned correctly after manual"
-        " setting."
-    )
-
-
 def test_invalid_structure_configuration() -> None:
     """Test the testing an unstructured configuration file."""
     text_config = f"{DEV_KEY}:\n  fail: True"
@@ -98,3 +79,26 @@ def test_invalid_member_setting() -> None:
         "An error was not raised when accessing a configuration with an"
         " invalid value."
     )
+
+
+def test_valid_configuration() -> None:
+    """Test the dumping, loading and setting of a plain dictionary."""
+    text_config = f"{DEV_KEY}: True"
+    __place_text_config(text_config)
+
+    config.reload()
+
+    assert getattr(
+        config, DEV_KEY
+    ), f"The key {DEV_KEY} was not saved and returned correctly."
+
+    dev_key_value = getattr(config, DEV_KEY)
+
+    setattr(config, DEV_KEY, False)
+
+    assert not getattr(config, DEV_KEY), (
+        f"The key {DEV_KEY} was not saved and returned correctly after manual"
+        " setting."
+    )
+
+    setattr(config, DEV_KEY, dev_key_value)

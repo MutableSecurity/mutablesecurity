@@ -1,4 +1,4 @@
-"""pytest configuration."""
+"""Global pytest configuration."""
 import os
 import typing
 

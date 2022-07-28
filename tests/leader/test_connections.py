@@ -28,8 +28,8 @@ def test_create_connections() -> None:
         "The password on local connection is not correct:"
         f" {connection.password} != {password}"
     )
-    assert (
-        "local" in exported_connection
+    assert "local" in str(
+        exported_connection
     ), f"The exported local connection is not correct: {exported_connection}."
 
     # Remote password-based connection

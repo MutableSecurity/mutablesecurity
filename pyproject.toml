@@ -83,7 +83,7 @@ per-file-ignores = """
 
     # Ease the integration process by not requesting documentation via
     # docstrings.
-    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D106
+    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D103, D106
 
     # Ease the creation of facts and operations by not requesting functions
     # documentations (only class)
@@ -92,6 +92,7 @@ per-file-ignores = """
 
     # All the pytest unit tests use asserts.
     ./tests/**: S101
+    ./mutablesecurity/helpers/pytest.py: S101
 """
 ban-relative-imports = true
 banned-modules = """
@@ -129,5 +130,6 @@ spelling-private-dict-file = "whitelist.txt"
 [tool.coverage.run]
 omit = [
     "mutablesecurity/solutions/implementations/*",
-    "tests/*"
+    "tests/*",
+    "**/greenlet.py"
 ]
