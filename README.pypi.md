@@ -1,18 +1,18 @@
 <div align="center">
-    <img src="https://raw.githubusercontent.com/MutableSecurity/mutablesecurity/main/others/cover.png" width="600px" alt="Cover">
+    <img src="others/readme_images/cover.webp" width="600px" alt="Cover">
+    <br/><br/>
+    <img alt="Monthly Downloads on PyPi" src="https://img.shields.io/pypi/dm/mutablesecurity?color=blue&label=PyPi%20Downloads&logo=pypi&style=flat-square">
+    <img alt="Stable Version of PyPi" src="https://img.shields.io/pypi/v/mutablesecurity?color=blue&label=PyPi%20Stable%20Version&logo=pypi&style=flat-square">
+    <img alt="GitHub Stars" src="https://img.shields.io/github/stars/mutablesecurity/mutablesecurity?color=brightgreen&label=GitHub%20Stars&logo=github&style=flat-square">
+    <img alt="GitHub closed issues" src="https://img.shields.io/github/issues-closed/mutablesecurity/mutablesecurity?color=brightgreen&label=GitHub%20Issues&logo=github&style=flat-square">
+    <img alt="License" src="https://img.shields.io/github/license/mutablesecurity/mutablesecurity?color=lightgray&label=License&style=flat-square">
 </div>
-
-<br>
 
 ---
 
-# Background 👴🏼
+# Description
 
-In today's fast-paced society, most people are unaware of the potential consequences of cyberattacks on their organizations. Furthermore, they do not invest in cybersecurity solutions due to the costs of setup, licensing, and maintenance.
-
-# Vision 📜
-
-**MutableSecurity** 🏗️ is a software product for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
+**MutableSecurity** is a software product for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
 
 Despite the current lack of complex functionalities, we have a vision in mind that we hope to achieve in the near future. As we must begin somewhere, the first step in our progress is this command line interface for automatic management of cybersecurity solutions.
 

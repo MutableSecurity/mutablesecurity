@@ -8,6 +8,7 @@ baseinformation
 baselog
 baseobject
 basesolution
+basesolutiontype
 basetest
 bgcolor
 bool

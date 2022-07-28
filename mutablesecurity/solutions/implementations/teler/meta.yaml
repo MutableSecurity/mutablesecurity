@@ -1,5 +1,5 @@
 full_name: teler Real-time HTTP Intrusion Detection
-description: teler is an real-time intrusion detection and threat alert based on web log. Targets only nginx installed on Ubuntu.
+description: teler is a real-time intrusion detection and threat alert based on web log. Targets only nginx installed on Ubuntu.
 references:
   - https://teler.app
   - https://github.com/kitabisa/teler

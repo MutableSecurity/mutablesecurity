@@ -66,9 +66,9 @@ class SolutionMaturity(Enum):
     """Enumeration for defining the solution's maturity level."""
 
     PRODUCTION = "Production"
-    REFACTORING = "Under refactoring, but integrated in older versions"
+    REFACTORING = "Under refactoring"
     UNDER_DEVELOPMENT = "Under development"
-    DEV_ONLY = "Only for development and testing purposes"
+    DEV_ONLY = "Development/testing purposes only"
 
     def __str__(self) -> str:
         """Stringify the maturity level.
