@@ -7,7 +7,7 @@ ORIGINAL_YAML_SAFELOAD = yaml.safe_load
 
 def __mock_dummy_password(message: str, password: bool) -> str:
     # pylint: disable=unused-argument
-    return "password"
+    return ""
 
 
 def __mock_yaml_safeload(stream: str) -> dict:
