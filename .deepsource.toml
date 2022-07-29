@@ -1,10 +1,12 @@
 version = 1
 
 test_patterns = [
-  "tests/**"
+  "tests/**",
+  "mutablesecurity/helpers/pytest.py"
 ]
 
 exclude_patterns = [
+  "mutablesecurity/solutions/implementations/**",
   "others/**"
 ]
 

@@ -220,8 +220,8 @@ class InvalidMetaException(SolutionException):
 
 
 class NoSolutionConfigurationFileException(SolutionException):
-    """No local configuration file for the given solution was found. Maybe you \
-should initialize it first."""
+    """No local configuration file for the given solution was found. Maybe \
+you should initialize it first."""
 
 
 class RequirementsNotMetException(SolutionException):

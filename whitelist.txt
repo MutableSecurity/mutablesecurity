@@ -78,6 +78,7 @@ pathlib
 pencolor
 png
 powershell
+ptc
 pycf
 pyinfra
 pyinfrahosttuple
@@ -87,6 +88,7 @@ pytest
 reraising
 safeload
 securitydeploymentresult
+skipcq
 src
 stateful
 stderr
@@ -115,3 +117,4 @@ writability
 writelines
 xdr
 yaml
+W6004

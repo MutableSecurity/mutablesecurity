@@ -24,7 +24,7 @@ class Message:
     message_type: MessageTypes
     severity: int
     emoji: Emoji
-    message: Text
+    message_as_rich_text: Text
 
     def __init__(
         self,
@@ -44,10 +44,12 @@ class Message:
         self.message_type = message_type
         self.severity = severity
         self.emoji = Emoji(emoji_id)
-        self.message = Text(message)
+        self.message_as_rich_text = Text(message)
 
     def __justify_long_text(self) -> None:
-        self.message = Text(str(self.message), justify="full")
+        self.message_as_rich_text = Text(
+            str(self.message_as_rich_text), justify="full"
+        )
 
     def to_text(self, justified: bool = True) -> Text:
         """Convert the message into its rich representation.
@@ -65,7 +67,7 @@ class Message:
         result = Text()
         result.append(str(self.emoji))
         result.append(" ")
-        result.append(self.message)
+        result.append(self.message_as_rich_text)
 
         return result
 

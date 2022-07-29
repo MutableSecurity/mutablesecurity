@@ -1,4 +1,7 @@
-"""Module with functionality helpful for unit testing."""
+"""Module with functionality helpful for unit testing.
+
+This module is used only in the unit tests.
+"""
 
 from click.testing import CliRunner, Result
 

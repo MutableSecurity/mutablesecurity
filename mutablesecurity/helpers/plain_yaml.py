@@ -88,5 +88,7 @@ def dump_to_file(content: dict, filename: str) -> None:
         raise NotPlainDictionaryException()
 
     raw_content = yaml.dump(content, Dumper=yaml.SafeDumper)
+
+    # skipcq: PTC-W6004
     with open(filename, mode="w", encoding="utf-8") as yaml_file:
         yaml_file.write(raw_content)

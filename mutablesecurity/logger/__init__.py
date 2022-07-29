@@ -17,4 +17,4 @@ def get_logger() -> logging.Logger:
     Returns:
         logging.Logger: Logger
     """
-    return Logger().logger
+    return Logger().native_logger

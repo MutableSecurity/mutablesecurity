@@ -11,7 +11,7 @@ class Logger(metaclass=Singleton):
     """Class modeling a logger."""
 
     PASSWORD_REPLACEMENT_STRING = "REDACTED"  # noqa: S105
-    logger: logging.Logger
+    native_logger: logging.Logger
     old_factory: typing.Any
 
     @staticmethod
@@ -51,7 +51,7 @@ class Logger(metaclass=Singleton):
         )
 
         # Get the MutableSecurity logger
-        self.logger = logging.getLogger()
+        self.native_logger = logging.getLogger()
 
         # Log a message
         logging.debug("The logger was initialized.")
@@ -67,6 +67,6 @@ class Logger(metaclass=Singleton):
             verbose (bool): Boolean indicating if the logging is verbose
         """
         if verbose:
-            self.logger.setLevel(logging.INFO)
+            self.native_logger.setLevel(logging.INFO)
         else:
-            self.logger.setLevel(logging.DEBUG)
+            self.native_logger.setLevel(logging.DEBUG)

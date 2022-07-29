@@ -28,4 +28,7 @@ def preserve_test_config_file() -> typing.Generator[None, None, None]:
         ) as config_file:
             config_file.write(content)
     else:
-        os.remove(ConfigurationManager.CONFIGURATION_FILENAME)
+        try:
+            os.remove(ConfigurationManager.CONFIGURATION_FILENAME)
+        except OSError:
+            pass

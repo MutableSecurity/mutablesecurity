@@ -20,10 +20,14 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Install dependencies
         run: poetry install --no-interaction
+      - name: Create a configuration file
+        run: |
+          echo 'developer_mode: True' > .mutablesecurity
       - name: Run pytest
         run: |
-          source .venv/bin/activate
-          coverage run -m pytest tests/ --ignore=tests/solutions/test_invalid_commands.py
-          coverage run -a -m pytest tests/solutions/test_invalid_commands.py
+          poetry run coverage run -m pytest tests/ --ignore=tests/solutions/test_invalid_commands.py
+          poetry run coverage run -a -m pytest tests/solutions/test_invalid_commands.py
       - name: Report coverage to Coveralls
-        run: coveralls
+        run: poetry run coveralls --service=github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

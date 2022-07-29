@@ -21,9 +21,7 @@ jobs:
       - name: Install dependencies
         run: poetry install --no-interaction
       - name: Run the generation script
-        run: |
-          source .venv/bin/activate
-          python3 others/readme_generation_script/generate.py
+        run: poetry run python3 others/readme_generation_script/generate.py
       - name: Commit the changes
         run: |
           git config --local user.email "action@github.com"
