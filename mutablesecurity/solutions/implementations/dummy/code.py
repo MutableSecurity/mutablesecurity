@@ -110,7 +110,7 @@ class UbuntuRequirement(BaseTest):
     FACT = CheckIfUbuntu
 
 
-class PresenceTest(BaseTest):
+class FilePresenceTest(BaseTest):
     class CheckIfPresent(FactBase):
         command = "if [ -e /tmp/dummy ] ; then echo '1'; else echo '0' ; fi"
 
@@ -145,7 +145,7 @@ class Dummy(BaseSolution):
     ]
     TESTS = [
         UbuntuRequirement,  # type: ignore[list-item]
-        PresenceTest,  # type: ignore[list-item]
+        FilePresenceTest,  # type: ignore[list-item]
     ]
     LOGS = [
         ContentLogs,  # type: ignore[list-item]

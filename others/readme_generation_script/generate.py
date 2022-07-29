@@ -24,7 +24,7 @@ MATURITY_COLOR_MAPPING = {
     SolutionMaturity.REFACTORING: "yellowgreen",
     SolutionMaturity.UNDER_DEVELOPMENT: "red",
 }
-TEMPLATE_PATH = "others/readme_generation/README.template.md"
+TEMPLATE_PATH = "others/readme_generation_script/README.template.md"
 README_PATH = "README.md"
 ROW_FORMAT = """        <tr>
             <td>
