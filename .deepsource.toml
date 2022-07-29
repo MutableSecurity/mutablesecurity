@@ -1,0 +1,22 @@
+version = 1
+
+test_patterns = [
+  "tests/**",
+  "mutablesecurity/helpers/pytest.py"
+]
+
+exclude_patterns = [
+  "mutablesecurity/solutions/implementations/**",
+  "others/**"
+]
+
+[[analyzers]]
+name = "python"
+enabled = true
+
+  [analyzers.meta]
+  runtime_version = "3.x.x"
+  type_checker = "mypy"
+  max_line_length = 79
+  skip_doc_coverage = ["nonpublic"]
+  additional_builtins = ["mutablesecurity"]

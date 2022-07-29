@@ -57,39 +57,7 @@ Come join the MutableSecurity journey!
         </tr>
     </thead>
     <tbody>
-        <tr>
-            <td>
-                <a href="https://teler.app">
-                    <img src="others/readme_images/solutions/teler.webp">
-                </a>
-            </td>
-            <td>teler is an real-time intrusion detection and threat alert based on web log. Targets only nginx installed on Ubuntu.</td>
-            <td>
-                <img alt="Status: Production" src="https://img.shields.io/badge/Status-Production-blightgreen?style=flat-square">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <a href="https://suricata.io">
-                    <img src="others/readme_images/solutions/suricata.webp">
-                </a>
-            </td>
-            <td>Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.</td>
-            <td>
-                <img alt="Status: Under refactoring" src="https://img.shields.io/badge/Status-Under%20refactoring-yellowgreen?style=flat-square">
-            </td>
-        </tr>
-        <tr>
-            <td>
-                <a href="https://letsencrypt.org/">
-                    <img src="others/readme_images/solutions/lets_encrypt.webp">
-                </a>
-            </td>
-            <td>Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.</td>
-            <td>
-                <img alt="Status: Under refactoring" src="https://img.shields.io/badge/Status-Under%20refactoring-yellowgreen?style=flat-square">
-            </td>
-        </tr>
+{solutions_rows}
         <tr>
             <td colspan=3><center>More coming soon...</center></td>
         </tr>

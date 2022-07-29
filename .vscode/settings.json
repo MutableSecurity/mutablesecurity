@@ -2,9 +2,33 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
-    "python.formatting.provider": "black",
     "editor.formatOnSave": true,
+    "editor.wordWrap": "on",
+    "python.formatting.provider": "black",
     "python.linting.enabled": true,
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Path": ".venv/bin/pflake8",
+    "python.formatting.blackArgs": [
+        "--preview"
+    ],
+    "python.sortImports.path": "${workspaceFolder}/.venv/bin/isort",
+    "python.sortImports.args": [
+        "--src=${workspaceFolder}"
+    ],
+    "python.linting.lintOnSave": true,
+    "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": ".venv/bin/python"
+    "python.pythonPath": ".venv/bin/python",
+    "files.exclude": {
+        ".coverage": true,
+        ".dccache": true,
+        ".feedback": true,
+        ".git": true,
+        ".mypy_cache": true,
+        ".mutablesecurity": true,
+        ".venv": true,
+        "dist": true,
+        "poetry.lock": true,
+        "pyinfra-sudo-askpass": true,
+    },
 }

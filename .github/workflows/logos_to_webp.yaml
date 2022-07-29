@@ -1,0 +1,38 @@
+name: Optimizes the solutions' logos
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "mutablesecurity/solutions/implementations/**/logo.png"
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout the repository content
+        uses: actions/checkout@v2
+      - name: Install WebP utilities
+        run: sudo apt-get install -y webp
+      - name: Resize and convert the solutions' logos
+        run: |
+          mkdir /tmp/logos
+
+          for filename in mutablesecurity/solutions/implementations/*/logo.png; do
+                  id=$(basename "$(dirname "$filename")")
+                  temp_filename=/tmp/logos/$id
+
+                  cp $filename $temp_filename
+                  convert -geometry x200 $temp_filename $temp_filename
+                  cwebp -q 80 $temp_filename -o others/readme_images/solutions/$id.webp
+          done
+      - name: Commit the changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git commit -a -m "Optimizes the solutions' logos"
+      - name: Push the commit
+        uses: ad-m/github-push-action@v0.6.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main

@@ -1,0 +1,7 @@
+full_name: Dummy Security Solution
+description: No security at all!
+references:
+  - https://theywillnotattackmyorganization.com
+maturity: DEV_ONLY
+categories:
+  - NONE

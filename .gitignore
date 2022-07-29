@@ -1,16 +1,24 @@
-# Backup files
-.bak/
-
 # Feedback file
-.feedback
+/.feedback
+
+# Local configuration file
+/.mutablesecurity
+
+# Forgot solutions configurations
+/*.yaml
 
 # Poetry
-.venv/
-dist/
-poetry.lock
+/.venv/
+/dist/
+/poetry.lock
 
 # Python
-__pycache__
+**/__pycache__
+/.mypy_cache
+/.coverage
 
 # Pyinfra
-pyinfra-sudo-askpass
+/pyinfra-sudo-askpass
+
+# Snyk
+/.dccache

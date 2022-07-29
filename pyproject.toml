@@ -30,23 +30,107 @@ include = [
 "Twitter" = "https://twitter.com/mutablesecurity/"
 
 [tool.poetry.dependencies]
-python = "^3.9"
-pyinfra = "^1.6.1"
 Click = "^8.0"
-PyYAML = "6.0"
-rich = "11.2.0"
 humanfriendly = "^10.0"
 packaging = "^21.3"
+pyinfra = "^2.2"
+pypattyrn = "^1.2"
+python = "^3.9"
+PyYAML = "6.0"
 requests = "^2.27.1"
+rich = "11.2.0"
 
 [tool.poetry.scripts]
 mutablesecurity = "mutablesecurity.cli:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
+coverage = {extras = ["toml"], version = "^6.4.2"}
+coveralls = "^3.3.1"
+darglint = "^1.8.1"
+flake8 = "^4.0.1"
+flake8-annotations = "^2.9.0"
+flake8-bandit = "^3.0.0"
+flake8-docstrings = "^1.6.0"
+flake8-print = "^5.0.0"
+flake8-quotes = "^3.3.1"
+flake8-spellcheck = "^0.28.0"
+flake8-tidy-imports = "^4.8.0"
+graphviz = "^0.20"
 isort = "^5.10.1"
+mypy = "^0.961"
+pep8-naming = "^0.13.0"
+pyenchant = "^3.2.2"
 pylint = "^2.13.5"
+pyproject-flake8 = "^0.0.1-alpha.4"
+pytest = "^7.1.2"
+types-PyYAML = "^6.0.9"
+types-requests = "^2.27.30"
+
+[tool.black]
+line-length = 79
+preview = true
+
+[tool.flake8]
+exclude = ".venv"
+inline-quotes = "double"
+extend-ignore = "ANN101,"
+per-file-ignores = """
+    # The __init__.py files only imports the modules defined in the package.
+    ./**/__init__.py: F401
+
+    # The banned module logging is used only here.
+    ./mutablesecurity/logger/**: I251
+
+    # Ease the integration process by not requesting documentation via
+    # docstrings.
+    ./mutablesecurity/solutions/implementations/**/code.py: D101, D102, D103, D106
+
+    # Ease the creation of facts and operations by not requesting functions
+    # documentations (only class)
+    ./mutablesecurity/solutions/common/facts/**: D102
+    ./mutablesecurity/solutions/common/operations/**: D103
+
+    # All the pytest unit tests use asserts.
+    ./tests/**: S101
+    ./mutablesecurity/helpers/pytest.py: S101
+"""
+ban-relative-imports = true
+banned-modules = """
+    logging = Use the logging module instead.
+"""
+dictionaries = "en_US,python,technical"
 
 [tools.isort]
-known_local_folder= ["modules"]
-line_length = 88
+line_length = 79
+profile = "black"
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
+known_first_party= ["src"]
+known_local_folder = ["src"]
+
+[tool.mypy]
+python_version = "3.9"
+show_error_codes = true
+
+[tool.pylint.MASTER]
+init-hook="import sys; sys.path.append('.')"
+
+[tool.pylint.MESSAGES_CONTROL]
+disable="missing-function-docstring"
+
+[tool.pytest.ini_options]
+pythonpath = [
+    ".",
+    "src"
+]
+
+[tool.pylint.SPELLING]
+spelling-dict = "en_US"
+spelling-private-dict-file = "whitelist.txt"
+
+[tool.coverage.run]
+omit = [
+    "mutablesecurity/solutions/implementations/*",
+    "tests/*",
+    "**/greenlet.py"
+]
