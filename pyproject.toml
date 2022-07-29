@@ -38,7 +38,7 @@ pypattyrn = "^1.2"
 python = "^3.9"
 PyYAML = "6.0"
 requests = "^2.27.1"
-rich = "11.2.0"
+rich = "12.5.1"
 
 [tool.poetry.scripts]
 mutablesecurity = "mutablesecurity.cli:main"
