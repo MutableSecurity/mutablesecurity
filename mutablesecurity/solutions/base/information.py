@@ -8,19 +8,14 @@ from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.data_type import DataType
 from mutablesecurity.helpers.exceptions import (
-    InvalidInformationValueException,
-    MandatoryAspectLeftUnsetException,
-    NonWritableInformationException,
-    SolutionInformationNotFoundException,
-    SolutionObjectNotFoundException,
-)
+    InvalidInformationValueException, MandatoryAspectLeftUnsetException,
+    NonWritableInformationException, SolutionInformationNotFoundException,
+    SolutionObjectNotFoundException)
 from mutablesecurity.helpers.type_hints import PyinfraOperation
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
-    BaseConcreteResultObjects,
-    BaseGenericObjectsDescriptions,
-    KeysDescriptions,
-)
+    BaseConcreteResultObjects, BaseGenericObjectsDescriptions,
+    KeysDescriptions)
 
 
 class InformationProperties(Enum):
@@ -51,7 +46,7 @@ class InformationProperties(Enum):
 
     # Description:  Optional to set
     # Requirements: CONFIGURATION
-    # Examples:     Additional threat hunting sources for an IDS
+    # Example:      Additional threat hunting sources for an IDS
     OPTIONAL = __CONFIGURATION_OPTIONALITY_BASE + 2
 
     # Base for configuration's generation mechanism
@@ -85,12 +80,12 @@ class InformationProperties(Enum):
     # Base for writability
     _WRITABILITY_BASE = 30
 
-    # Description: The value could not be written, only read
-    # Example:     Any metric
+    # Description:  The value could not be written, only read
+    # Example:      Any metric
     READ_ONLY = _WRITABILITY_BASE + 1
 
-    # Description: The value could be written and read
-    # Example:     A server on which an agent reports
+    # Description:  The value could be written and read
+    # Example:      A server on which an agent reports
     WRITABLE = _WRITABILITY_BASE + 2
 
     def __str__(self) -> str:

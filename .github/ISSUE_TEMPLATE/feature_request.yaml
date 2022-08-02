@@ -1,5 +1,5 @@
-name: Feature Request
-description: Request a feature in MutableSecurity
+name: Request a feature
+description: Please open an issue
 labels: ["feature-request"]
 body:
   - type: textarea

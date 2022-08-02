@@ -1,5 +1,5 @@
-name: Improvement
-description: Improve the existent codebase of MutableSecurity
+name: Improve the existent codebase
+description: Please open an issue
 labels: ["improvement"]
 body:
   - type: textarea
