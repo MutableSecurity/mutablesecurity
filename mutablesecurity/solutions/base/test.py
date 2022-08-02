@@ -37,7 +37,7 @@ class TestType(Enum):
     # Used to determine if the solution achieves its security-related goals
     SECURITY = 3
 
-    # Used to test if the solution integrates with other components of the
+    # Used to determine if the solution integrates with other components of the
     # infrastructure
     INTEGRATION = 4
 

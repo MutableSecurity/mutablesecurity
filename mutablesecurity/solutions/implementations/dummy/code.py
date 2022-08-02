@@ -81,6 +81,7 @@ class CurrentUserInformation(BaseInformation):
             return output[0]
 
     @staticmethod
+    @deploy
     def set_user(old_value: str, new_value: str) -> None:
         shell(["echo {old_username} {new_username}"])
 

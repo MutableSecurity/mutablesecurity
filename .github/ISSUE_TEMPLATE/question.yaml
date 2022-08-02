@@ -1,5 +1,5 @@
-name: Question
-description: Ask a question about MutableSecurity
+name: Ask a question
+description: Please open an issue
 labels: ["question"]
 body:
   - type: textarea
