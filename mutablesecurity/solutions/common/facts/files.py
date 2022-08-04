@@ -5,7 +5,7 @@ import typing
 from pyinfra.api import FactBase
 
 
-class PresenceTest(FactBase):
+class FilePresenceTest(FactBase):
     """Fact for checking if a file is present on the system."""
 
     @staticmethod

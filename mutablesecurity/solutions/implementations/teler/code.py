@@ -1,5 +1,6 @@
 """Module integrating teler."""
 
+# pylint: disable=protected-access
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg
@@ -14,34 +15,24 @@ from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
-from mutablesecurity.helpers.data_type import (
-    IntegerDataType,
-    StringDataType,
-    StringListDataType,
-)
-from mutablesecurity.helpers.github import (
-    get_asset_from_latest_release,
-    get_latest_release_name,
-)
-from mutablesecurity.solutions.base import (
-    BaseAction,
-    BaseInformation,
-    BaseLog,
-    BaseSolution,
-    BaseSolutionException,
-    BaseTest,
-    InformationProperties,
-    TestType,
-)
-from mutablesecurity.solutions.common.facts.files import PresenceTest
-from mutablesecurity.solutions.common.facts.networking import (
-    InternetConnection,
-)
+from mutablesecurity.helpers.data_type import (BooleanDataType,
+                                               IntegerDataType, StringDataType,
+                                               StringListDataType)
+from mutablesecurity.helpers.github import (get_asset_from_latest_release,
+                                            get_latest_release_name)
+from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
+                                            BaseLog, BaseSolution,
+                                            BaseSolutionException, BaseTest,
+                                            InformationProperties, TestType)
+from mutablesecurity.solutions.common.facts.files import FilePresenceTest
+from mutablesecurity.solutions.common.facts.networking import \
+    InternetConnection
 from mutablesecurity.solutions.common.facts.process import ProcessRunning
 from mutablesecurity.solutions.common.facts.service import ActiveService
-from mutablesecurity.solutions.common.operations.crontab import (
-    remove_crontabs_by_part,
-)
+from mutablesecurity.solutions.common.operations.crontab import \
+    remove_crontabs_by_part
+from mutablesecurity.solutions.implementations.fail2ban.code import (
+    Fail2ban, ReloadJails)
 
 REPOSITORY_DETAILS = ("kitabisa", "teler")
 
@@ -82,7 +73,7 @@ class WebServerLogFormat(BaseInformation):
         j2_values = {"log_format": WebServerLogFormat.get()}
         files.template(
             src=template_path,
-            dest="/opt/teler/teler.conf",
+            dest="/opt/mutablesecurity/teler/teler.conf",
             configuration=j2_values,
             name="Copy the generated configuration into teler's folder.",
         )
@@ -115,7 +106,7 @@ class WebServerLogLocation(BaseInformation):
         StopProcess.execute()
 
         remove_crontabs_by_part(
-            unique_part="/opt/teler/teler",
+            unique_part="/opt/mutablesecurity/teler/teler",
             name="Removes the crontab containing the old log location",
         )
         server.crontab(
@@ -149,8 +140,11 @@ class ProcessCommand(BaseInformation):
         @staticmethod
         def process(output: typing.List[str]) -> str:
             return (
-                f"tail -f {WebServerLogLocation.get()} | /opt/teler/teler"
-                " -c /opt/teler/teler.conf"
+                f"tail -f {WebServerLogLocation.get()} |"
+                " /opt/mutablesecurity/teler/teler -c"
+                " /opt/mutablesecurity/teler/teler.conf  2>&1 |  sed -u -r"
+                r' "s/\\x1B\[([0-9]{1,3}(;[0-9]{1,2})?)?[mGK]//g" | tee'
+                " --append /var/log/teler.text.log"
             )
 
     IDENTIFIER = "command"
@@ -169,7 +163,7 @@ class ProcessCommand(BaseInformation):
 class Version(BaseInformation):
     class VersionFact(FactBase):
         # Teler returns the major version as an exit code
-        command = "/opt/teler/teler -v || true"
+        command = "/opt/mutablesecurity/teler/teler -v || true"
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
@@ -184,6 +178,48 @@ class Version(BaseInformation):
     DEFAULT_VALUE = None
     GETTER = VersionFact
     SETTER = None
+
+
+class Fail2banIntegration(BaseInformation):
+    @staticmethod
+    @deploy
+    def integrate_fail2ban(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        Fail2ban._ensure_installation_state(installed=True)
+
+        filter_path = os.path.join(
+            os.path.dirname(__file__), "files/filter.conf"
+        )
+        files.put(
+            src=filter_path,
+            dest="/etc/fail2ban/filter.d/teler.conf",
+            name="Uploads the Fail2ban filter configuration for teler.",
+        )
+
+        jail_path = os.path.join(os.path.dirname(__file__), "files/jail.conf")
+        files.put(
+            src=jail_path,
+            dest="/etc/fail2ban/jail.d/teler.conf",
+            name="Uploads the Fail2ban jail configuration for teler.",
+        )
+
+        ReloadJails.execute()
+
+    IDENTIFIER = "fail2ban_integration"
+    DESCRIPTION = "Whether the integration with Fail2ban is activated"
+    INFO_TYPE = BooleanDataType
+    PROPERTIES = [
+        InformationProperties.CONFIGURATION,
+        InformationProperties.MANDATORY,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = False
+    GETTER = FilePresenceTest
+    GETTER_ARGS = ("/etc/fail2ban/jail.d/teler.conf",)
+    SETTER = integrate_fail2ban
 
 
 class BinaryArchitectureFact(FactBase):
@@ -215,7 +251,7 @@ class BinaryArchitecture(BaseInformation):
 
 class AlertsCount(BaseInformation):
     class AlertsCountFact(FactBase):
-        command = "cat /var/log/teler.log | egrep '^{' | wc -l"
+        command = "cat /var/log/teler.json.log | egrep '^{' | wc -l"
 
         @staticmethod
         def process(output: typing.List[str]) -> int:
@@ -239,7 +275,9 @@ class DailyAlertsCount(BaseInformation):
         def command() -> str:
             current_date = datetime.today().strftime("%d/%b/%Y")
 
-            return f"cat /var/log/teler.log | grep '{current_date}' | wc -l"
+            return (
+                f"cat /var/log/teler.json.log | grep '{current_date}' | wc -l"
+            )
 
         @staticmethod
         def process(output: typing.List[str]) -> int:
@@ -260,9 +298,9 @@ class DailyAlertsCount(BaseInformation):
 class TopAttacksTypes(BaseInformation):
     class TopAttacksTypesFact(FactBase):
         command = (
-            "cat /var/log/teler.log | jq -s '.' | jq  'group_by (.category)[]"
-            " | {type: .[0].category, occurances: length}' | jq -s | jq -S . |"
-            " jq 'sort_by(.occurances) | reverse | .[0:3]'"
+            "cat /var/log/teler.json.log | jq -s '.' | jq  'group_by"
+            " (.category)[] | {type: .[0].category, occurances: length}' | jq"
+            " -s | jq -S . | jq 'sort_by(.occurances) | reverse | .[0:3]'"
         )
 
         @staticmethod
@@ -289,7 +327,7 @@ class TopAttacksTypes(BaseInformation):
 class TopAttackers(BaseInformation):
     class TopAttackersFact(FactBase):
         command = (
-            "cat /var/log/teler.log | jq -s '.' | jq  'group_by"
+            "cat /var/log/teler.json.log | jq -s '.' | jq  'group_by"
             " (.remote_addr)[] | {attacker: .[0].remote_addr, occurances:"
             " length}' | jq -s | jq -S . | jq 'sort_by(.occurances) | reverse"
             " | .[0:3]'"
@@ -337,7 +375,7 @@ class StopProcess(BaseAction):
     @deploy
     def stop_process() -> None:
         server.shell(
-            commands=["killall -9 /opt/teler/teler || true"],
+            commands=["killall -9 /opt/mutablesecurity/teler/teler || true"],
             name="Kills the teler process.",
         )
 
@@ -368,8 +406,8 @@ class BadUserAgentDetection(BaseTest):
             current_date = datetime.today().strftime("%d/%b/%Y:%H:%M")
 
             check_command = (
-                "cat /var/log/teler.log | jq 'select((.http_user_agent =="
-                ' "curl x MutableSecurity") and (.time_local |'
+                "cat /var/log/teler.json.log | jq 'select((.http_user_agent"
+                ' == "curl x MutableSecurity") and (.time_local |'
                 f' startswith("{current_date}")))\' | wc -l'
             )
 
@@ -398,7 +436,7 @@ class ProcessUpAndRunning(BaseTest):
     DESCRIPTION = "Checks if teler's process is running."
     TEST_TYPE = TestType.OPERATIONAL
     FACT = ProcessRunning
-    FACT_ARGS = ("/opt/teler/teler",)
+    FACT_ARGS = ("/opt/mutablesecurity/teler/teler",)
 
 
 class ActiveNginx(BaseTest):
@@ -429,21 +467,34 @@ class BinaryPresenceTest(BaseTest):
     IDENTIFIER = "presence"
     DESCRIPTION = "Checks if a file is present."
     TEST_TYPE = TestType.PRESENCE
-    FACT = PresenceTest
-    FACT_ARGS = ("/opt/teler/teler",)
+    FACT = FilePresenceTest
+    FACT_ARGS = ("/opt/mutablesecurity/teler/teler",)
 
 
-class Alerts(BaseLog):
-    class AlertsFact(FactBase):
-        command = "cat /var/log/teler.log"
+class JsonAlerts(BaseLog):
+    class JsonAlertsFact(FactBase):
+        command = "cat /var/log/teler.json.log"
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
             return "".join(output)
 
-    IDENTIFIER = "alerts"
-    DESCRIPTION = "Generated alerts"
-    FACT = AlertsFact
+    IDENTIFIER = "json_alerts"
+    DESCRIPTION = "Generated alerts in JSON format"
+    FACT = JsonAlertsFact
+
+
+class TextAlerts(BaseLog):
+    class TextAlertsFact(FactBase):
+        command = "cat /var/log/teler.text.log"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return "".join(output)
+
+    IDENTIFIER = "json_alerts"
+    DESCRIPTION = "Generated alerts in JSON format"
+    FACT = TextAlertsFact
 
 
 class Teler(BaseSolution):
@@ -458,6 +509,7 @@ class Teler(BaseSolution):
         DailyAlertsCount,  # type: ignore[list-item]
         TopAttacksTypes,  # type: ignore[list-item]
         TopAttackers,  # type: ignore[list-item]
+        Fail2banIntegration,  # type: ignore[list-item]
     ]
     TESTS = [
         BadUserAgentDetection,  # type: ignore[list-item]
@@ -468,7 +520,8 @@ class Teler(BaseSolution):
         ActiveNginx,  # type: ignore[list-item]
     ]
     LOGS = [
-        Alerts,  # type: ignore[list-item]
+        JsonAlerts,  # type: ignore[list-item]
+        TextAlerts,  # type: ignore[list-item]
     ]
     ACTIONS = [
         StartProcess,  # type: ignore[list-item]
@@ -480,7 +533,6 @@ class Teler(BaseSolution):
     def _install() -> None:
         apt.packages(
             packages=["jq", "tmux"],
-            latest=True,
             name="Installs the required packages",
         )
 
@@ -509,7 +561,7 @@ class Teler(BaseSolution):
         )
 
         server.shell(
-            commands=["cp /tmp/teler /opt/teler/teler"],
+            commands=["cp /tmp/teler /opt/mutablesecurity/teler/teler"],
             name="Moves the binary into the created folder.",
         )
 
@@ -519,13 +571,13 @@ class Teler(BaseSolution):
         j2_values = {"log_format": WebServerLogFormat.get()}
         files.template(
             src=template_path,
-            dest="/opt/teler/teler.conf",
+            dest="/opt/mutablesecurity/teler/teler.conf",
             configuration=j2_values,
             name="Copy the generated configuration into teler's folder.",
         )
 
         files.file(
-            "/var/log/teler.log",
+            "/var/log/teler.json.log",
             present=True,
             name="Creates the log file.",
         )
@@ -545,7 +597,7 @@ class Teler(BaseSolution):
         StopProcess.execute()
 
         remove_crontabs_by_part(
-            unique_part="/opt/teler/teler",
+            unique_part="/opt/mutablesecurity/teler/teler",
             name="Removes the crontab to automatically run teler.",
         )
 
@@ -557,8 +609,14 @@ class Teler(BaseSolution):
 
         if remove_logs:
             files.file(
-                name="Removes the teler log file.",
-                path="/var/log/teler.log",
+                name="Removes teler's JSON log file.",
+                path="/var/log/teler.json.log",
+                present=False,
+            )
+
+            files.file(
+                name="Removes teler's text log file.",
+                path="/var/log/teler.text.log",
                 present=False,
             )
 

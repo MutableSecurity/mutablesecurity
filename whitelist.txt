@@ -35,6 +35,7 @@ docstring
 docstrings
 enum
 enums
+fail2ban
 fontcolor
 formatter
 func
@@ -51,8 +52,10 @@ helpformatter
 hostname
 hostnames
 idps
+ids
 inexistent
 informationproperties
+ips
 isfile
 isfunction
 issubset
@@ -106,15 +109,16 @@ testsuite
 traceback
 tui
 uid
+unban
 unflatten
 uninstallation
 unsets
 uppercased
 uppercases
+w6004
 wazuh
 wget
 writability
 writelines
 xdr
 yaml
-W6004

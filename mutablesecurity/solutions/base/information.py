@@ -8,14 +8,19 @@ from pyinfra.api import FactBase
 
 from mutablesecurity.helpers.data_type import DataType
 from mutablesecurity.helpers.exceptions import (
-    InvalidInformationValueException, MandatoryAspectLeftUnsetException,
-    NonWritableInformationException, SolutionInformationNotFoundException,
-    SolutionObjectNotFoundException)
+    InvalidInformationValueException,
+    MandatoryAspectLeftUnsetException,
+    NonWritableInformationException,
+    SolutionInformationNotFoundException,
+    SolutionObjectNotFoundException,
+)
 from mutablesecurity.helpers.type_hints import PyinfraOperation
 from mutablesecurity.solutions.base.object import BaseManager, BaseObject
 from mutablesecurity.solutions.base.result import (
-    BaseConcreteResultObjects, BaseGenericObjectsDescriptions,
-    KeysDescriptions)
+    BaseConcreteResultObjects,
+    BaseGenericObjectsDescriptions,
+    KeysDescriptions,
+)
 
 
 class InformationProperties(Enum):
@@ -117,6 +122,7 @@ class BaseInformation(BaseObject):
     INFO_TYPE: typing.Type[DataType]
     PROPERTIES: typing.List[InformationProperties]
     GETTER: FactBase
+    GETTER_ARGS: tuple
     SETTER: typing.Optional[PyinfraOperation]
 
     @staticmethod
@@ -232,7 +238,8 @@ class InformationManager(BaseManager):
         # Get the concrete values
         for info in info_list:
             if InformationProperties.NON_DEDUCTIBLE not in info.PROPERTIES:
-                info.set_actual_value(host.get_fact(info.GETTER))
+                args = getattr(info, "GETTER_ARGS", ())
+                info.set_actual_value(host.get_fact(info.GETTER, *args))
 
         return self.represent_as_dict(identifier=identifier)
 
@@ -275,10 +282,10 @@ class InformationManager(BaseManager):
             if not info.validate_value(new_value):
                 raise InvalidInformationValueException()
 
+        info.set_actual_value(new_value)
+
         if not only_local and info.SETTER:
             info.SETTER(old_value, new_value)
-
-        info.set_actual_value(new_value)
 
     def set_default_values_locally(self) -> None:
         """Set the default values in the local configuration."""
@@ -292,7 +299,8 @@ class InformationManager(BaseManager):
                 InformationProperties.AUTO_GENERATED_BEFORE_INSTALL
                 in info.PROPERTIES
             ):
-                info.set_actual_value(host.get_fact(info.GETTER))
+                args = getattr(info, "GETTER_ARGS", ())
+                info.set_actual_value(host.get_fact(info.GETTER, *args))
 
     def populate(self, export: dict, post_installation: bool = True) -> None:
         """Set all the local values from an export dictionary.
@@ -319,7 +327,8 @@ class InformationManager(BaseManager):
                     in info.PROPERTIES
                 )
             ):
-                value = host.get_fact(info.GETTER)
+                args = getattr(info, "GETTER_ARGS", ())
+                value = host.get_fact(info.GETTER, *args)
                 self.set(key, value, only_local=True)
 
         self.validate_all()
@@ -348,7 +357,7 @@ class InformationManager(BaseManager):
 
             if (
                 InformationProperties.MANDATORY in info.PROPERTIES
-                and not info.get()
+                and info.get() is None
             ):
                 raise MandatoryAspectLeftUnsetException()
 

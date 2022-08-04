@@ -1,0 +1,8 @@
+full_name: Fail2ban
+description: Fail2ban is an intrusion prevention software framework that protects Unix-like servers from brute-force attacks. It scans log files and bans IP addresses conducting too many failed operations (for example, login attempts). This module targets Debian-based operating systems and has already set a SSH jail.
+references:
+  - https://www.fail2ban.org
+  - https://github.com/fail2ban/fail2ban
+maturity: PRODUCTION
+categories:
+  - HOST_IPS

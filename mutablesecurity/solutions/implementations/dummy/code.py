@@ -10,24 +10,22 @@ from pyinfra.api.deploy import deploy
 from pyinfra.api.facts import FactBase
 from pyinfra.operations.server import shell
 
-from mutablesecurity.solutions.base import (
-    BaseAction,
-    BaseInformation,
-    BaseLog,
-    BaseSolution,
-    BaseTest,
-    InformationProperties,
-    IntegerDataType,
-    StringDataType,
-    TestType,
-)
+from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
+                                            BaseLog, BaseSolution, BaseTest,
+                                            InformationProperties,
+                                            IntegerDataType, StringDataType,
+                                            TestType)
+from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 
 
 class AppendToFileAction(BaseAction):
     @staticmethod
     @deploy
     def append_to_file(content: str, number: int) -> None:
-        shell([f"echo '{content}' >> /tmp/dummy.{number}"])
+        shell(
+            [f"echo '{content}' >> /tmp/dummy.{number}"],
+            name="Creates a new file.",
+        )
 
     IDENTIFIER = "append_to_file"
     DESCRIPTION = "Appends a text to a file."
@@ -98,13 +96,6 @@ class CurrentUserInformation(BaseInformation):
 
 
 class UbuntuRequirement(BaseTest):
-    class CheckIfUbuntu(FactBase):
-        command = "uname -a"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> bool:
-            return "ubuntu" in "".join(output).lower()
-
     IDENTIFIER = "ubuntu"
     DESCRIPTION = "Checks if the operating system is Ubuntu."
     TEST_TYPE = TestType.REQUIREMENT
