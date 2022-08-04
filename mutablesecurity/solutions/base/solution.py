@@ -14,6 +14,7 @@ from abc import ABC, abstractmethod
 from enum import Enum
 
 from pyinfra.api.deploy import deploy
+from pyinfra.operations import files
 
 from mutablesecurity.helpers.exceptions import (
     InvalidMetaException,
@@ -49,8 +50,9 @@ class SolutionCategories(Enum):
     """Enumeration for defining categories of security solutions."""
 
     WEB_IDS = "Web Intrusion Detection System"
-    NETWORK_IDPS = "Network Detection and Prevention System"
+    NETWORK_IDPS = "Network Intrusion Detection and Prevention System"
     WEB_ENCRYPTION = "Encryption for Web Applications"
+    HOST_IPS = "Host Intrusion Prevention System"
     NONE = "No Security"
 
     def __str__(self) -> str:
@@ -204,10 +206,39 @@ class BaseSolution(ABC):
         return cls.INFORMATION_MANAGER.get(identifier)
 
     @classmethod
+    def __get_home_path(
+        cls: typing.Type["BaseSolution"],
+    ) -> str:
+        return os.path.join("/opt/mutablesecurity", cls.IDENTIFIER)
+
+    @classmethod
     @deploy
-    def __ensure_installation_state(
+    def __create_home_path(
+        cls: typing.Type["BaseSolution"],
+    ) -> None:
+        files.directory(cls.__get_home_path(), present=True)
+
+    @classmethod
+    @deploy
+    def __remove_home_path(
+        cls: typing.Type["BaseSolution"],
+    ) -> None:
+        files.directory(cls.__get_home_path(), present=False)
+
+    @classmethod
+    @deploy
+    def _ensure_installation_state(
         cls: typing.Type["BaseSolution"], installed: bool
     ) -> None:
+        """Ensure that the solution is installed.
+
+        Mandatory executed when performing actions against an already-installed
+        solution.
+
+        Args:
+            installed (bool): Boolean indicating if the solution needs to be
+                already installed or not on the system.
+        """
         cls.__load_current_configuration_from_file(True)
 
         raised_exception = (
@@ -252,7 +283,7 @@ class BaseSolution(ABC):
         """Install the security solution."""
         cls.__load_current_configuration_from_file(False)
 
-        cls.__ensure_installation_state(False)
+        cls._ensure_installation_state(False)
 
         # Ensure that the requirements are met
         cls.TESTS_MANAGER.test(
@@ -260,6 +291,8 @@ class BaseSolution(ABC):
             TestType.REQUIREMENT,
             exception_when_fail=RequirementsNotMetException,
         )
+
+        cls.__create_home_path()
 
         cls._install()
 
@@ -278,7 +311,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Response with the requested information
         """
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
 
         results = cls.INFORMATION_MANAGER.get(identifier)
         cls.__save_current_configuration_as_file()
@@ -298,7 +331,7 @@ class BaseSolution(ABC):
             identifier (str):  Key identifying the information
             value (typing.Any): New value of the information
         """
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls.INFORMATION_MANAGER.set(identifier, value)
@@ -320,7 +353,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Result with tests results
         """
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         results = cls.TESTS_MANAGER.test(identifier, only_check=True)
@@ -342,7 +375,7 @@ class BaseSolution(ABC):
         Returns:
             ConcreteObjectsResult: Result with the requested logs
         """
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         results = cls.LOGS_MANAGER.get_content(identifier)
@@ -353,7 +386,7 @@ class BaseSolution(ABC):
     @deploy
     def update(cls: typing.Type["BaseSolution"]) -> None:
         """Update the security solution."""
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls._update()
@@ -362,10 +395,12 @@ class BaseSolution(ABC):
     @deploy
     def uninstall(cls: typing.Type["BaseSolution"]) -> None:
         """Uninstall a security solution."""
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls._uninstall()
+
+        cls.__remove_home_path()
 
     @classmethod
     @deploy
@@ -382,7 +417,7 @@ class BaseSolution(ABC):
                 of the action. Defaults to None if all actions needs to be
                 executed.
         """
-        cls.__ensure_installation_state(True)
+        cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
 
         cls.ACTIONS_MANAGER.execute(identifier, args)

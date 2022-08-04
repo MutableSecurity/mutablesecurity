@@ -1,0 +1,10 @@
+[sshd]
+enabled = true
+port = {{ configuration["ssh_port"] }}
+backend = polling
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = {{ configuration["max_retries"] }}
+bantime = {{ configuration["ban_time"] }}
+ignoreself = true
+ignoreip = {{ configuration["ignored_ips"] }}

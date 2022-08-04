@@ -20,6 +20,9 @@ jobs:
         uses: snok/install-poetry@v1
       - name: Install dependencies
         run: poetry install --no-interaction
+      - name: Create a configuration file
+        run: |
+          echo 'developer_mode: True' > .mutablesecurity
       - name: Run the generation script
         run: poetry run python3 others/readme_generation_script/generate.py
       - name: Create a Pull Request

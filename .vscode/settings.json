@@ -2,8 +2,23 @@
     "editor.codeActionsOnSave": {
         "source.organizeImports": true
     },
+    "editor.rulers": [
+        80
+    ],
     "editor.formatOnSave": true,
     "editor.wordWrap": "on",
+    "files.exclude": {
+        ".coverage": true,
+        ".dccache": true,
+        ".feedback": true,
+        ".git": true,
+        ".mypy_cache": true,
+        ".mutablesecurity": true,
+        ".venv": true,
+        "dist": true,
+        "poetry.lock": true,
+        "pyinfra-sudo-askpass": true,
+    },
     "python.formatting.provider": "black",
     "python.linting.enabled": true,
     "python.linting.flake8Enabled": true,
@@ -18,17 +33,5 @@
     "python.linting.lintOnSave": true,
     "python.linting.mypyEnabled": true,
     "python.linting.pylintEnabled": true,
-    "python.pythonPath": ".venv/bin/python",
-    "files.exclude": {
-        ".coverage": true,
-        ".dccache": true,
-        ".feedback": true,
-        ".git": true,
-        ".mypy_cache": true,
-        ".mutablesecurity": true,
-        ".venv": true,
-        "dist": true,
-        "poetry.lock": true,
-        "pyinfra-sudo-askpass": true,
-    }
+    "python.pythonPath": ".venv/bin/python"
 }
