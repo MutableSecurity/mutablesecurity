@@ -18,12 +18,12 @@ jobs:
           mkdir /tmp/logos
 
           for filename in mutablesecurity/solutions/implementations/*/logo.png; do
-                  id=$(basename "$(dirname "$filename")")
-                  temp_filename=/tmp/logos/$id
+            id=$(basename "$(dirname "$filename")")
+            temp_filename=/tmp/logos/$id
 
-                  cp $filename $temp_filename
-                  convert -geometry x200 $temp_filename $temp_filename
-                  cwebp -q 80 $temp_filename -o others/readme_images/solutions/$id.webp
+            cp $filename $temp_filename
+            convert -geometry x200 $temp_filename $temp_filename
+            cwebp -q 80 $temp_filename -o others/readme_images/solutions/$id.webp
           done
       - name: Create a Pull Request
         uses: peter-evans/create-pull-request@v4
