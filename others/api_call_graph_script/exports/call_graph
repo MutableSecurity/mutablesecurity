@@ -53,6 +53,10 @@ digraph "Call Graph" {
 			shape=box,
 			style=filled
 		];
+		_ensure_installation_state	[color=royalblue,
+			label=_ensure_installation_state,
+			shape=box,
+			style=filled];
 		_install	[color=royalblue,
 			label=_install,
 			shape=box,
@@ -96,8 +100,16 @@ digraph "Call Graph" {
 			label=__get_information_from_remote,
 			shape=box,
 			style=filled];
-		__ensure_installation_state	[color=lightslategray,
-			label=__ensure_installation_state,
+		__get_home_path	[color=lightslategray,
+			label=__get_home_path,
+			shape=box,
+			style=filled];
+		__create_home_path	[color=lightslategray,
+			label=__create_home_path,
+			shape=box,
+			style=filled];
+		__remove_home_path	[color=lightslategray,
+			label=__remove_home_path,
 			shape=box,
 			style=filled];
 	}
@@ -107,28 +119,20 @@ digraph "Call Graph" {
 			shape=ellipse,
 			style=filled
 		];
-		"ACTIONS_MANAGER.execute"	[color=lightgray,
-			label="ACTIONS_MANAGER.execute",
+		"INFORMATION_MANAGER.populate"	[color=lightgray,
+			label="INFORMATION_MANAGER.populate",
 			shape=ellipse,
 			style=filled];
-		"INFORMATION_MANAGER.set_default_values_locally"	[color=lightgray,
-			label="INFORMATION_MANAGER.set_default_values_locally",
+		"ACTIONS_MANAGER.execute"	[color=lightgray,
+			label="ACTIONS_MANAGER.execute",
 			shape=ellipse,
 			style=filled];
 		"LOGS_MANAGER.get_content"	[color=lightgray,
 			label="LOGS_MANAGER.get_content",
 			shape=ellipse,
 			style=filled];
-		"INFORMATION_MANAGER.represent_as_dict"	[color=lightgray,
-			label="INFORMATION_MANAGER.represent_as_dict",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.set"	[color=lightgray,
-			label="INFORMATION_MANAGER.set",
-			shape=ellipse,
-			style=filled];
-		"INFORMATION_MANAGER.populate"	[color=lightgray,
-			label="INFORMATION_MANAGER.populate",
+		"INFORMATION_MANAGER.set_default_values_locally"	[color=lightgray,
+			label="INFORMATION_MANAGER.set_default_values_locally",
 			shape=ellipse,
 			style=filled];
 		"TESTS_MANAGER.test"	[color=lightgray,
@@ -139,43 +143,55 @@ digraph "Call Graph" {
 			label="INFORMATION_MANAGER.get",
 			shape=ellipse,
 			style=filled];
+		"INFORMATION_MANAGER.represent_as_dict"	[color=lightgray,
+			label="INFORMATION_MANAGER.represent_as_dict",
+			shape=ellipse,
+			style=filled];
+		"INFORMATION_MANAGER.set"	[color=lightgray,
+			label="INFORMATION_MANAGER.set",
+			shape=ellipse,
+			style=filled];
 	}
 	init -> __save_current_configuration_as_file;
 	init -> "INFORMATION_MANAGER.set_default_values_locally"	[minlen=1];
+	install -> _ensure_installation_state;
 	install -> _install	[minlen=1];
 	install -> __load_current_configuration_from_file;
-	install -> __ensure_installation_state;
+	install -> __create_home_path;
 	install -> "TESTS_MANAGER.test";
+	get_information -> _ensure_installation_state;
 	get_information -> __build_manager_result;
 	get_information -> __save_current_configuration_as_file;
-	get_information -> __ensure_installation_state;
 	get_information -> "INFORMATION_MANAGER.get";
+	set_information -> _ensure_installation_state;
 	set_information -> __save_current_configuration_as_file;
 	set_information -> __get_information_from_remote;
-	set_information -> __ensure_installation_state;
 	set_information -> "INFORMATION_MANAGER.set"	[minlen=1];
+	test -> _ensure_installation_state;
 	test -> __build_manager_result;
 	test -> __get_information_from_remote;
-	test -> __ensure_installation_state;
 	test -> "TESTS_MANAGER.test";
+	get_logs -> _ensure_installation_state;
 	get_logs -> __build_manager_result;
 	get_logs -> __get_information_from_remote;
-	get_logs -> __ensure_installation_state;
 	get_logs -> "LOGS_MANAGER.get_content"	[minlen=1];
+	update -> _ensure_installation_state;
 	update -> _update	[minlen=1];
 	update -> __get_information_from_remote;
-	update -> __ensure_installation_state;
+	uninstall -> _ensure_installation_state;
 	uninstall -> _uninstall	[minlen=1];
 	uninstall -> __get_information_from_remote;
-	uninstall -> __ensure_installation_state;
+	uninstall -> __remove_home_path;
+	execute -> _ensure_installation_state;
 	execute -> __get_information_from_remote;
-	execute -> __ensure_installation_state;
 	execute -> "ACTIONS_MANAGER.execute"	[minlen=1];
+	_ensure_installation_state -> __load_current_configuration_from_file;
+	_ensure_installation_state -> "TESTS_MANAGER.test";
 	__load_current_configuration_from_file -> __get_configuration_filename;
 	__load_current_configuration_from_file -> "INFORMATION_MANAGER.populate"	[minlen=1];
 	__save_current_configuration_as_file -> __get_configuration_filename;
 	__save_current_configuration_as_file -> "INFORMATION_MANAGER.represent_as_dict"	[minlen=1];
 	__get_information_from_remote -> "INFORMATION_MANAGER.get";
-	__ensure_installation_state -> __load_current_configuration_from_file;
-	__ensure_installation_state -> "TESTS_MANAGER.test";
+	__create_home_path -> __get_home_path;
+	__remove_home_path -> __get_home_path;
 }
