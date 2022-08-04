@@ -6,6 +6,10 @@ on:
   pull_request:
     branches:
       - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -23,7 +27,7 @@ jobs:
       - name: Create a configuration file
         run: |
           echo 'developer_mode: True' > .mutablesecurity
-       - name: Ignore showing the feedback form when running from CLI
+      - name: Ignore showing the feedback form when running from CLI
         run: |
           touch .feedback
       - name: Run pytest
