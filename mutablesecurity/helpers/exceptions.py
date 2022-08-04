@@ -199,7 +199,7 @@ class SolutionsManagerException(MutableSecurityException):
     """An error occurred in the solutions manager module."""
 
 
-class UnacceptedSolutionMaturityException(SolutionsManagerException):
+class UnacceptedSolutionMaturityLevelsException(SolutionsManagerException):
     """The maturity of the solution is not accepted by your user profile."""
 
 

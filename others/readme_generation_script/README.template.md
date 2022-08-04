@@ -50,21 +50,7 @@ Come join the MutableSecurity journey!
 
 ## Supported Cybersecurity Solutions
 
-<table>
-    <thead>
-        <tr>
-            <th>Solution</th>
-            <th>Description</th>
-            <th>Others</th>
-        </tr>
-    </thead>
-    <tbody>
-{solutions_rows}
-        <tr>
-            <td colspan=3><center>More coming soon...</center></td>
-        </tr>
-    </tbody>
-</table>
+{solutions_status_table}
 
 # Installation
 

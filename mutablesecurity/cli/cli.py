@@ -14,6 +14,9 @@ from rich.traceback import install
 
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
+from mutablesecurity.cli.solutions_manager_adapter import (
+    SolutionsManagerAdapter,
+)
 from mutablesecurity.helpers.exceptions import (
     BadArgumentException,
     BadValueException,
@@ -24,11 +27,12 @@ from mutablesecurity.helpers.exceptions import (
 )
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
-from mutablesecurity.solutions_manager import SolutionsManager
 
 MIN_PYTHON_VERSION = (3, 9)
 
+
 console = Console()
+adapter = SolutionsManagerAdapter()
 
 
 def __click_callback(callback: typing.Callable) -> typing.Callable:
@@ -112,15 +116,17 @@ class CommandWithBanner(click.Command):
     "-s",
     "--solution",
     type=click.Choice(
-        SolutionsManager().get_available_solutions_ids(), case_sensitive=True
+        SolutionsManagerAdapter().get_solutions_ids(),
+        case_sensitive=True,
     ),
+    callback=__click_callback(__lower_str_callback),
     help="Solution to manage",
 )
 @click.option(
     "-o",
     "--operation",
     type=click.Choice(
-        SolutionsManager().get_available_operations_ids(),
+        SolutionsManagerAdapter().get_operations_ids(),
         case_sensitive=True,
     ),
     callback=__click_callback(__lower_str_callback),

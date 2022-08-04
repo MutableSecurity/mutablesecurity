@@ -75,7 +75,9 @@ class Main:
             raise exception
 
         # Execute
-        solution_class = SolutionsManager().get_solution_by_id(solution_id)
+        solution_class = SolutionsManager().get_solution_class_by_id(
+            solution_id
+        )
         solution = solution_class()
         operation = SolutionsManager().get_operation_by_id(
             solution, operation_name

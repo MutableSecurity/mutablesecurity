@@ -16,6 +16,13 @@ from enum import Enum
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import files
 
+from mutablesecurity.helpers.colors import (
+    BrightGreenColor,
+    Color,
+    LightGreyColor,
+    RedColor,
+    YellowGreenColor,
+)
 from mutablesecurity.helpers.exceptions import (
     InvalidMetaException,
     NoSolutionConfigurationFileException,
@@ -64,13 +71,58 @@ class SolutionCategories(Enum):
         return self.value
 
 
-class SolutionMaturity(Enum):
+class InnerSolutionMaturityLevel:
+    """Data structure for storing details about a maturity level."""
+
+    caption: str
+    level: int
+    color: Color
+
+    def __init__(self, caption: str, level: int, color: Color) -> None:
+        """Initialize the instance.
+
+        Args:
+            caption (str): Text caption, used when transforming the object to
+                a string
+            level (int): Level, used for comparison with the other levels
+            color (Color): Color to use when visually representing the level
+        """
+        self.caption = caption
+        self.level = level
+        self.color = color
+
+    def __int__(self) -> int:
+        """Transform the level into an integer.
+
+        Returns:
+            int: Integer representation
+        """
+        return self.level
+
+    def __str__(self) -> str:
+        """Transform the level to a string.
+
+        Returns:
+            str: String representation
+        """
+        return self.caption
+
+
+class SolutionMaturityLevels(Enum):
     """Enumeration for defining the solution's maturity level."""
 
-    PRODUCTION = "Production"
-    REFACTORING = "Under refactoring"
-    UNDER_DEVELOPMENT = "Under development"
-    DEV_ONLY = "Development/testing purposes only"
+    PRODUCTION = InnerSolutionMaturityLevel(
+        "Production", 1000, BrightGreenColor
+    )
+    REFACTORING = InnerSolutionMaturityLevel(
+        "Under refactoring", 100, YellowGreenColor
+    )
+    UNDER_DEVELOPMENT = InnerSolutionMaturityLevel(
+        "Under development", 10, RedColor
+    )
+    DEV_ONLY = InnerSolutionMaturityLevel(
+        "Development/testing purposes only", 0, LightGreyColor
+    )
 
     def __str__(self) -> str:
         """Stringify the maturity level.
@@ -78,7 +130,15 @@ class SolutionMaturity(Enum):
         Returns:
             str: Stringified maturity level
         """
-        return self.value
+        return str(self.value)
+
+    def __int__(self) -> int:
+        """Transform the level to a string.
+
+        Returns:
+            int: Integer representation
+        """
+        return int(self.value)
 
 
 class BaseSolution(ABC):
@@ -89,7 +149,7 @@ class BaseSolution(ABC):
     FULL_NAME: str
     DESCRIPTION: str
     REFERENCES: typing.List[str]
-    MATURITY: SolutionMaturity
+    MATURITY: SolutionMaturityLevels
     CATEGORIES: typing.List[SolutionCategories]
 
     # Class members declared explicitly in the child class
@@ -160,7 +220,9 @@ class BaseSolution(ABC):
         cls.DESCRIPTION = meta[cls.MetaKeys.DESCRIPTION.value]
         cls.REFERENCES = meta[cls.MetaKeys.REFERENCES.value]
         try:
-            cls.MATURITY = SolutionMaturity[meta[cls.MetaKeys.MATURITY.value]]
+            cls.MATURITY = SolutionMaturityLevels[
+                meta[cls.MetaKeys.MATURITY.value]
+            ]
             cls.CATEGORIES = [
                 SolutionCategories[cat]
                 for cat in meta[cls.MetaKeys.CATEGORIES.value]

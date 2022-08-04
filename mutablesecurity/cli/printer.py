@@ -13,12 +13,17 @@ from rich.text import Text
 
 from mutablesecurity import config
 from mutablesecurity.cli.messages import MessageFactory, MessageTypes
-from mutablesecurity.helpers.exceptions import (CLIException,
-                                                MutableSecurityException)
+from mutablesecurity.helpers.exceptions import (
+    CLIException,
+    MutableSecurityException,
+)
 from mutablesecurity.main import ResponseTypes, SecurityDeploymentResult
 from mutablesecurity.solutions.base.result import (
-    BaseConcreteResultObjects, BaseGenericObjectsDescriptions,
-    ConcreteObjectsResult, KeysDescriptions)
+    BaseConcreteResultObjects,
+    BaseGenericObjectsDescriptions,
+    ConcreteObjectsResult,
+    KeysDescriptions,
+)
 from mutablesecurity.solutions_manager import SolutionsManager
 
 PrintableMatrix = typing.List[typing.List[str]]
@@ -298,7 +303,9 @@ and run [italic]mutablesecurity feedback[/italic] when you're ready.
         Args:
             solution_id (str): Selected solution's name
         """
-        solution_class = SolutionsManager().get_solution_by_id(solution_id)
+        solution_class = SolutionsManager().get_solution_class_by_id(
+            solution_id
+        )
         solution = solution_class()
 
         categories = [str(cat) for cat in solution.CATEGORIES]

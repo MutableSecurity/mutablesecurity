@@ -1,6 +1,7 @@
 appendleft
 args
 ast
+autodoc
 automations
 autouse
 baseaction
@@ -55,6 +56,7 @@ idps
 ids
 inexistent
 informationproperties
+io
 ips
 isfile
 isfunction
@@ -82,6 +84,7 @@ pencolor
 png
 powershell
 ptc
+py
 pycf
 pyinfra
 pyinfrahosttuple
@@ -92,6 +95,7 @@ reraising
 safeload
 securitydeploymentresult
 skipcq
+solutionsgenerator
 src
 stateful
 stderr

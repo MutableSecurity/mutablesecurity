@@ -14,18 +14,14 @@ def test_valid_solutions_operations() -> None:
     manager = SolutionsManager()
 
     # Get all the available solutions
-    solutions = manager.get_available_solutions_ids()
+    solutions = manager.get_production_solutions()
     assert len(solutions) != 0, "No solution was retrieved."
 
     # Get a reference to the first solution
-    solution_id = solutions[0]
-    solution = manager.get_solution_by_id(solution_id)
-    assert (
-        solution is not None
-    ), 'Solution with ID "{solution_id}" was not returned'
+    solution = solutions[0]
     assert isinstance(
         solution, object
-    ), 'Solution with ID "{solution_id}" is not a class.'
+    ), 'Solution with ID "{solution.IDENTIFIER}" is not a class.'
 
     # Get all the operations
     operations = manager.get_available_operations_ids()
@@ -49,7 +45,7 @@ def test_get_solution_by_invalid_id() -> None:
     manager = SolutionsManager()
 
     with pytest.raises(SolutionNotPresentException) as execution:
-        manager.get_solution_by_id("security_panacea_free")
+        manager.get_solution_class_by_id("security_panacea_free")
     assert execution.value, "A security solution panacea was found!"
 
 
@@ -57,9 +53,8 @@ def test_get_operation_by_invalid_id() -> None:
     """Test if an error is raised when passing an invalid operation ID."""
     manager = SolutionsManager()
 
-    solutions = manager.get_available_solutions_ids()
-    solution_id = solutions[0]
-    solution = manager.get_solution_by_id(solution_id)
+    solutions = manager.get_production_solutions()
+    solution = solutions[0]
 
     with pytest.raises(OperationNotImplementedException) as execution:
         manager.get_operation_by_id(solution, "PROTECT_ALL")
