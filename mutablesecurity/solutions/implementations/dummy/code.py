@@ -10,11 +10,17 @@ from pyinfra.api.deploy import deploy
 from pyinfra.api.facts import FactBase
 from pyinfra.operations.server import shell
 
-from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
-                                            BaseLog, BaseSolution, BaseTest,
-                                            InformationProperties,
-                                            IntegerDataType, StringDataType,
-                                            TestType)
+from mutablesecurity.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseSolution,
+    BaseTest,
+    InformationProperties,
+    IntegerDataType,
+    StringDataType,
+    TestType,
+)
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 
 

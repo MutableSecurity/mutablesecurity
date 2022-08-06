@@ -1,7 +1,7 @@
 """Module for sorting security solutions based on different properties."""
 from functools import cmp_to_key
 
-from mutablesecurity.solutions.base import BaseSolution
+from mutablesecurity.solutions.base import BaseSolutionType
 from mutablesecurity.solutions_manager.types import SolutionsList
 
 
@@ -30,7 +30,9 @@ class SolutionsSorter:
             SolutionsList: Maturity-ordered solutions
         """
 
-        def maturity_compare(first: BaseSolution, second: BaseSolution) -> int:
+        def maturity_compare(
+            first: BaseSolutionType, second: BaseSolutionType
+        ) -> int:
             return int(first.MATURITY) - int(second.MATURITY)
 
         solutions = list(self.solutions)

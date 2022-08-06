@@ -9,12 +9,7 @@ The only included information are:
 import typing
 
 from mutablesecurity.autodoc import MaturityLevelBadge
-from mutablesecurity.solutions.base import BaseSolution, SolutionMaturityLevels
-from mutablesecurity.solutions_manager import (
-    SolutionsFilter,
-    SolutionsManager,
-    SolutionsSorter,
-)
+from mutablesecurity.solutions_manager import SolutionsManager
 
 TABLE = """<table>
     <thead>
@@ -46,41 +41,33 @@ ROW_FORMAT = """\
         </tr>"""
 
 
-class SolutionsStatusesTable:
-    """Class generating a table with integrated solutions' statuses."""
+def __generate_rows() -> typing.Generator[str, None, None]:
+    solutions = (
+        SolutionsManager().get_non_dev_solutions_sorted_desc_by_maturity()
+    )
 
-    def __get_sorted_non_dev_solutions(self) -> typing.List[BaseSolution]:
-        solutions = SolutionsManager().get_production_solutions()
-        non_dev_solutions = list(
-            SolutionsFilter(solutions).had_not_maturity_level(
-                SolutionMaturityLevels.DEV_ONLY
-            )
+    for solution in solutions:
+        link = solution.REFERENCES[0]
+        image_id = solution.IDENTIFIER
+        description = solution.DESCRIPTION
+        text_status = str(solution.MATURITY)
+        badge_code = MaturityLevelBadge(solution.MATURITY).export_as_html()
+
+        yield ROW_FORMAT.format(
+            link=link,
+            image_id=image_id,
+            description=description,
+            text_status=text_status,
+            status_badge=badge_code,
         )
 
-        return SolutionsSorter(non_dev_solutions).by_maturity(ascending=False)
 
-    def __generate_rows(self) -> typing.Generator[str, None, None]:
-        for solution in self.__get_sorted_non_dev_solutions():
-            link = solution.REFERENCES[0]
-            image_id = solution.IDENTIFIER
-            description = solution.DESCRIPTION
-            text_status = str(solution.MATURITY)
-            badge_code = MaturityLevelBadge(solution.MATURITY).export_as_html()
+def generate_solutions_statuses_table() -> str:
+    """Generate_the solutions statuses_table.
 
-            yield ROW_FORMAT.format(
-                link=link,
-                image_id=image_id,
-                description=description,
-                text_status=text_status,
-                status_badge=badge_code,
-            )
+    Returns:
+        str: HTML representation of the table
+    """
+    entries = list(__generate_rows())
 
-    def export_as_html(self) -> str:
-        """Export the table as HTML code.
-
-        Returns:
-            str: HTML representation of the table
-        """
-        entries = list(self.__generate_rows())
-
-        return TABLE.format(solutions_rows="".join(entries))
+    return TABLE.format(solutions_rows="".join(entries))

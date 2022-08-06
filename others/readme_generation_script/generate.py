@@ -7,7 +7,7 @@ This script requires to be ran with:
 """
 
 
-from mutablesecurity.autodoc import SolutionsStatusesTable
+from mutablesecurity.autodoc import generate_solutions_statuses_table
 
 TEMPLATE_PATH = "others/readme_generation_script/README.template.md"
 README_PATH = "README.md"
@@ -15,7 +15,7 @@ README_PATH = "README.md"
 
 def main() -> None:
     """Run the main functionality."""
-    solutions_status_table = SolutionsStatusesTable().export_as_html()
+    solutions_status_table = generate_solutions_statuses_table()
 
     with open(TEMPLATE_PATH, "r", encoding="utf-8") as template_readme:
         content = template_readme.read()

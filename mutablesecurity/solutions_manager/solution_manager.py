@@ -19,7 +19,11 @@ from mutablesecurity.helpers.exceptions import (
     SolutionNotPresentException,
 )
 from mutablesecurity.helpers.python import find_public_methods
-from mutablesecurity.solutions.base import BaseSolution
+from mutablesecurity.solutions.base import (
+    BaseSolution,
+    BaseSolutionType,
+    SolutionMaturityLevels,
+)
 from mutablesecurity.solutions_manager.filter import SolutionsFilter
 from mutablesecurity.solutions_manager.sorter import SolutionsSorter
 from mutablesecurity.solutions_manager.types import (
@@ -79,7 +83,24 @@ class SolutionsManager(metaclass=Singleton):
         """
         return list(self.solutions_filter.is_usable_in_production())
 
-    def get_solution_class_by_id(self, module_id: str) -> BaseSolution:
+    def get_non_dev_solutions_sorted_desc_by_maturity(
+        self,
+    ) -> typing.List[BaseSolutionType]:
+        """Get the non-development solutions sorted descending by maturity.
+
+        Returns:
+            typing.List[BaseSolutionType]: List of solutions
+        """
+        solutions = SolutionsManager().get_production_solutions()
+        non_dev_solutions = list(
+            SolutionsFilter(solutions).had_not_maturity_level(
+                SolutionMaturityLevels.DEV_ONLY
+            )
+        )
+
+        return SolutionsSorter(non_dev_solutions).by_maturity(ascending=False)
+
+    def get_solution_class_by_id(self, module_id: str) -> BaseSolutionType:
         """Get a solution class by its identifier.
 
         Args:
@@ -90,7 +111,7 @@ class SolutionsManager(metaclass=Singleton):
                 locally.
 
         Returns:
-            BaseSolution: Implementation class
+            BaseSolutionType: Implementation class
         """
         class_name = self.__translate_solution_id_to_class_name(module_id)
 

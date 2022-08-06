@@ -30,6 +30,7 @@ datastore
 datefmt
 deleter
 deque
+desc
 dest
 dirname
 docstring
@@ -83,6 +84,7 @@ pathlib
 pencolor
 png
 powershell
+proxying
 ptc
 py
 pycf
@@ -96,13 +98,16 @@ safeload
 securitydeploymentresult
 skipcq
 solutionsgenerator
+solutionspecsheet
 src
 stateful
 stderr
 stdout
 str
 stringified
+stringifier
 stringify
+stringifying
 subgraph
 subnode
 sudo

@@ -2,5 +2,5 @@
 
 from mutablesecurity.autodoc.badges import Badge, MaturityLevelBadge
 from mutablesecurity.autodoc.solutions_statuses_table import (
-    SolutionsStatusesTable,
+    generate_solutions_statuses_table,
 )
