@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="others/readme_images/cover.webp" width="600px" alt="Cover">
+    <img src="https://raw.githubusercontent.com/MutableSecurity/mutablesecurity/main/others/readme_images/cover.webp" width="600px" alt="Cover">
     <br/><br/>
     <img src="https://img.shields.io/github/workflow/status/mutablesecurity/mutablesecurity/Executes%20unit%20testing%20and%20coverage%20reporting?color=brightgreen&label=unit%20tests&logo=github&logoColor=white&style=flat-square" alt="Unit Tests">
     <a href='https://coveralls.io/github/MutableSecurity/mutablesecurity?branch=main'>
