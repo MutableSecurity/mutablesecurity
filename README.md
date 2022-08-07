@@ -47,6 +47,7 @@ Come join the MutableSecurity journey!
     - Password-based or key-based SSH for remote hosts
 - Deployments to multiple hosts with the same command
 - Intuitive command line interface
+- Extensive [usage](https://mutablesecurity.io/docs/users) and [contribution](https://mutablesecurity.io/docs/developers) documentations
 
 ## Supported Cybersecurity Solutions
 
