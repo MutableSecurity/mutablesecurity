@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "mutablesecurity"
-version = "0.2.0"
+version = "0.3.0"
 description = "Seamless deployment and management of cybersecurity solutions"
 keywords = ["cybersecurity", "security-solutions", "hardening", "automatic-deployment"]
 license = "MIT"
