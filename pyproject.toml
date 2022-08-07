@@ -48,7 +48,7 @@ black = "^22.1.0"
 coverage = {extras = ["toml"], version = "^6.4.2"}
 coveralls = "^3.3.1"
 darglint = "^1.8.1"
-flake8 = "^5.0.1"
+flake8 = "^4.0.1"
 flake8-annotations = "^2.9.0"
 flake8-bandit = "^3.0.0"
 flake8-docstrings = "^1.6.0"
@@ -60,6 +60,7 @@ graphviz = "^0.20"
 isort = "^5.10.1"
 mypy = "^0.971"
 pep8-naming = "^0.13.0"
+poethepoet = "^0.16.0"
 pyenchant = "^3.2.2"
 pylint = "^2.13.5"
 pyproject-flake8 = "^0.0.1-alpha.4"
@@ -70,6 +71,13 @@ types-requests = "^2.27.30"
 [tool.black]
 line-length = 79
 preview = true
+include = '\.pyi?$'
+extend-exclude = """
+(
+    ^/.venv/*
+    ^/dist/*
+)
+"""
 
 [tool.flake8]
 exclude = ".venv"
@@ -105,12 +113,20 @@ dictionaries = "en_US,python,technical"
 line_length = 79
 profile = "black"
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER"]
-known_first_party= ["src"]
-known_local_folder = ["src"]
+known_first_party= ["mutablesecurity"]
+known_local_folder = ["mutablesecurity"]
 
 [tool.mypy]
 python_version = "3.9"
+files = [
+  "mutablesecurity",
+  "others",
+  "tests"
+]
 show_error_codes = true
+namespace_packages = true
+explicit_package_bases = true
+ignore_missing_imports = true
 
 [tool.pylint.MASTER]
 init-hook="import sys; sys.path.append('.')"
@@ -121,7 +137,9 @@ disable="missing-function-docstring"
 [tool.pytest.ini_options]
 pythonpath = [
     ".",
-    "src"
+    "mutablesecurity",
+    "others",
+    "tests"
 ]
 
 [tool.pylint.SPELLING]
@@ -134,3 +152,60 @@ omit = [
     "tests/*",
     "**/greenlet.py"
 ]
+
+[tool.poe.tasks]
+
+    [tool.poe.tasks.lint_flake8]
+    help = "Lint with flake8."
+    cmd = "poetry run pflake8"
+
+    [tool.poe.tasks.lint_pylint]
+    help = "Lint with pylint."
+    cmd = "poetry run pylint --recursive=y --ignore=dist,.venv ."
+
+    [tool.poe.tasks.lint_mypy]
+    help = "Lint with mypy."
+    cmd = "poetry run mypy"
+
+    [tool.poe.tasks.lint]
+    help = "Lint with all linters."
+    sequence = ["lint_flake8", "lint_pylint", "lint_mypy"]
+
+    [tool.poe.tasks._test_first_chunk]
+    help = "Run the first chunk of unit tests."
+    cmd  = """
+        coverage run -m pytest
+            -vv tests/
+            --ignore=tests/solutions/test_invalid_commands.py;
+    """
+
+    [tool.poe.tasks._test_second_chunk]
+    help = "Run the second chunk of unit tests."
+    cmd  = """
+        coverage run -a -m pytest
+            -vv tests/solutions/test_invalid_commands.py;
+    """
+
+    [tool.poe.tasks.test]
+    help = "Run all the unit tests."
+    sequence = ["_test_first_chunk", "_test_second_chunk"]
+
+    [tool.poe.tasks.coverage]
+    help = "Report the coverage"
+    cmd = "coverage report -m"
+
+    [tool.poe.tasks.covtest]
+    help = "Run the unit tests and report the coverage."
+    sequence = ["test", "coverage"]
+
+    [tool.poe.tasks.generate_specs]
+    help = "Generate the solutions spec sheets in /tmp."
+    cmd = "./others/spec_sheets_generation_script/generate.py /tmp"
+
+    [tool.poe.tasks.generate_api_call_graph]
+    help = "Generate the API call graph."
+    cmd = "./others/api_call_graph_script/generate.py"
+
+    [tool.poe.tasks.generate_readme]
+    help = "Generate README.md."
+    cmd = ".others/readme_generation_script/generate.py"
