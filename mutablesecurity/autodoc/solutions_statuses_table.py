@@ -36,7 +36,7 @@ ROW_FORMAT = """\
             </td>
             <td>{description}</td>
             <td>
-                {status_badge}
+                {maturity_badge}
             </td>
         </tr>"""
 
@@ -50,15 +50,15 @@ def __generate_rows() -> typing.Generator[str, None, None]:
         link = solution.REFERENCES[0]
         image_id = solution.IDENTIFIER
         description = solution.DESCRIPTION
-        text_status = str(solution.MATURITY)
+        text_maturity = str(solution.MATURITY)
         badge_code = MaturityLevelBadge(solution.MATURITY).export_as_html()
 
         yield ROW_FORMAT.format(
             link=link,
             image_id=image_id,
             description=description,
-            text_status=text_status,
-            status_badge=badge_code,
+            text_maturity=text_maturity,
+            maturity_badge=badge_code,
         )
 
 

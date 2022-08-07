@@ -53,4 +53,4 @@ class MaturityLevelBadge(Badge):
         Args:
             level (SolutionMaturityLevels): Maturity level
         """
-        super().__init__("Status", str(level), level.value.color)
+        super().__init__("Maturity", str(level), level.value.color)
