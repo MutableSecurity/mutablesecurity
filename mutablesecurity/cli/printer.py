@@ -57,14 +57,14 @@ Description:
 References:
 {references}
 
-Tests:
-{tests}
+Actions:
+{actions}
 Information:
 {information}
 Log Sources:
 {logs}
-Actions:
-{actions}
+Tests:
+{tests}
 """
 
     SOLUTION_HELP_DEV_EXTENSION = """Maturity: {maturity}\n"""

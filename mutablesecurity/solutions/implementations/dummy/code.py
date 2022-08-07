@@ -1,5 +1,6 @@
 """Module defining a dummy security solution, for testing purposes."""
 
+# pylint: disable=protected-access
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg
@@ -23,6 +24,8 @@ from mutablesecurity.solutions.base import (
 )
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 
+# Actions classes definitions
+
 
 class AppendToFileAction(BaseAction):
     @staticmethod
@@ -36,6 +39,9 @@ class AppendToFileAction(BaseAction):
     IDENTIFIER = "append_to_file"
     DESCRIPTION = "Appends a text to a file."
     ACT = append_to_file
+
+
+# Information classes definitions
 
 
 class FileSizeInformation(BaseInformation):
@@ -101,6 +107,25 @@ class CurrentUserInformation(BaseInformation):
     SETTER = set_user
 
 
+# Logs classes definitions
+
+
+class ContentLogs(BaseLog):
+    class GetContent(FactBase):
+        command = "cat /tmp/dummy"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return "".join(output)
+
+    IDENTIFIER = "file_content"
+    DESCRIPTION = "Gets the file content."
+    FACT = GetContent
+
+
+# Tests classes definitions
+
+
 class UbuntuRequirement(BaseTest):
     IDENTIFIER = "ubuntu"
     DESCRIPTION = "Checks if the operating system is Ubuntu."
@@ -122,17 +147,7 @@ class FilePresenceTest(BaseTest):
     FACT = CheckIfPresent
 
 
-class ContentLogs(BaseLog):
-    class GetContent(FactBase):
-        command = "cat /tmp/dummy"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
-    IDENTIFIER = "file_content"
-    DESCRIPTION = "Gets the file content."
-    FACT = GetContent
+# Solution class definition
 
 
 class Dummy(BaseSolution):

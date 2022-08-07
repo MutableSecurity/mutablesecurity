@@ -268,14 +268,14 @@ class StartService(BaseAction):
 class StopService(BaseAction):
     @staticmethod
     @deploy
-    def start_service() -> None:
+    def stop_service() -> None:
         server.service(
             "fail2ban", running=False, name="Stops the Fail2ban service."
         )
 
-    IDENTIFIER = "start_service"
+    IDENTIFIER = "stop_service"
     DESCRIPTION = "Stops the Fail2ban service."
-    ACT = start_service
+    ACT = stop_service
 
 
 class RestartService(BaseAction):
@@ -287,7 +287,7 @@ class RestartService(BaseAction):
         )
 
     IDENTIFIER = "restart_service"
-    DESCRIPTION = "Stops the Fail2ban service."
+    DESCRIPTION = "Restarts the Fail2ban service."
     ACT = restart_service
 
 

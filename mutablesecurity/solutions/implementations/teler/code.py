@@ -507,8 +507,8 @@ class TextAlerts(BaseLog):
         def process(output: typing.List[str]) -> str:
             return "".join(output)
 
-    IDENTIFIER = "json_alerts"
-    DESCRIPTION = "Generated alerts in JSON format"
+    IDENTIFIER = "text_alerts"
+    DESCRIPTION = "Generated alerts in plaintext format"
     FACT = TextAlertsFact
 
 

@@ -1,4 +1,9 @@
-"""Module generating Markdown +_ HTML spec sheets for solution."""
+"""Module generating Markdown +_ HTML spec sheets for solution.
+
+A spec sheet contains:
+- General information about the solution
+- Markdown documentation.
+"""
 
 import re
 import typing
@@ -14,20 +19,20 @@ from mutablesecurity.solutions_manager import SolutionsManager
 from mutablesecurity.visual_proxy import ObjectsDescriberFacade
 
 SPEC_SHEET_TEMPLATE = """\
-# {name}
+# {full_name}
 
 ## Metadata
 
-- **Identifier**: {identifier}
+- **Identifier**: `{identifier}`
 - **Maturity**: {maturity}
+
+### Categories
+
+{categories}
 
 ## Description
 
 {description}
-
-## Categories
-
-{categories_list}
 
 ## Actions
 
@@ -55,16 +60,21 @@ class SolutionSpecSheet:
     """Data structure modeling a spec sheet for a solution."""
 
     solution_id: str
+    general_info: dict
     md_spec_sheet: str
 
-    def __init__(self, solution_id: str, md_spec_sheet: str) -> None:
+    def __init__(
+        self, solution_id: str, general_info: dict, md_spec_sheet: str
+    ) -> None:
         """Initialize the instance.
 
         Args:
             solution_id (str): Solution identifier
+            general_info (dict): General information
             md_spec_sheet (str): String representing the spec sheet
         """
         self.solution_id = solution_id
+        self.general_info = general_info
         self.md_spec_sheet = md_spec_sheet
 
 
@@ -79,9 +89,20 @@ def generate_all_sheets() -> typing.Generator[SolutionSpecSheet, None, None]:
     )
 
     for solution in solutions:
+        general_info = __generate_short_details(solution)
         md_content = __generate_solution_spec_sheet(solution)
 
-        yield SolutionSpecSheet(solution.IDENTIFIER, md_content)
+        yield SolutionSpecSheet(solution.IDENTIFIER, general_info, md_content)
+
+
+def __generate_short_details(solution: BaseSolution) -> dict:
+    return {
+        "identifier": solution.IDENTIFIER,
+        "full_name": solution.FULL_NAME,
+        "maturity": str(solution.MATURITY),
+        "description": solution.DESCRIPTION,
+        "categories": [str(category) for category in solution.CATEGORIES],
+    }
 
 
 def __generate_solution_spec_sheet(solution: BaseSolution) -> str:
@@ -91,7 +112,21 @@ def __generate_solution_spec_sheet(solution: BaseSolution) -> str:
 
 
 def __generate_format_details(solution: BaseSolution) -> dict:
-    categories_list = __generate_categories_list(solution.CATEGORIES)
+    short_details = __generate_short_details_as_markdown(solution)
+    additional_details = __generate_additional_details(solution)
+
+    return short_details | additional_details
+
+
+def __generate_short_details_as_markdown(solution: BaseSolution) -> dict:
+    details = __generate_short_details(solution)
+
+    details["categories"] = generate_unordered_list(details["categories"])
+
+    return details
+
+
+def __generate_additional_details(solution: BaseSolution) -> dict:
     references_list = __generate_references_list(solution.REFERENCES)
     actions_table = __generate_actions_html_table(solution)
     information_table = __generate_information_html_table(solution)
@@ -99,11 +134,6 @@ def __generate_format_details(solution: BaseSolution) -> dict:
     tests_table = __generate_tests_html_table(solution)
 
     return {
-        "name": solution.FULL_NAME,
-        "identifier": solution.IDENTIFIER,
-        "maturity": solution.MATURITY,
-        "description": solution.DESCRIPTION,
-        "categories_list": categories_list,
         "actions_table": actions_table,
         "information_table": information_table,
         "logs_table": logs_table,
