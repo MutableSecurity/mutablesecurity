@@ -1,5 +1,6 @@
 """Module integrating Suricata."""
 
+# pylint: disable=protected-access
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg

@@ -16,6 +16,13 @@ from enum import Enum
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import files
 
+from mutablesecurity.helpers.colors import (
+    BrightGreenColor,
+    Color,
+    LightGreyColor,
+    RedColor,
+    YellowGreenColor,
+)
 from mutablesecurity.helpers.exceptions import (
     InvalidMetaException,
     NoSolutionConfigurationFileException,
@@ -45,6 +52,8 @@ from mutablesecurity.solutions.base.test import (
     TestType,
 )
 
+BaseSolutionType = typing.Type["BaseSolution"]
+
 
 class SolutionCategories(Enum):
     """Enumeration for defining categories of security solutions."""
@@ -64,13 +73,58 @@ class SolutionCategories(Enum):
         return self.value
 
 
-class SolutionMaturity(Enum):
+class InnerSolutionMaturityLevel:
+    """Data structure for storing details about a maturity level."""
+
+    caption: str
+    level: int
+    color: Color
+
+    def __init__(self, caption: str, level: int, color: Color) -> None:
+        """Initialize the instance.
+
+        Args:
+            caption (str): Text caption, used when transforming the object to
+                a string
+            level (int): Level, used for comparison with the other levels
+            color (Color): Color to use when visually representing the level
+        """
+        self.caption = caption
+        self.level = level
+        self.color = color
+
+    def __int__(self) -> int:
+        """Transform the level into an integer.
+
+        Returns:
+            int: Integer representation
+        """
+        return self.level
+
+    def __str__(self) -> str:
+        """Transform the level to a string.
+
+        Returns:
+            str: String representation
+        """
+        return self.caption
+
+
+class SolutionMaturityLevels(Enum):
     """Enumeration for defining the solution's maturity level."""
 
-    PRODUCTION = "Production"
-    REFACTORING = "Under refactoring"
-    UNDER_DEVELOPMENT = "Under development"
-    DEV_ONLY = "Development/testing purposes only"
+    PRODUCTION = InnerSolutionMaturityLevel(
+        "Production", 1000, BrightGreenColor
+    )
+    REFACTORING = InnerSolutionMaturityLevel(
+        "Under refactoring", 100, YellowGreenColor
+    )
+    UNDER_DEVELOPMENT = InnerSolutionMaturityLevel(
+        "Under development", 10, RedColor
+    )
+    DEV_ONLY = InnerSolutionMaturityLevel(
+        "Development/testing purposes only", 0, LightGreyColor
+    )
 
     def __str__(self) -> str:
         """Stringify the maturity level.
@@ -78,7 +132,15 @@ class SolutionMaturity(Enum):
         Returns:
             str: Stringified maturity level
         """
-        return self.value
+        return str(self.value)
+
+    def __int__(self) -> int:
+        """Transform the level to a string.
+
+        Returns:
+            int: Integer representation
+        """
+        return int(self.value)
 
 
 class BaseSolution(ABC):
@@ -89,7 +151,7 @@ class BaseSolution(ABC):
     FULL_NAME: str
     DESCRIPTION: str
     REFERENCES: typing.List[str]
-    MATURITY: SolutionMaturity
+    MATURITY: SolutionMaturityLevels
     CATEGORIES: typing.List[SolutionCategories]
 
     # Class members declared explicitly in the child class
@@ -113,7 +175,7 @@ class BaseSolution(ABC):
         MATURITY = "maturity"
         CATEGORIES = "categories"
 
-    def __init_subclass__(cls: typing.Type["BaseSolution"]) -> None:
+    def __init_subclass__(cls: BaseSolutionType) -> None:
         """Initialize a subclass after definition."""
         super().__init_subclass__()
 
@@ -129,7 +191,7 @@ class BaseSolution(ABC):
 
     @classmethod
     def __build_manager_result(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         manager: BaseManager,
         concrete_results: BaseConcreteResultObjects,
         is_long_output: bool = False,
@@ -142,7 +204,7 @@ class BaseSolution(ABC):
         )
 
     @classmethod
-    def __load_meta(cls: typing.Type["BaseSolution"]) -> None:
+    def __load_meta(cls: BaseSolutionType) -> None:
         # Load the meta YAML file
         module = inspect.getmodule(cls)
         if module is None or not module.__file__:
@@ -160,7 +222,9 @@ class BaseSolution(ABC):
         cls.DESCRIPTION = meta[cls.MetaKeys.DESCRIPTION.value]
         cls.REFERENCES = meta[cls.MetaKeys.REFERENCES.value]
         try:
-            cls.MATURITY = SolutionMaturity[meta[cls.MetaKeys.MATURITY.value]]
+            cls.MATURITY = SolutionMaturityLevels[
+                meta[cls.MetaKeys.MATURITY.value]
+            ]
             cls.CATEGORIES = [
                 SolutionCategories[cat]
                 for cat in meta[cls.MetaKeys.CATEGORIES.value]
@@ -169,14 +233,14 @@ class BaseSolution(ABC):
             raise InvalidMetaException() from exception
 
     @classmethod
-    def __get_configuration_filename(cls: typing.Type["BaseSolution"]) -> str:
+    def __get_configuration_filename(cls: BaseSolutionType) -> str:
         host_id = get_connection_for_host()
 
         return f"{host_id}_{cls.IDENTIFIER}.yaml"
 
     @classmethod
     def __load_current_configuration_from_file(
-        cls: typing.Type["BaseSolution"], post_installation: bool
+        cls: BaseSolutionType, post_installation: bool
     ) -> None:
         try:
             configuration = load_from_file(cls.__get_configuration_filename())
@@ -187,7 +251,7 @@ class BaseSolution(ABC):
 
     @classmethod
     def __save_current_configuration_as_file(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
     ) -> None:
         configuration = cls.INFORMATION_MANAGER.represent_as_dict(
             filter_properties=[
@@ -200,35 +264,35 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def __get_information_from_remote(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: typing.Optional[str] = None,
     ) -> typing.Any:
         return cls.INFORMATION_MANAGER.get(identifier)
 
     @classmethod
     def __get_home_path(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
     ) -> str:
         return os.path.join("/opt/mutablesecurity", cls.IDENTIFIER)
 
     @classmethod
     @deploy
     def __create_home_path(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
     ) -> None:
         files.directory(cls.__get_home_path(), present=True)
 
     @classmethod
     @deploy
     def __remove_home_path(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
     ) -> None:
         files.directory(cls.__get_home_path(), present=False)
 
     @classmethod
     @deploy
     def _ensure_installation_state(
-        cls: typing.Type["BaseSolution"], installed: bool
+        cls: BaseSolutionType, installed: bool
     ) -> None:
         """Ensure that the solution is installed.
 
@@ -272,14 +336,14 @@ class BaseSolution(ABC):
 
     @classmethod
     @deploy
-    def init(cls: typing.Type["BaseSolution"]) -> None:
+    def init(cls: BaseSolutionType) -> None:
         """Initialize the security solution lifecycle."""
         cls.INFORMATION_MANAGER.set_default_values_locally()
         cls.__save_current_configuration_as_file()
 
     @classmethod
     @deploy
-    def install(cls: typing.Type["BaseSolution"]) -> None:
+    def install(cls: BaseSolutionType) -> None:
         """Install the security solution."""
         cls.__load_current_configuration_from_file(False)
 
@@ -299,7 +363,7 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def get_information(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: typing.Optional[str] = None,
     ) -> ConcreteObjectsResult:
         """Get an information from a target host.
@@ -321,7 +385,7 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def set_information(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: str,
         value: typing.Any,
     ) -> None:
@@ -341,7 +405,7 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def test(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: typing.Optional[str] = None,
     ) -> ConcreteObjectsResult:
         """Run a test against a security solution.
@@ -363,7 +427,7 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def get_logs(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: typing.Optional[str] = None,
     ) -> ConcreteObjectsResult:
         """Get logs from a target host.
@@ -384,7 +448,7 @@ class BaseSolution(ABC):
 
     @classmethod
     @deploy
-    def update(cls: typing.Type["BaseSolution"]) -> None:
+    def update(cls: BaseSolutionType) -> None:
         """Update the security solution."""
         cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
@@ -393,7 +457,7 @@ class BaseSolution(ABC):
 
     @classmethod
     @deploy
-    def uninstall(cls: typing.Type["BaseSolution"]) -> None:
+    def uninstall(cls: BaseSolutionType) -> None:
         """Uninstall a security solution."""
         cls._ensure_installation_state(True)
         cls.__get_information_from_remote()
@@ -405,7 +469,7 @@ class BaseSolution(ABC):
     @classmethod
     @deploy
     def execute(
-        cls: typing.Type["BaseSolution"],
+        cls: BaseSolutionType,
         identifier: str,
         args: typing.Dict[str, str],
     ) -> None:

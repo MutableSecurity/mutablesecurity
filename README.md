@@ -67,7 +67,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Fail2ban is an intrusion prevention software framework that protects Unix-like servers from brute-force attacks. It scans log files and bans IP addresses conducting too many failed operations (for example, login attempts). This module targets Debian-based operating systems and has already set a SSH jail.</td>
             <td>
-                <img alt="Status: Production" src="https://img.shields.io/badge/Status-Production-blightgreen?style=flat-square">
+                <img alt="Maturity: Production" src="https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square">
             </td>
         </tr>
         <tr>
@@ -78,7 +78,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>teler is a real-time intrusion detection and threat alert based on web log. Targets only nginx installed on Ubuntu.</td>
             <td>
-                <img alt="Status: Production" src="https://img.shields.io/badge/Status-Production-blightgreen?style=flat-square">
+                <img alt="Maturity: Production" src="https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square">
             </td>
         </tr>
         <tr>
@@ -89,7 +89,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.</td>
             <td>
-                <img alt="Status: Under refactoring" src="https://img.shields.io/badge/Status-Under%20refactoring-yellowgreen?style=flat-square">
+                <img alt="Maturity: Under refactoring" src="https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square">
             </td>
         </tr>
         <tr>
@@ -100,7 +100,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.</td>
             <td>
-                <img alt="Status: Under refactoring" src="https://img.shields.io/badge/Status-Under%20refactoring-yellowgreen?style=flat-square">
+                <img alt="Maturity: Under refactoring" src="https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square">
             </td>
         </tr>
         <tr>

@@ -3,6 +3,10 @@ on:
   push:
     branches:
       - main
+    paths:
+      - "mutablesecurity/**"
+      - "tests/**"
+      - ".github/workflows/pytest_coveralls.yaml"
   pull_request:
     branches:
       - main

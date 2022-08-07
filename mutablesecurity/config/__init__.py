@@ -2,8 +2,6 @@
 
 import typing
 
-from pypattyrn.creational.singleton import Singleton
-
 from mutablesecurity.config.config import ConfigurationManager
 from mutablesecurity.helpers.exceptions import (
     InvalidStructureOfLocalConfigException,

@@ -6,6 +6,9 @@ Before running this, make sure you have graphviz installed locally:
 - On Windows: choco install -y graphviz
 - On Linux: apt install graphviz.
 
+This script requires to be ran with:
+    poetry run <path_to_script>.
+
 References:
 - https://gist.github.com/jargnar/0946ab1d985e2b4ab776
 """

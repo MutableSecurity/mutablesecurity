@@ -14,3 +14,6 @@ PyinfraConnectionDump = typing.Union[str, typing.Tuple[str, dict]]
 
 # pyinfra operation
 PyinfraOperation = typing.Annotated[typing.Callable, "pyinfra Operation"]
+
+# Matrix of strings
+StringMatrix = typing.List[typing.List[str]]

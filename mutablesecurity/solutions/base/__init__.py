@@ -24,7 +24,9 @@ from mutablesecurity.solutions.base.result import (
 )
 from mutablesecurity.solutions.base.solution import (
     BaseSolution,
-    SolutionMaturity,
+    BaseSolutionType,
+    SolutionCategories,
+    SolutionMaturityLevels,
 )
 from mutablesecurity.solutions.base.test import (
     BaseTest,

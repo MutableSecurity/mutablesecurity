@@ -1,6 +1,7 @@
 appendleft
 args
 ast
+autodoc
 automations
 autouse
 baseaction
@@ -29,6 +30,7 @@ datastore
 datefmt
 deleter
 deque
+desc
 dest
 dirname
 docstring
@@ -55,6 +57,7 @@ idps
 ids
 inexistent
 informationproperties
+io
 ips
 isfile
 isfunction
@@ -81,7 +84,9 @@ pathlib
 pencolor
 png
 powershell
+proxying
 ptc
+py
 pycf
 pyinfra
 pyinfrahosttuple
@@ -92,13 +97,17 @@ reraising
 safeload
 securitydeploymentresult
 skipcq
+solutionsgenerator
+solutionspecsheet
 src
 stateful
 stderr
 stdout
 str
 stringified
+stringifier
 stringify
+stringifying
 subgraph
 subnode
 sudo

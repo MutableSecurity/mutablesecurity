@@ -29,8 +29,7 @@ class InformationProperties(Enum):
     # Base for information's type
     __TYPE_BASE = 1
 
-    # Description:  Information on which depends the functioning of the
-    #               solution
+    # Description:  Information required to make a solution operable
     # Example:      Quarantine folder for an antivirus
     CONFIGURATION = __TYPE_BASE + 1
 

@@ -208,7 +208,7 @@ class StringDataType(DataType):
 class BooleanListDataType(DataType):
     """Data type for list of booleans."""
 
-    ALIAS = "LIST OF BOOLEANS"
+    ALIAS = "LIST_OF_BOOLEANS"
     INNER_TYPE = InnerDataType.LIST_OF_BOOLEANS
     PYTHON_ANNOTATION = typing.List[bool]
 
@@ -216,7 +216,7 @@ class BooleanListDataType(DataType):
 class IntegerListDataType(DataType):
     """Data type for list of integers."""
 
-    ALIAS = "LIST OF INTEGERS"
+    ALIAS = "LIST_OF_INTEGERS"
     INNER_TYPE = InnerDataType.LIST_OF_INTEGERS
     PYTHON_ANNOTATION = typing.List[int]
 
@@ -224,7 +224,7 @@ class IntegerListDataType(DataType):
 class StringListDataType(DataType):
     """Data type for list of strings."""
 
-    ALIAS = "LIST OF STRINGS"
+    ALIAS = "LIST_OF_STRINGS"
     INNER_TYPE = InnerDataType.LIST_OF_STRINGS
     PYTHON_ANNOTATION = typing.List[str]
 
