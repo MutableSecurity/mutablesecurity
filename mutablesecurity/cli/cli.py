@@ -14,17 +14,12 @@ from rich.traceback import install
 
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
-from mutablesecurity.cli.solutions_manager_adapter import (
-    SolutionsManagerAdapter,
-)
+from mutablesecurity.cli.solutions_manager_adapter import \
+    SolutionsManagerAdapter
 from mutablesecurity.helpers.exceptions import (
-    BadArgumentException,
-    BadValueException,
-    MutableSecurityException,
-    StoppedMutableSecurityException,
-    UnexpectedBehaviorException,
-    UnsupportedPythonVersionException,
-)
+    BadArgumentException, BadValueException, MutableSecurityException,
+    StoppedMutableSecurityException, UnexpectedBehaviorException,
+    UnsupportedPythonVersionException)
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
 from mutablesecurity.monitoring import Monitor
