@@ -9,8 +9,10 @@ class FilePresenceTest(FactBase):
     """Fact for checking if a file is present on the system."""
 
     @staticmethod
-    def command(path: str) -> str:
-        return f"if [ -e {path} ] ; then echo '1'; else echo '0' ; fi"
+    def command(path: str, exists: bool) -> str:
+        prefix = "" if exists else "!"
+        
+        return f"if [ {prefix} -e {path} ] ; then echo '1'; else echo '0' ; fi"
 
     @staticmethod
     def process(output: typing.List[str]) -> bool:
