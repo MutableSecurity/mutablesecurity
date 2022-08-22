@@ -1,0 +1,8 @@
+full_name: Duplicati 2.0
+description: Duplicati is a backup client that securely stores encrypted, incremental, compressed backups on local storage, cloud storage services and remote file servers. 
+references:
+  - https://www.duplicati.com/
+  - https://github.com/duplicati/duplicati
+maturity: PRODUCTION
+categories:
+  - BACKUP
