@@ -5,25 +5,31 @@
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg
 
-from pickle import TRUE
 import typing
 from datetime import datetime
 
-
+from pyinfra import host
 from pyinfra.api import FactBase
 from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
-from mutablesecurity.helpers.data_type import (IntegerDataType,StringDataType)
-from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
-                                            BaseLog, BaseSolution,
-                                            BaseSolutionException, BaseTest,
-                                            InformationProperties, TestType)
+from mutablesecurity.helpers.data_type import IntegerDataType, StringDataType
+from mutablesecurity.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseSolution,
+    BaseSolutionException,
+    BaseTest,
+    InformationProperties,
+    TestType,
+)
 from mutablesecurity.solutions.common.facts.files import FilePresenceTest
-from mutablesecurity.solutions.common.facts.networking import \
-    InternetConnection
-from mutablesecurity.solutions.common.facts.service import ActiveService
+from mutablesecurity.solutions.common.facts.networking import (
+    InternetConnection,
+)
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
+from mutablesecurity.solutions.common.facts.service import ActiveService
 
 
 class CertbotAlreadyUpdatedException(BaseSolutionException):
@@ -33,9 +39,74 @@ class CertbotAlreadyUpdatedException(BaseSolutionException):
 class CertbotAlreadyInstalledException(BaseSolutionException):
     """Let's Encrypt Nginx file exists and Certbot is already installed."""
 
+
+@deploy
+def revoke_certificate_with_explicit_domain(domain: str = None) -> None:
+    if domain is None:
+        domain = UserDomain.get()
+
+    server.shell(
+        sudo=True,
+        name="Revokes the generated certificate",
+        commands=[
+            f"certbot revoke -n --cert-name {domain} --reason"
+            f" {RevokeReason.get()}"
+        ],
+    )
+
+    server.shell(
+        sudo=True,
+        name="Adds all the old configurations back in place on sites-enabled",
+        commands=[
+            "cp /opt/mutablesecurity/lets_encrypt/default"
+            " /etc/nginx/sites-enabled/default"
+        ],
+    )
+
+    files.file(
+        sudo=True,
+        name=(
+            "Removes the old Nginx configuration from"
+            " /opt/mutablesecurity/lets_encrypt"
+        ),
+        path="/opt/mutablesecurity/lets_encrypt/default",
+        present=False,
+    )
+
+    files.file(
+        sudo=True,
+        name="Removes the MutableSecurity traces from /var/log/nginx/",
+        path=f"/var/log/nginx/https_{domain}_access.log",
+        present=False,
+    )
+
+
+@deploy
+def revoke_old_and_generate_new_certificate(domain: str) -> None:
+    GenerateCertificate.execute()
+    revoke_certificate_with_explicit_domain(domain)
+
+
+@deploy
+def revoke_old_and_generate_new_certificate_when_domain_changed(
+    old_value: typing.Any, new_value: typing.Any
+) -> None:
+    revoke_old_and_generate_new_certificate(old_value)
+
+
+@deploy
+def revoke_old_and_generate_new_certificate_when_email_changed(
+    old_value: typing.Any, new_value: typing.Any
+) -> None:
+    revoke_old_and_generate_new_certificate(UserDomain.get())
+
+
 class UserEmail(BaseInformation):
     IDENTIFIER = "email"
-    DESCRIPTION = "The email of the user whom installs Let's Encrypt on the given domain."
+    DESCRIPTION = (
+        "The email of the user whom installs Let's Encrypt on the given"
+        " domain."
+    )
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -44,7 +115,7 @@ class UserEmail(BaseInformation):
     ]
     DEFAULT_VALUE = None
     GETTER = None
-    SETTER = None
+    SETTER = revoke_old_and_generate_new_certificate_when_email_changed
 
 
 class UserDomain(BaseInformation):
@@ -58,12 +129,16 @@ class UserDomain(BaseInformation):
     ]
     DEFAULT_VALUE = None
     GETTER = None
-    SETTER = None
+    SETTER = revoke_old_and_generate_new_certificate_when_domain_changed
 
 
 class RevokeReason(BaseInformation):
     IDENTIFIER = "revoke_reason"
-    DESCRIPTION = "The reason why Let's Encrypt has been removed.\n\nChoose from 'unspecified', 'keycompromise', 'affiliationchanged', 'superseded', 'cessationofoperation', if you wish to change the reason."
+    DESCRIPTION = (
+        "The reason why Let's Encrypt has been removed. Choose from"
+        " 'unspecified', 'keycompromise', 'affiliationchanged', 'superseded',"
+        " 'cessationofoperation', if you wish to change the reason."
+    )
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -77,26 +152,16 @@ class RevokeReason(BaseInformation):
     SETTER = None
 
 
-class FilePresenceRequirement(BaseTest):
-    IDENTIFIER = "presence"
-    DESCRIPTION = "Checks if the old Nginx configuration file is saved in /opt/mutablesecurity/lets_encrypt"
-    TEST_TYPE = TestType.PRESENCE
-    FACT = FilePresenceTest
-    FACT_ARGS = ("/opt/mutablesecurity/lets_encrypt/default", True)
-
-
 class LogLocation(BaseInformation):
-    
     class LogLocationFact(FactBase):
-
         command = "echo 'hi'"
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return (f"/var/log/nginx/https_{UserDomain.get()}_access.log")
+            return f"/var/log/nginx/https_{UserDomain.get()}_access.log"
 
     IDENTIFIER = "log_location"
-    DESCRIPTION = "Location in which Nginx logs messages"
+    DESCRIPTION = "Location where Nginx logs messages"
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -110,10 +175,11 @@ class LogLocation(BaseInformation):
     SETTER = None
 
 
-class Version(BaseInformation):
-    class VersionFact(FactBase):
-        # Let's Encrypt returns the major version as an exit code
-        command = "apt-cache policy certbot | grep -i Installed | cut -d ' ' -f 4"
+class InstalledVersion(BaseInformation):
+    class InstalledVersionFact(FactBase):
+        command = (
+            "apt-cache policy certbot | grep -i Installed | cut -d ' ' -f 4"
+        )
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
@@ -124,33 +190,12 @@ class Version(BaseInformation):
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.METRIC,
+        InformationProperties.READ_ONLY,
     ]
     DEFAULT_VALUE = None
-    GETTER = VersionFact
+    GETTER = InstalledVersionFact
     SETTER = None
 
-
-class UbuntuRequirement(BaseTest):
-    IDENTIFIER = "ubuntu"
-    DESCRIPTION = "Checks if the operating system is Ubuntu."
-    TEST_TYPE = TestType.REQUIREMENT
-    FACT = CheckIfUbuntu
-
-
-class TextLogs(BaseLog):
-    class GeneratedLogsFact(FactBase):
-        @staticmethod
-        def command():
-            return f"cat {LogLocation.get()}"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
-    IDENTIFIER = "text_logs"
-    DESCRIPTION = "The logs generated by Let's Encrypt x Certbot for the given domain."
-    INFO_TYPE = IntegerDataType
-    FACT = GeneratedLogsFact
 
 class SecuredRequests(BaseInformation):
     class SecuredRequestsFact(FactBase):
@@ -181,7 +226,7 @@ class SecuredRequestsToday(BaseInformation):
             current_date = datetime.today().strftime("%d/%b/%Y")
 
             return (
-                f"sudo cat /var/log/nginx/https_{UserDomain.get()}_access.log | grep '{current_date}' | wc -l"
+                f"sudo cat {LogLocation.get()} | grep '{current_date}' | wc -l"
             )
 
         @staticmethod
@@ -200,8 +245,25 @@ class SecuredRequestsToday(BaseInformation):
     SETTER = None
 
 
-class TestRequest(BaseTest):
+class FilePresenceRequirement(BaseTest):
+    IDENTIFIER = "configuration_file_presence"
+    DESCRIPTION = (
+        "Checks if the old Nginx configuration file is saved in"
+        " /opt/mutablesecurity/lets_encrypt"
+    )
+    TEST_TYPE = TestType.PRESENCE
+    FACT = FilePresenceTest
+    FACT_ARGS = ("/opt/mutablesecurity/lets_encrypt/default", True)
 
+
+class UbuntuRequirement(BaseTest):
+    IDENTIFIER = "ubuntu"
+    DESCRIPTION = "Checks if the operating system is Ubuntu."
+    TEST_TYPE = TestType.REQUIREMENT
+    FACT = CheckIfUbuntu
+
+
+class TestRequest(BaseTest):
     @staticmethod
     @deploy
     def make_request() -> None:
@@ -217,7 +279,7 @@ class TestRequest(BaseTest):
             current_date = datetime.today().strftime("%d/%b/%Y:%H:%M")
 
             check_command = (
-                f"sudo cat /var/log/nginx/https_{UserDomain.get()}_access.log | grep '{current_date}' | wc -l"
+                f"sudo cat {LogLocation.get()} | grep '{current_date}' | wc -l"
             )
 
             return check_command
@@ -226,12 +288,12 @@ class TestRequest(BaseTest):
         def process(output: typing.List[str]) -> bool:
             return int(output[0]) != 0
 
-
-    IDENTIFIER = "test_request"
+    IDENTIFIER = "request_via_https"
     DESCRIPTION = "Checks if the site is secured with Let's Encrypt."
     TEST_TYPE = TestType.SECURITY
     TRIGGER = make_request
     FACT = TestRequestFact
+
 
 class InternetAccess(BaseTest):
     IDENTIFIER = "internet_access"
@@ -248,31 +310,87 @@ class ActiveNginx(BaseTest):
     FACT_ARGS = ("nginx",)
 
 
+class TestDomainRequest(BaseTest):
+    class TestDomainRequestFact(FactBase):
+        @staticmethod
+        def command() -> str:
+            check_command = (
+                "curl -o /dev/null -s -w '%{{http_code}}\n' -H 'Host:"
+                f" {UserDomain.get()}' http://localhost/"
+            )
+
+            return check_command
+
+        @staticmethod
+        def process(output: typing.List[str]) -> bool:
+            return output[0] != "000"
+
+    IDENTIFIER = "domain_request"
+    DESCRIPTION = (
+        "Checks if the site exists before trying to generate certificate."
+    )
+    TEST_TYPE = TestType.REQUIREMENT
+    FACT = TestDomainRequestFact
+    FACT_ARGS = ()
+
+
+class TextLogs(BaseLog):
+    class GeneratedLogsFact(FactBase):
+        @staticmethod
+        def command():
+            return f"cat {LogLocation.get()}"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return "\n".join(output)
+
+    IDENTIFIER = "text_logs"
+    DESCRIPTION = (
+        "The logs generated by Let's Encrypt x Certbot for the given domain."
+    )
+    INFO_TYPE = IntegerDataType
+    FACT = GeneratedLogsFact
+
+
 class GenerateCertificate(BaseAction):
     @staticmethod
     @deploy
     def generate_certificate() -> None:
         server.shell(
             sudo=True,
-            name="Saves the default config file in case the user wants to remove LetsEncrypt(Certbot)",
+            name=(
+                "Saves the default config file in case the user wants to"
+                " remove LetsEncrypt (Certbot)"
+            ),
             commands=[
-                "cp /etc/nginx/sites-enabled/default /opt/mutablesecurity/lets_encrypt/"
+                "cp /etc/nginx/sites-enabled/default"
+                " /opt/mutablesecurity/lets_encrypt/"
             ],
         )
 
         server.shell(
             sudo=True,
-            name="Generates and installs the certificates for the given Nginx domain",
+            name=(
+                "Generates and installs the certificate for the given Nginx"
+                " domain"
+            ),
             commands=[
-                f"certbot --nginx --noninteractive --agree-tos --cert-name {UserDomain.get()} -d {UserDomain.get()} -m {UserEmail.get()} --redirect"
+                "certbot --nginx --noninteractive --agree-tos --cert-name"
+                f" {UserDomain.get()} -d {UserDomain.get()} -m"
+                f" {UserEmail.get()} --redirect"
             ],
         )
 
         server.shell(
             sudo=True,
-            name="Adds MutableSecurity logs command in sites-enabled",
+            name=(
+                "Adds MutableSecurity logs generation command in the"
+                " sites-enabled directory of the Nginx configuration"
+            ),
             commands=[
-                f"sed -i '/server_name {UserDomain.get()};/a access_log /var/log/nginx/https_{UserDomain.get()}_access.log; # Managed by MutableSecurity' /etc/nginx/sites-enabled/default"
+                f"sed -i '/server_name {UserDomain.get()};/a access_log"
+                f" {LogLocation.get()}; # Managed by MutableSecurity'"
+                " /etc/nginx/sites-enabled/default"
             ],
         )
 
@@ -283,7 +401,11 @@ class GenerateCertificate(BaseAction):
         )
 
     IDENTIFIER = "generate_certificate"
-    DESCRIPTION = "Generates a certificate for a given domain and email. Used mostly when there are multiple domains for which Let's Encrypt HTTPS encryption is required."
+    DESCRIPTION = (
+        "Generates a certificate for a given domain and email. Used mostly"
+        " when there are multiple domains for which Let's Encrypt HTTPS"
+        " encryption is required."
+    )
     ACT = generate_certificate
 
 
@@ -291,104 +413,67 @@ class RevokeCurrentCertificate(BaseAction):
     @staticmethod
     @deploy
     def revoke_certificate() -> None:
-
-        server.shell(
-            sudo=True,
-            name="Revokes the generated certificate",
-            commands=[f"certbot revoke -n --cert-name {UserDomain.get()} --reason {RevokeReason.get()}"],
-        )
-
-        server.shell(
-            sudo=True,
-            name="Adds all the old configurations back in place on sites-enabled",
-            commands=[
-                "cp /opt/mutablesecurity/lets_encrypt/default /etc/nginx/sites-enabled/default"
-            ],
-        )
-
-        server.shell(
-            sudo=True,
-            name="Removes all traces of Let's Encrypt x Certbot",
-            commands=[
-                f"rm /var/log/nginx/https_{UserDomain.get()}_access.log /opt/mutablesecurity/lets_encrypt/default"
-            ],
-        )
-
-        files.file(
-            name="Removes the MutableSecurity traces from /var/log/nginx/",
-            path=f"/var/log/nginx/https_{UserDomain.get()}_access.log",
-            present=False,
-        )
-
-        files.directory(
-            name="Removes the Certbot traces from opt/mutablesecurity/lets_encrypt/",
-            path="/opt/mutablesecurity/lets_encrypt/",
-            present=False,
-        )
+        revoke_certificate_with_explicit_domain()
 
     IDENTIFIER = "revoke_certificate"
     DESCRIPTION = "Revokes the certificate for the current email and domain."
     ACT = revoke_certificate
 
 
-
 class LetsEncrypt(BaseSolution):
     INFORMATION = [
-        UserEmail, # type: ignore[list-item]
-        UserDomain, # type: ignore[list-item]
-        RevokeReason, # type: ignore[list-item]
-        LogLocation, # type: ignore[list-item]
-        Version,  # type: ignore[list-item]
+        RevokeReason,  # type: ignore[list-item]
+        UserEmail,  # type: ignore[list-item]
+        UserDomain,  # type: ignore[list-item]
+        LogLocation,  # type: ignore[list-item]
         SecuredRequests,  # type: ignore[list-item]
         SecuredRequestsToday,  # type: ignore[list-item]
+        InstalledVersion,  # type: ignore[list-item]
     ]
     TESTS = [
         UbuntuRequirement,  # type: ignore[list-item]
         InternetAccess,  # type: ignore[list-item]
-        TestRequest, # type: ignore[list-item]
+        TestRequest,  # type: ignore[list-item]
         ActiveNginx,  # type: ignore[list-item]
-        FilePresenceRequirement, # type: ignore[list-item]
+        FilePresenceRequirement,  # type: ignore[list-item]
+        TestDomainRequest,  # type: ignore[list-item]
     ]
     LOGS = [
-        TextLogs, # type: ignore[list-item]
+        TextLogs,  # type: ignore[list-item]
     ]
-    ACTIONS = [
-    ]
+    ACTIONS = []
 
     @staticmethod
     @deploy
     def _install() -> None:
-
         apt.update(
-        sudo=True,
-        name="Updates the apt reporisoties",
-        env={"LC_TIME": "en_US.UTF-8"},
-        cache_time=3600,
-        success_exit_codes=[0, 100],
+            sudo=True,
+            name="Updates the apt reporisoties",
+            env={"LC_TIME": "en_US.UTF-8"},
+            cache_time=3600,
+            success_exit_codes=[0, 100],
         )
 
         apt.packages(
-        sudo=True,
-        name="Installs the requirements",
-        packages=["python3-certbot-nginx", "curl"],
-        latest=True,
+            sudo=True,
+            name="Installs the requirements",
+            packages=["python3-certbot-nginx", "curl"],
+            latest=True,
         )
 
         files.directory(
-        path="/opt/mutablesecurity/lets_encrypt",
-        present=True,
-        name="Creates the folder that will store Let's Encrypt.",
+            sudo=True,
+            path="/opt/mutablesecurity/lets_encrypt",
+            present=True,
+            name="Creates the folder that will store Let's Encrypt.",
         )
 
-        GenerateCertificate().ACT()
-
-            
+        GenerateCertificate.execute()
 
     @staticmethod
     @deploy
     def _uninstall(remove_logs: bool = True) -> None:
-
-        RevokeCurrentCertificate().ACT()
+        RevokeCurrentCertificate.execute()
 
         server.shell(
             sudo=True,
@@ -397,30 +482,45 @@ class LetsEncrypt(BaseSolution):
         )
 
         files.directory(
+            sudo=True,
+            name=(
+                "Removes the Certbot traces from"
+                " opt/mutablesecurity/lets_encrypt/"
+            ),
+            path="/opt/mutablesecurity/lets_encrypt/",
+            present=False,
+        )
+
+        files.directory(
+            sudo=True,
             name="Removes Let's Encrypt from /etc",
             path="/etc/letsencrypt",
             present=False,
         )
 
         files.directory(
+            sudo=True,
             name="Removes Let's Encrypt from /root/.local/share/",
             path="/root/.local/share/letsencrypt/",
             present=False,
         )
 
         files.directory(
+            sudo=True,
             name="Removes Certbot from /opt/eff.org/",
             path="/opt/eff.org/certbot/",
             present=False,
         )
 
         files.directory(
+            sudo=True,
             name="Removes Let's Encrypt from /var/lib/",
             path="/var/lib/letsencrypt/",
             present=False,
         )
 
         files.directory(
+            sudo=True,
             name="Removes Let's Encrypt from /var/log/",
             path="/var/log/letsencrypt/",
             present=False,
@@ -428,7 +528,7 @@ class LetsEncrypt(BaseSolution):
 
         server.shell(
             sudo=True,
-            name="Removes everything using autoremove",
+            name="Cleans everything using autoremove",
             commands=["apt -y update && apt -y autoremove"],
         )
 
@@ -441,26 +541,21 @@ class LetsEncrypt(BaseSolution):
     @staticmethod
     @deploy
     def _update() -> None:
-
-        try:
-
-            apt.shell(
-                sudo=True,
-                name="First step of selecting packages and updating Certbot",
-                commands=["sudo -s"],
+        class LatestVersionFact(FactBase):
+            command = (
+                "apt-cache policy certbot | grep -i Candidate | cut -d ' '"
+                " -f 4"
             )
 
-            apt.shell(
-                sudo=True,
-                name="Second step of selecting packages and updating Certbot",
-                commands=["echo certbot hold | dpkg --set-selections"],
-            )
+            @staticmethod
+            def process(output: typing.List[str]) -> str:
+                return output[0]
 
-            apt.shell(
-                sudo=True,
-                name="Third step of selecting packages and updating Certbot",
-                commands=["apt-get update && apt-get upgrade"],
-            )
-        except:
+        if host.get_fact(LatestVersionFact) == InstalledVersion.get():
             raise CertbotAlreadyUpdatedException()
-        
+
+        apt.packages(
+            packages=["certbot"],
+            latest=True,
+            name="Updates Certbot via apt.",
+        )
