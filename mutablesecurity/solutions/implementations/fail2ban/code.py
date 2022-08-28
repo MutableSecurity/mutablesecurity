@@ -1,4 +1,4 @@
-"""Module integrating Suricata."""
+"""Module integrating Fail2ban."""
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
