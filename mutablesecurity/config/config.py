@@ -58,6 +58,11 @@ class ConfigurationManager(metaclass=Singleton):
             BooleanDataType,
             default_value=False,
         )
+        APPLICATION_MONITORING = ConfigurationKey(
+            "application_monitoring",
+            BooleanDataType,
+            default_value=True,
+        )
 
     def __init__(self) -> None:
         """Initialize the configuration manager instance.

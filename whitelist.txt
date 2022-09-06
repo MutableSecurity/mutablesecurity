@@ -1,5 +1,6 @@
 appendleft
 args
+argv
 ast
 autodoc
 automations
@@ -35,6 +36,7 @@ dest
 dirname
 docstring
 docstrings
+dsn
 enum
 enums
 fail2ban
@@ -95,6 +97,7 @@ pypattyrn
 pytest
 reraising
 safeload
+sdk
 securitydeploymentresult
 skipcq
 solutionsgenerator

@@ -27,11 +27,13 @@ from mutablesecurity.helpers.exceptions import (
 )
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
+from mutablesecurity.monitoring import Monitor
 
 MIN_PYTHON_VERSION = (3, 9)
 
 
 console = Console()
+monitor = Monitor()
 adapter = SolutionsManagerAdapter()
 
 
