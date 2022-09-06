@@ -26,16 +26,19 @@ class Monitor:
         self.__send_custom_usage_data()
         self.__init_sentry()
 
-    def __is_monitoring_enabled(self):
+    @staticmethod
+    def __is_monitoring_enabled():
         return config.application_monitoring
 
-    def __init_sentry(self) -> None:
+    @staticmethod
+    def __init_sentry() -> None:
         sentry_sdk.init(
             dsn=SENTRY_DSN,
             traces_sample_rate=1.0,
         )
 
-    def __send_custom_usage_data(self) -> None:
+    @staticmethod
+    def __send_custom_usage_data() -> None:
         data = DataCollector().get_all()
         headers = {
             "Content-Type": "application/json",

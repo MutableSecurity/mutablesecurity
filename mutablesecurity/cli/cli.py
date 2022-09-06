@@ -66,8 +66,8 @@ def __ask_for_password_when_not_root(
 ) -> typing.Optional[str]:
     if remote is None and remote_list is None and os.geteuid() == 0:
         return None
-    else:
-        return Printer(console).ask_for_connection_password()
+
+    return Printer(console).ask_for_connection_password()
 
 
 class CommandWithBanner(click.Command):

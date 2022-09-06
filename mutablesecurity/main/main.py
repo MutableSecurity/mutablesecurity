@@ -131,7 +131,7 @@ def exported_functionality(
         required_kwargs = {}
         if len(parameters) > 1:
             for key, _ in parameters.items():
-                if key == "self" or key == "cls":
+                if key in ["self", "cls"]:
                     continue
 
                 required_kwargs[key] = kwargs[key]

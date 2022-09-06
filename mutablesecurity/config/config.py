@@ -117,7 +117,8 @@ class ConfigurationManager(metaclass=Singleton):
 
         if name == "configuration":
             return config_dict
-        elif name == "__init__":
+
+        if name == "__init__":
             return ConfigurationManager.__init__
 
         try:
