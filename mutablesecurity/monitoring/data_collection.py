@@ -1,11 +1,10 @@
 """Module collecting system and usage information."""
-import importlib
 import platform
 import sys
 import time
 import typing
 
-from mutablesecurity import config
+from mutablesecurity import VERSION, config
 
 
 class DataCollector:
@@ -82,7 +81,7 @@ class PackageVersion(Metric):
 
     @staticmethod
     def _get() -> str:
-        return importlib.metadata.version("mutablesecurity")
+        return VERSION
 
 
 class IsDeveloper(Metric):
