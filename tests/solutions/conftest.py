@@ -15,8 +15,8 @@ def __mock_dummy_password(message: str, password: bool) -> str:
 def __mock_yaml_safeload(stream: str) -> dict:
     if "current_user" in stream:
         return {"current_user": "username"}
-    else:
-        return ORIGINAL_YAML_SAFELOAD(stream)
+
+    return ORIGINAL_YAML_SAFELOAD(stream)
 
 
 @pytest.fixture(autouse=True)

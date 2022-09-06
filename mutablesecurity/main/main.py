@@ -42,8 +42,8 @@ class Main:
         self.logger = Logger()
         self.logger.set_verbosity(verbose)
 
+    @staticmethod
     def run(
-        self,
         connections: typing.List[Connection],
         solution_id: str,
         operation_name: str,

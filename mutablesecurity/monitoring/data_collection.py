@@ -4,7 +4,7 @@ import sys
 import time
 import typing
 
-from mutablesecurity import VERSION, config
+from mutablesecurity import VERSION
 
 
 class DataCollector:
@@ -82,26 +82,6 @@ class PackageVersion(Metric):
     @staticmethod
     def _get() -> str:
         return VERSION
-
-
-class IsDeveloper(Metric):
-    """Metric indicating if the user is a developer."""
-
-    IDENTIFIER = "is_dev"
-
-    @staticmethod
-    def _get() -> str:
-        return str(config.developer_mode)
-
-
-class CommandLine(Metric):
-    """Command line, based on argv."""
-
-    IDENTIFIER = "command"
-
-    @staticmethod
-    def _get() -> str:
-        return " ".join(sys.argv)
 
 
 class Timezone(Metric):

@@ -33,7 +33,6 @@ MIN_PYTHON_VERSION = (3, 9)
 
 
 console = Console()
-monitor = Monitor()
 adapter = SolutionsManagerAdapter()
 
 
@@ -83,6 +82,8 @@ class CommandWithBanner(click.Command):
             formatter (click.formatting.HelpFormatter): click's formatter
         """
         Printer(console).print_banner()
+
+        Monitor().report()
 
         super().format_usage(ctx, formatter)
 
@@ -187,6 +188,7 @@ def __run_command(
     # context about their meaning
 
     FeedbackForm(console).launch(no_check=feedback)
+    Monitor().report(solution, operation)
 
     printer = Printer(console)
 
