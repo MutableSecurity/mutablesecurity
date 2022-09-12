@@ -413,14 +413,6 @@ class ActiveClamAVDatabase(BaseTest):
     FACT_ARGS = ("clamav-freshclam",)
 
 
-class ActiveClamAVDaemon(BaseTest):
-    IDENTIFIER = "active_daemon"
-    DESCRIPTION = "Checks if the ClamAV daemon service is active."
-    TEST_TYPE = TestType.OPERATIONAL
-    FACT = ActiveService
-    FACT_ARGS = ("clamav-daemon",)
-
-
 class InternetAccess(BaseTest):
     IDENTIFIER = "internet_access"
     DESCRIPTION = "Checks if host has Internet access."
@@ -554,7 +546,6 @@ class Clamav(BaseSolution):
         UbuntuRequirement,  # type: ignore[list-item, var-annotated]
         InternetAccess,  # type: ignore[list-item, var-annotated]
         ActiveClamAVDatabase,  # type: ignore[list-item, var-annotated]
-        ActiveClamAVDaemon,  # type: ignore[list-item, var-annotated]
         TestScan,  # type: ignore[list-item, var-annotated]
     ]
     LOGS = [TextLogs]  # type: ignore[list-item, var-annotated]
@@ -574,7 +565,7 @@ class Clamav(BaseSolution):
         apt.packages(
             sudo=True,
             name="Installs ClamAV",
-            packages=["clamav", "clamav-daemon"],
+            packages=["clamav"],
             latest=True,
             success_exit_codes=[0, 100],
         )
@@ -595,18 +586,6 @@ class Clamav(BaseSolution):
             sudo=True,
             name="Starting the service to renew the signature database",
             commands=["systemctl start clamav-freshclam"],
-        )
-
-        server.shell(
-            sudo=True,
-            name="Enabling the clamav-daemon",
-            commands=["systemctl enable clamav-daemon"],
-        )
-
-        server.shell(
-            sudo=True,
-            name="Starting the clamav-daemon",
-            commands=["systemctl start clamav-daemon"],
         )
 
         files.directory(
@@ -671,7 +650,7 @@ class Clamav(BaseSolution):
         server.shell(
             sudo=True,
             name="Uninstalls ClamAV",
-            commands=["apt-get --purge remove -y clamav clamav-daemon"],
+            commands=["apt-get --purge remove -y clamav"],
         )
 
         server.shell(
@@ -724,7 +703,7 @@ class Clamav(BaseSolution):
         apt.packages(
             sudo=True,
             name="Updates ClamAV",
-            packages=["clamav", "clamav-daemon"],
+            packages=["clamav"],
             latest=True,
             present=True,
         )
