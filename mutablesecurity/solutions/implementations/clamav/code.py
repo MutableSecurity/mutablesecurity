@@ -90,7 +90,7 @@ def change_scan_logs_location(
 
     server.shell(
         sudo=True,
-        name="Adding all the old logs data to the new location.",
+        name="Adding all the old logs data into the new location.",
         commands=f"cp {old_value} {new_value}",
     )
 
@@ -174,7 +174,7 @@ class ScanLogLocation(BaseInformation):
     IDENTIFIER = "scan_log_location"
     DESCRIPTION = (
         "The location of the generated logs after the on-demand/crontab scans."
-        " Please chose a file in which the logs will be stored if you would"
+        "Chose a file in which the logs will be stored if you would"
         " like to change."
     )
     INFO_TYPE = StringDataType
@@ -194,7 +194,7 @@ class QuarantineLocation(BaseInformation):
     IDENTIFIER = "quarantine_location"
     DESCRIPTION = (
         "The location where the infected files will be moved to after the"
-        " on-demand/crontab scans. Please select a directory in which the"
+        " on-demand/crontab scans. Select a directory in which the"
         " quarantine will take place if you would like to change."
     )
     INFO_TYPE = StringDataType
@@ -214,7 +214,7 @@ class ScanLocation(BaseInformation):
     IDENTIFIER = "scan_location"
     DESCRIPTION = (
         "The location where the on-demand/crontab scans will take place."
-        " Please select a different directory if you would like to change."
+        "Select a different directory if you would like to change."
     )
     INFO_TYPE = StringDataType
     PROPERTIES = [
@@ -289,7 +289,7 @@ class ScanDayofTheWeek(BaseInformation):
     IDENTIFIER = "scan_day_of_week"
     DESCRIPTION = (
         "The day of the week when the crontab scan will take place. (0-6,"
-        " SUN-SAT, 7 for sunday or * for any)"
+        " SUN-SAT, 7 for Sunday or * for any)"
     )
     INFO_TYPE = StringDataType
     PROPERTIES = [
@@ -407,10 +407,7 @@ class UbuntuRequirement(BaseTest):
 
 class ActiveClamAVDatabase(BaseTest):
     IDENTIFIER = "active_database"
-    DESCRIPTION = (
-        "Checks if the ClamAV virus database service is active. Freshclam is a"
-        " virus database update tool for ClamAV."
-    )
+    DESCRIPTION = "Checks if the ClamAV virus database service is active."
     TEST_TYPE = TestType.OPERATIONAL
     FACT = ActiveService
     FACT_ARGS = ("clamav-freshclam",)
@@ -418,12 +415,7 @@ class ActiveClamAVDatabase(BaseTest):
 
 class ActiveClamAVDaemon(BaseTest):
     IDENTIFIER = "active_daemon"
-    DESCRIPTION = (
-        "Checks if the ClamAV daemon service is active. Daemon checks"
-        " periodically for virus database definition updates, downloads,"
-        " installs them, and notifies clamd to refresh it's in-memory virus"
-        " database cache."
-    )
+    DESCRIPTION = "Checks if the ClamAV daemon service is active."
     TEST_TYPE = TestType.OPERATIONAL
     FACT = ActiveService
     FACT_ARGS = ("clamav-daemon",)
@@ -493,7 +485,10 @@ class TestScan(BaseTest):
             return int(output[0]) != 0
 
     IDENTIFIER = "test_scan"
-    DESCRIPTION = "Checks if ClamAV is working properly."
+    DESCRIPTION = (
+        "Creates a EICAR-STANDARD-ANTIVIRUS-TEST-FILE and checks if ClamAV is"
+        " able to detect it."
+    )
     TEST_TYPE = TestType.SECURITY
     TRIGGER = create_test
     FACT = TestScanFact
@@ -529,6 +524,7 @@ class StartScan(BaseAction):
                 "clamscan --recursive"
                 f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {scan_location}"
             ],
+            success_exit_codes=[0, 1],
         )
 
     IDENTIFIER = "start_scan"

@@ -11,7 +11,6 @@ class FilePresenceTest(FactBase):
     @staticmethod
     def command(path: str, exists: bool) -> str:
         prefix = "" if exists else "!"
-        
         return f"if [ {prefix} -e {path} ] ; then echo '1'; else echo '0' ; fi"
 
     @staticmethod
