@@ -1,4 +1,6 @@
 """pytest package configuration."""
+import os
+
 import pytest
 import yaml
 
@@ -7,14 +9,14 @@ ORIGINAL_YAML_SAFELOAD = yaml.safe_load
 
 def __mock_dummy_password(message: str, password: bool) -> str:
     # pylint: disable=unused-argument
-    return ""
+    return os.environ.get("MUTABLESECURITY_TESTS_PASS", "")
 
 
 def __mock_yaml_safeload(stream: str) -> dict:
     if "current_user" in stream:
         return {"current_user": "username"}
-    else:
-        return ORIGINAL_YAML_SAFELOAD(stream)
+
+    return ORIGINAL_YAML_SAFELOAD(stream)
 
 
 @pytest.fixture(autouse=True)

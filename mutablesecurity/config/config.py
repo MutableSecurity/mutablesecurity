@@ -58,6 +58,11 @@ class ConfigurationManager(metaclass=Singleton):
             BooleanDataType,
             default_value=False,
         )
+        APPLICATION_MONITORING = ConfigurationKey(
+            "application_monitoring",
+            BooleanDataType,
+            default_value=True,
+        )
 
     def __init__(self) -> None:
         """Initialize the configuration manager instance.
@@ -112,7 +117,8 @@ class ConfigurationManager(metaclass=Singleton):
 
         if name == "configuration":
             return config_dict
-        elif name == "__init__":
+
+        if name == "__init__":
             return ConfigurationManager.__init__
 
         try:
