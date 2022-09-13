@@ -90,15 +90,11 @@ def change_scan_logs_location(
 
     server.shell(
         sudo=True,
-        name="Adding all the old logs data into the new location.",
-        commands=f"cp {old_value} {new_value}",
-    )
-
-    files.file(
-        sudo=True,
-        name="Removing the old logs file.",
-        path=f"{old_value}",
-        present=False,
+        name=(
+            "Adding all the old logs data into the new location while deleting"
+            " the old ones."
+        ),
+        commands=f"mv -f {old_value} {new_value}",
     )
 
 
@@ -134,15 +130,8 @@ def change_quarantine_location(
 
     server.shell(
         sudo=True,
-        name="Adding all the old quarantine data to the new location.",
-        commands=f"cp -r {old_value} {new_value}",
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removing the old quarantine directory.",
-        path=f"{old_value}",
-        present=False,
+        name="Adding all the old quarantine data to the new location .",
+        commands=f"mv -f {old_value} {new_value}",
     )
 
 
