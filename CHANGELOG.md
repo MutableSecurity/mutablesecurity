@@ -1,5 +1,11 @@
 # Changelog
 
+## `v0.3.1` | 2022-09-13
+
+### Added
+
+- Adds usage monitoring with custom serverless function and crash monitoring with Sentry
+
 ## `v0.3.0` | 2022-08-07
 
 ### Added
