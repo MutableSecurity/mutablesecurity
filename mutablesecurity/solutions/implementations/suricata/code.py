@@ -30,7 +30,6 @@ from mutablesecurity.solutions.common.facts.bash import PresentCommand
 from mutablesecurity.solutions.common.facts.networking import (
     InternetConnection,
 )
-from mutablesecurity.solutions.common.facts.process import ProcessRunning
 
 
 class StartService(BaseAction):
@@ -67,18 +66,22 @@ class Interface(BaseInformation):
     ) -> None:
         _save_current_configuration()
 
+    class ProcessCommandFact(FactBase):
+        command =("ls -1 /sys/class/net")
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return (output[0])
+
     IDENTIFIER = "interface"
     DESCRIPTION = "Interface on which Suricata listens"
     INFO_TYPE = StringDataType
     PROPERTIES = [
-        InformationProperties.CONFIGURATION,
-        InformationProperties.MANDATORY,
-        InformationProperties.WITH_DEFAULT_VALUE,
-        InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
+        InformationProperties.MANDATORY,
     ]
-    DEFAULT_VALUE = "eth0"
-    GETTER = None
+    DEFAULT_VALUE = None
+    GETTER = ProcessCommandFact
     SETTER = set_configuration
 
 
@@ -152,9 +155,8 @@ class DailyAlertsCount(BaseInformation):
 
 class Uptime(BaseInformation):
     class UptimeFact(FactBase):
-        current_date = datetime.today().strftime("%m/%d/%Y")
         command = (
-            f"cat /var/log/suricata/fast.log | grep '{current_date}' | wc -l"
+            "suricatasc -c uptime | jq '.message'"
         )
 
         @staticmethod
@@ -175,17 +177,19 @@ class Uptime(BaseInformation):
 
 class Version(BaseInformation):
     class VersionFact(FactBase):
-        command = "suricatasc -c version | jq -r '.message'"
+        command = "suricata -V version | egrep -o '([0-9].)+'   "
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return output[0].split()[1]
+            return output[0]
 
     IDENTIFIER = "version"
     DESCRIPTION = "Current installed version"
     INFO_TYPE = StringDataType
     PROPERTIES = [
-        InformationProperties.METRIC,
+        InformationProperties.AUTO_GENERATED_AFTER_INSTALL,
+        InformationProperties.READ_ONLY,
+
     ]
     DEFAULT_VALUE = None
     GETTER = VersionFact
@@ -233,7 +237,7 @@ class ProcessUpAndRunning(BaseTest):
         """Fact for checking if a process is running."""
 
         def command(self, executable: str) -> str:
-            return f"ps -axo cmd | egrep '{executable}' | wc -l"
+            return f"systemctl status {executable}| egrep ' active' | wc -l"
 
         @staticmethod
         def process(
@@ -249,7 +253,7 @@ class ProcessUpAndRunning(BaseTest):
 
 class ExistingSolution(BaseTest):
     IDENTIFIER = "present_commnad"
-    DESCRIPTION = "Checks if suricata's process is running."
+    DESCRIPTION = "Checks if suricata's command is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = PresentCommand
     FACT_ARGS = ("suricata -V",)
