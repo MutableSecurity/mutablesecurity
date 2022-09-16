@@ -20,6 +20,7 @@ callee
 capsys
 capturefixture
 choco
+clamav
 classdef
 cli
 codebase

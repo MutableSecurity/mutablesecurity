@@ -1,0 +1,10 @@
+full_name: ClamAV
+description: Clam AntiVirus (ClamAV) is a free software, cross-platfom antimalware toolkit able to detect many types of malware, including viruses. ClamAV includes a command-line scanner, automatic database updater, and a scalable multi-threaded daemon running on an anti-virus engine from a shared library. FreshClam is a virus database update tool for ClamAV. ClamAV Daemon checks periodically for virus database definition updates, downloads, installs them, and notifies clamd to refresh it's in-memory virus database cache.
+references:
+  - https://www.clamav.net/
+  - https://github.com/Cisco-Talos/clamav
+  - https://docs.clamav.net/Introduction.html
+maturity: PRODUCTION
+categories:
+  - ANTIMALWARE
+  - HOST_PROTECTION

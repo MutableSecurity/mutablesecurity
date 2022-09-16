@@ -62,6 +62,8 @@ class SolutionCategories(Enum):
     NETWORK_IDPS = "Network Intrusion Detection and Prevention System"
     WEB_ENCRYPTION = "Encryption for Web Applications"
     HOST_IPS = "Host Intrusion Prevention System"
+    HOST_PROTECTION = "Host Protection"
+    ANTIMALWARE = "Antimalware"
     NONE = "No Security"
 
     def __str__(self) -> str:

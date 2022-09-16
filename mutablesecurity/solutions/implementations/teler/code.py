@@ -233,7 +233,7 @@ class Fail2banIntegration(BaseInformation):
     ]
     DEFAULT_VALUE = False
     GETTER = FilePresenceTest
-    GETTER_ARGS = ("/etc/fail2ban/jail.d/teler.conf",)
+    GETTER_ARGS = ("/etc/fail2ban/jail.d/teler.conf", True)
     SETTER = integrate_fail2ban
 
 
