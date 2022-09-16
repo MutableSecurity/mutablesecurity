@@ -62,6 +62,16 @@ Come join the MutableSecurity journey!
     <tbody>
         <tr>
             <td>
+                <a href="https://www.clamav.net/">
+                    <img src="others/readme_images/solutions/clamav.webp">
+                </a>
+            </td>
+            <td>Clam AntiVirus (ClamAV) is a free software, cross-platfom antimalware toolkit able to detect many types of malware, including viruses. ClamAV includes a command-line scanner, automatic database updater, and a scalable multi-threaded daemon running on an anti-virus engine from a shared library. FreshClam is a virus database update tool for ClamAV. ClamAV Daemon checks periodically for virus database definition updates, downloads, installs them, and notifies clamd to refresh it's in-memory virus database cache.</td>
+            <td>
+                <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
+            </td>
+        </tr>        <tr>
+            <td>
                 <a href="https://teler.app">
                     <img src="others/readme_images/solutions/teler.webp">
                 </a>
@@ -82,21 +92,21 @@ Come join the MutableSecurity journey!
             </td>
         </tr>        <tr>
             <td>
-                <a href="https://suricata.io">
-                    <img src="others/readme_images/solutions/suricata.webp">
-                </a>
-            </td>
-            <td>Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.</td>
-            <td>
-                <img alt='Maturity: Under refactoring' src='https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square'>
-            </td>
-        </tr>        <tr>
-            <td>
                 <a href="https://letsencrypt.org">
                     <img src="others/readme_images/solutions/lets_encrypt.webp">
                 </a>
             </td>
             <td>Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.</td>
+            <td>
+                <img alt='Maturity: Under refactoring' src='https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square'>
+            </td>
+        </tr>        <tr>
+            <td>
+                <a href="https://suricata.io">
+                    <img src="others/readme_images/solutions/suricata.webp">
+                </a>
+            </td>
+            <td>Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.</td>
             <td>
                 <img alt='Maturity: Under refactoring' src='https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square'>
             </td>
