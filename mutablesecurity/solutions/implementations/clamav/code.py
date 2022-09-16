@@ -14,24 +14,16 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
 from mutablesecurity.helpers.data_type import IntegerDataType, StringDataType
-from mutablesecurity.solutions.base import (
-    BaseAction,
-    BaseInformation,
-    BaseLog,
-    BaseSolution,
-    BaseSolutionException,
-    BaseTest,
-    InformationProperties,
-    TestType,
-)
-from mutablesecurity.solutions.common.facts.networking import (
-    InternetConnection,
-)
+from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
+                                            BaseLog, BaseSolution,
+                                            BaseSolutionException, BaseTest,
+                                            InformationProperties, TestType)
+from mutablesecurity.solutions.common.facts.networking import \
+    InternetConnection
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 from mutablesecurity.solutions.common.facts.service import ActiveService
-from mutablesecurity.solutions.common.operations.crontab import (
-    remove_crontabs_by_part,
-)
+from mutablesecurity.solutions.common.operations.crontab import \
+    remove_crontabs_by_part
 
 
 class ClamAVAlreadyUpdatedException(BaseSolutionException):
@@ -487,7 +479,7 @@ class TextLogs(BaseLog):
         def command() -> str:
             return (
                 "cat /var/log/clamav/freshclam.log "
-                f" /var/log/clamav/clamav.log {ScanLogLocation.get()}"
+                f" /var/log/clamav/clamav.log {ScanLogLocation.get()} || true"
             )
 
         @staticmethod
