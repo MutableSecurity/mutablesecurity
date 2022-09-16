@@ -1,8 +1,9 @@
-"""Module integrating ClamAV"""
+"""Module integrating ClamAV."""
 
 # pylint: disable=missing-class-docstring
 # pylint: disable=unused-argument
 # pylint: disable=unexpected-keyword-arg
+# pylint: disable=anomalous-backslash-in-string
 
 import typing
 from datetime import datetime
@@ -13,24 +14,16 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
 from mutablesecurity.helpers.data_type import IntegerDataType, StringDataType
-from mutablesecurity.solutions.base import (
-    BaseAction,
-    BaseInformation,
-    BaseLog,
-    BaseSolution,
-    BaseSolutionException,
-    BaseTest,
-    InformationProperties,
-    TestType,
-)
-from mutablesecurity.solutions.common.facts.networking import (
-    InternetConnection,
-)
+from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
+                                            BaseLog, BaseSolution,
+                                            BaseSolutionException, BaseTest,
+                                            InformationProperties, TestType)
+from mutablesecurity.solutions.common.facts.networking import \
+    InternetConnection
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 from mutablesecurity.solutions.common.facts.service import ActiveService
-from mutablesecurity.solutions.common.operations.crontab import (
-    remove_crontabs_by_part,
-)
+from mutablesecurity.solutions.common.operations.crontab import \
+    remove_crontabs_by_part
 
 
 class ClamAVAlreadyUpdatedException(BaseSolutionException):
@@ -43,14 +36,15 @@ def run_crontab() -> None:
         name="Adds a crontab to automatically scan the system recursively",
         command=(
             "clamscan --recursive"
-            f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {ScanLocation.get()}"
+            f" --log={ScanLogLocation.get()}"
+            f" --move={QuarantineLocation.get()} {ScanLocation.get()}"
         ),
         present=True,
         minute=f"{ScanMinute.get()}",
         hour=f"{ScanHour.get()}",
         month=f"{ScanMonth.get()}",
-        day_of_week=f"{ScanDayofTheWeek.get()}",
-        day_of_month=f"{ScanDayofTheMonth.get()}",
+        day_of_week=f"{ScanDayOfTheWeek.get()}",
+        day_of_month=f"{ScanDayOfTheMonth.get()}",
     )
 
 
@@ -67,14 +61,15 @@ def change_scan_logs_location(
         name="Adds a crontab to automatically scan the system recursively",
         command=(
             "clamscan --recursive"
-            f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {ScanLocation.get()}"
+            f" --log={ScanLogLocation.get()}"
+            f" --move={QuarantineLocation.get()} {ScanLocation.get()}"
         ),
         present=True,
         minute=f"{ScanMinute.get()}",
         hour=f"{ScanHour.get()}",
         month=f"{ScanMonth.get()}",
-        day_of_week=f"{ScanDayofTheWeek.get()}",
-        day_of_month=f"{ScanDayofTheMonth.get()}",
+        day_of_week=f"{ScanDayOfTheWeek.get()}",
+        day_of_month=f"{ScanDayOfTheMonth.get()}",
     )
 
     files.file(
@@ -111,14 +106,15 @@ def change_quarantine_location(
         name="Adds a crontab to automatically scan the system recursively",
         command=(
             "clamscan --recursive"
-            f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {ScanLocation.get()}"
+            f" --log={ScanLogLocation.get()}"
+            f" --move={QuarantineLocation.get()} {ScanLocation.get()}"
         ),
         present=True,
         minute=f"{ScanMinute.get()}",
         hour=f"{ScanHour.get()}",
         month=f"{ScanMonth.get()}",
-        day_of_week=f"{ScanDayofTheWeek.get()}",
-        day_of_month=f"{ScanDayofTheMonth.get()}",
+        day_of_week=f"{ScanDayOfTheWeek.get()}",
+        day_of_month=f"{ScanDayOfTheMonth.get()}",
     )
 
     files.directory(
@@ -148,14 +144,15 @@ def change_scan_location_or_crontab(
         name="Adds a crontab to automatically scan the system recursively",
         command=(
             "clamscan --recursive"
-            f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {ScanLocation.get()}"
+            f" --log={ScanLogLocation.get()}"
+            f" --move={QuarantineLocation.get()} {ScanLocation.get()}"
         ),
         present=True,
         minute=f"{ScanMinute.get()}",
         hour=f"{ScanHour.get()}",
         month=f"{ScanMonth.get()}",
-        day_of_week=f"{ScanDayofTheWeek.get()}",
-        day_of_month=f"{ScanDayofTheMonth.get()}",
+        day_of_week=f"{ScanDayOfTheWeek.get()}",
+        day_of_month=f"{ScanDayOfTheMonth.get()}",
     )
 
 
@@ -274,7 +271,7 @@ class ScanMonth(BaseInformation):
     SETTER = change_scan_location_or_crontab
 
 
-class ScanDayofTheWeek(BaseInformation):
+class ScanDayOfTheWeek(BaseInformation):
     IDENTIFIER = "scan_day_of_week"
     DESCRIPTION = (
         "The day of the week when the crontab scan will take place. (0-6,"
@@ -293,7 +290,7 @@ class ScanDayofTheWeek(BaseInformation):
     SETTER = change_scan_location_or_crontab
 
 
-class ScanDayofTheMonth(BaseInformation):
+class ScanDayOfTheMonth(BaseInformation):
     IDENTIFIER = "scan_day_of_month"
     DESCRIPTION = (
         "The day of the month when the crontab scan will take place. (1-31, or"
@@ -340,7 +337,8 @@ class TotalInfectedFiles(BaseInformation):
         def command() -> str:
             return (
                 f"cat {ScanLogLocation.get()}| grep -oP 'Infected"
-                " files:\s+\K\w+' | awk '{T+= $NF} END { print T }'"
+                " files:\s+\K\w+' | awk '{T+= $NF} END"  # noqa: W605
+                " { print T }'"
             )
 
         @staticmethod
@@ -416,7 +414,7 @@ class TestScan(BaseTest):
         files.directory(
             sudo=True,
             name="Creating the test directory in /tmp",
-            path="/tmp/clamav_test",
+            path="/tmp/clamav_test",  # noqa: S108
             present=True,
         )
 
@@ -424,7 +422,8 @@ class TestScan(BaseTest):
             sudo=True,
             name="Creating the file on which we'll test ClamAV",
             commands=[
-                "echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'"
+                "echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-"  # noqa: W605
+                "STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'"
                 " > /tmp/clamav_test/test.txt"
             ],
         )
@@ -445,7 +444,7 @@ class TestScan(BaseTest):
         files.directory(
             sudo=True,
             name="Removing the test directory in /tmp",
-            path="/tmp/clamav_test",
+            path="/tmp/clamav_test",  # noqa: S108
             present=False,
         )
 
@@ -478,7 +477,7 @@ class TestScan(BaseTest):
 class TextLogs(BaseLog):
     class GeneratedLogsFact(FactBase):
         @staticmethod
-        def command():
+        def command() -> str:
             return (
                 "cat /var/log/clamav/freshclam.log "
                 f" /var/log/clamav/clamav.log {ScanLogLocation.get()}"
@@ -503,7 +502,8 @@ class StartScan(BaseAction):
             name="Starts the scan with the predifined scan options.",
             commands=[
                 "clamscan --recursive"
-                f" --log={ScanLogLocation.get()} --move={QuarantineLocation.get()} {scan_location}"
+                f" --log={ScanLogLocation.get()}"
+                f" --move={QuarantineLocation.get()} {scan_location}"
             ],
             success_exit_codes=[0, 1],
         )
@@ -525,8 +525,8 @@ class Clamav(BaseSolution):
         ScanMinute,  # type: ignore[list-item, var-annotated]
         ScanHour,  # type: ignore[list-item, var-annotated]
         ScanMonth,  # type: ignore[list-item, var-annotated]
-        ScanDayofTheWeek,  # type: ignore[list-item, var-annotated]
-        ScanDayofTheMonth,  # type: ignore[list-item, var-annotated]
+        ScanDayOfTheWeek,  # type: ignore[list-item, var-annotated]
+        ScanDayOfTheMonth,  # type: ignore[list-item, var-annotated]
         InstalledVersion,  # type: ignore[list-item, var-annotated]
         TotalInfectedFiles,  # type: ignore[list-item, var-annotated]
         DailyInfectedFiles,  # type: ignore[list-item, var-annotated]
@@ -598,7 +598,7 @@ class Clamav(BaseSolution):
         files.directory(
             sudo=True,
             name="Creating the test directory in /tmp",
-            path="/tmp/clamav_test",
+            path="/tmp/clamav_test",  # noqa: S108
             present=True,
         )
 
@@ -606,8 +606,9 @@ class Clamav(BaseSolution):
             sudo=True,
             name="Creating the file on which we'll test ClamAV",
             commands=[
-                "echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'"
-                " > /tmp/clamav_test/test.txt"
+                "echo 'X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-"  # noqa: W605
+                "STANDARD-ANTIVIRUS-TEST-FILE!$H+H*'"
+                " > /tmp/clamav_test/test.txt"  # noqa: S108
             ],
         )
 
@@ -627,7 +628,7 @@ class Clamav(BaseSolution):
         files.directory(
             sudo=True,
             name="Removing the test directory in /tmp",
-            path="/tmp/clamav_test",
+            path="/tmp/clamav_test",  # noqa: S108
             present=False,
         )
 
