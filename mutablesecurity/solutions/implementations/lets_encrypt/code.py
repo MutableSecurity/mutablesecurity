@@ -56,21 +56,14 @@ def revoke_certificate_with_explicit_domain(domain: str = None) -> None:
 
     server.shell(
         sudo=True,
-        name="Adds all the old configurations back in place on sites-enabled",
+        name=(
+            "Adds all the old configurations back in place inside"
+            " sites-enabled"
+        ),
         commands=[
-            "cp /opt/mutablesecurity/lets_encrypt/default"
+            "mv -f /opt/mutablesecurity/lets_encrypt/default"
             " /etc/nginx/sites-enabled/default"
         ],
-    )
-
-    files.file(
-        sudo=True,
-        name=(
-            "Removes the old Nginx configuration from"
-            " /opt/mutablesecurity/lets_encrypt"
-        ),
-        path="/opt/mutablesecurity/lets_encrypt/default",
-        present=False,
     )
 
     files.file(
@@ -80,18 +73,128 @@ def revoke_certificate_with_explicit_domain(domain: str = None) -> None:
         present=False,
     )
 
+    server.shell(
+        sudo=True,
+        name="Purges Let's Encrypt x Certbot",
+        commands=["apt purge -y letsencrypt certbot"],
+    )
+
+    files.directory(
+        sudo=True,
+        name="Removes Let's Encrypt from /etc",
+        path="/etc/letsencrypt",
+        present=False,
+    )
+
+    files.directory(
+        sudo=True,
+        name="Removes Let's Encrypt from /root/.local/share/",
+        path="/root/.local/share/letsencrypt/",
+        present=False,
+    )
+
+    files.directory(
+        sudo=True,
+        name="Removes Certbot from /opt/eff.org/",
+        path="/opt/eff.org/certbot/",
+        present=False,
+    )
+
+    files.directory(
+        sudo=True,
+        name="Removes Let's Encrypt from /var/lib/",
+        path="/var/lib/letsencrypt/",
+        present=False,
+    )
+
+    files.directory(
+        sudo=True,
+        name="Removes Let's Encrypt from /var/log/",
+        path="/var/log/letsencrypt/",
+        present=False,
+    )
+
+    server.shell(
+        sudo=True,
+        name="Cleans everything using autoremove",
+        commands=["apt -y update && apt -y autoremove"],
+    )
+
+    server.shell(
+        sudo=True,
+        name="Restarts the Nginx service to apply changes",
+        commands=["systemctl restart nginx"],
+    )
+
 
 @deploy
 def revoke_old_and_generate_new_certificate(domain: str) -> None:
-    GenerateCertificate.execute()
     revoke_certificate_with_explicit_domain(domain)
+    GenerateCertificate.execute()
 
 
 @deploy
 def revoke_old_and_generate_new_certificate_when_domain_changed(
     old_value: typing.Any, new_value: typing.Any
 ) -> None:
-    revoke_old_and_generate_new_certificate(old_value)
+    revoke_certificate_with_explicit_domain(old_value)
+    apt.update(
+        sudo=True,
+        name="Updates the apt reporisoties",
+        env={"LC_TIME": "en_US.UTF-8"},
+        cache_time=3600,
+        success_exit_codes=[0, 100],
+    )
+
+    apt.packages(
+        sudo=True,
+        name="Installs the requirements",
+        packages=["python3-certbot-nginx", "curl"],
+        latest=True,
+    )
+
+    server.shell(
+        sudo=True,
+        name=(
+            "Saves the default config file in case the user wants to"
+            " remove LetsEncrypt (Certbot)"
+        ),
+        commands=[
+            "cp /etc/nginx/sites-enabled/default"
+            " /opt/mutablesecurity/lets_encrypt/"
+        ],
+    )
+
+    server.shell(
+        sudo=True,
+        name=(
+            "Generates and installs the certificate for the given Nginx domain"
+        ),
+        commands=[
+            "certbot --nginx --noninteractive --agree-tos --cert-name"
+            f" {new_value} -d {new_value} -m"
+            f" {UserEmail.get()} --redirect"
+        ],
+    )
+
+    server.shell(
+        sudo=True,
+        name=(
+            "Adds MutableSecurity logs generation command in the"
+            " sites-enabled directory of the Nginx configuration"
+        ),
+        commands=[
+            f"sed -i '/server_name {new_value};/a access_log"
+            f" /var/log/nginx/https_{new_value}_access.log; # Managed by"
+            " MutableSecurity' /etc/nginx/sites-enabled/default"
+        ],
+    )
+
+    server.shell(
+        sudo=True,
+        name="Restart the Nginx service",
+        commands=["systemctl restart nginx"],
+    )
 
 
 @deploy
@@ -356,6 +459,28 @@ class GenerateCertificate(BaseAction):
     @staticmethod
     @deploy
     def generate_certificate() -> None:
+        files.directory(
+            sudo=True,
+            path="/opt/mutablesecurity/lets_encrypt",
+            present=True,
+            name="Creates the folder that will store Let's Encrypt.",
+        )
+
+        apt.update(
+            sudo=True,
+            name="Updates the apt reporisoties",
+            env={"LC_TIME": "en_US.UTF-8"},
+            cache_time=3600,
+            success_exit_codes=[0, 100],
+        )
+
+        apt.packages(
+            sudo=True,
+            name="Installs the requirements",
+            packages=["python3-certbot-nginx", "curl"],
+            latest=True,
+        )
+
         server.shell(
             sudo=True,
             name=(
@@ -446,40 +571,12 @@ class LetsEncrypt(BaseSolution):
     @staticmethod
     @deploy
     def _install() -> None:
-        apt.update(
-            sudo=True,
-            name="Updates the apt reporisoties",
-            env={"LC_TIME": "en_US.UTF-8"},
-            cache_time=3600,
-            success_exit_codes=[0, 100],
-        )
-
-        apt.packages(
-            sudo=True,
-            name="Installs the requirements",
-            packages=["python3-certbot-nginx", "curl"],
-            latest=True,
-        )
-
-        files.directory(
-            sudo=True,
-            path="/opt/mutablesecurity/lets_encrypt",
-            present=True,
-            name="Creates the folder that will store Let's Encrypt.",
-        )
-
         GenerateCertificate.execute()
 
     @staticmethod
     @deploy
     def _uninstall(remove_logs: bool = True) -> None:
         RevokeCurrentCertificate.execute()
-
-        server.shell(
-            sudo=True,
-            name="Purges Let's Encrypt x Certbot",
-            commands=["apt purge -y letsencrypt certbot"],
-        )
 
         files.directory(
             sudo=True,
@@ -489,53 +586,6 @@ class LetsEncrypt(BaseSolution):
             ),
             path="/opt/mutablesecurity/lets_encrypt/",
             present=False,
-        )
-
-        files.directory(
-            sudo=True,
-            name="Removes Let's Encrypt from /etc",
-            path="/etc/letsencrypt",
-            present=False,
-        )
-
-        files.directory(
-            sudo=True,
-            name="Removes Let's Encrypt from /root/.local/share/",
-            path="/root/.local/share/letsencrypt/",
-            present=False,
-        )
-
-        files.directory(
-            sudo=True,
-            name="Removes Certbot from /opt/eff.org/",
-            path="/opt/eff.org/certbot/",
-            present=False,
-        )
-
-        files.directory(
-            sudo=True,
-            name="Removes Let's Encrypt from /var/lib/",
-            path="/var/lib/letsencrypt/",
-            present=False,
-        )
-
-        files.directory(
-            sudo=True,
-            name="Removes Let's Encrypt from /var/log/",
-            path="/var/log/letsencrypt/",
-            present=False,
-        )
-
-        server.shell(
-            sudo=True,
-            name="Cleans everything using autoremove",
-            commands=["apt -y update && apt -y autoremove"],
-        )
-
-        server.shell(
-            sudo=True,
-            name="Restarts the Nginx service to apply changes",
-            commands=["systemctl restart nginx"],
         )
 
     @staticmethod
