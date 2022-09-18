@@ -73,59 +73,6 @@ def revoke_certificate_with_explicit_domain(domain: str = None) -> None:
         present=False,
     )
 
-    server.shell(
-        sudo=True,
-        name="Purges Let's Encrypt x Certbot",
-        commands=["apt purge -y letsencrypt certbot"],
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removes Let's Encrypt from /etc",
-        path="/etc/letsencrypt",
-        present=False,
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removes Let's Encrypt from /root/.local/share/",
-        path="/root/.local/share/letsencrypt/",
-        present=False,
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removes Certbot from /opt/eff.org/",
-        path="/opt/eff.org/certbot/",
-        present=False,
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removes Let's Encrypt from /var/lib/",
-        path="/var/lib/letsencrypt/",
-        present=False,
-    )
-
-    files.directory(
-        sudo=True,
-        name="Removes Let's Encrypt from /var/log/",
-        path="/var/log/letsencrypt/",
-        present=False,
-    )
-
-    server.shell(
-        sudo=True,
-        name="Cleans everything using autoremove",
-        commands=["apt -y update && apt -y autoremove"],
-    )
-
-    server.shell(
-        sudo=True,
-        name="Restarts the Nginx service to apply changes",
-        commands=["systemctl restart nginx"],
-    )
-
 
 @deploy
 def revoke_old_and_generate_new_certificate(domain: str) -> None:
@@ -138,20 +85,6 @@ def revoke_old_and_generate_new_certificate_when_domain_changed(
     old_value: typing.Any, new_value: typing.Any
 ) -> None:
     revoke_certificate_with_explicit_domain(old_value)
-    apt.update(
-        sudo=True,
-        name="Updates the apt reporisoties",
-        env={"LC_TIME": "en_US.UTF-8"},
-        cache_time=3600,
-        success_exit_codes=[0, 100],
-    )
-
-    apt.packages(
-        sudo=True,
-        name="Installs the requirements",
-        packages=["python3-certbot-nginx", "curl"],
-        latest=True,
-    )
 
     server.shell(
         sudo=True,
@@ -459,27 +392,6 @@ class GenerateCertificate(BaseAction):
     @staticmethod
     @deploy
     def generate_certificate() -> None:
-        files.directory(
-            sudo=True,
-            path="/opt/mutablesecurity/lets_encrypt",
-            present=True,
-            name="Creates the folder that will store Let's Encrypt.",
-        )
-
-        apt.update(
-            sudo=True,
-            name="Updates the apt reporisoties",
-            env={"LC_TIME": "en_US.UTF-8"},
-            cache_time=3600,
-            success_exit_codes=[0, 100],
-        )
-
-        apt.packages(
-            sudo=True,
-            name="Installs the requirements",
-            packages=["python3-certbot-nginx", "curl"],
-            latest=True,
-        )
 
         server.shell(
             sudo=True,
@@ -571,12 +483,86 @@ class LetsEncrypt(BaseSolution):
     @staticmethod
     @deploy
     def _install() -> None:
+        files.directory(
+            sudo=True,
+            path="/opt/mutablesecurity/lets_encrypt",
+            present=True,
+            name="Creates the folder that will store Let's Encrypt.",
+        )
+
+        apt.update(
+            sudo=True,
+            name="Updates the apt reporisoties",
+            env={"LC_TIME": "en_US.UTF-8"},
+            cache_time=3600,
+            success_exit_codes=[0, 100],
+        )
+
+        apt.packages(
+            sudo=True,
+            name="Installs the requirements",
+            packages=["python3-certbot-nginx", "curl"],
+            latest=True,
+        )
         GenerateCertificate.execute()
 
     @staticmethod
     @deploy
     def _uninstall(remove_logs: bool = True) -> None:
         RevokeCurrentCertificate.execute()
+
+        server.shell(
+            sudo=True,
+            name="Purges Let's Encrypt x Certbot",
+            commands=["apt purge -y letsencrypt certbot"],
+        )
+
+        files.directory(
+            sudo=True,
+            name="Removes Let's Encrypt from /etc",
+            path="/etc/letsencrypt",
+            present=False,
+        )
+
+        files.directory(
+            sudo=True,
+            name="Removes Let's Encrypt from /root/.local/share/",
+            path="/root/.local/share/letsencrypt/",
+            present=False,
+        )
+
+        files.directory(
+            sudo=True,
+            name="Removes Certbot from /opt/eff.org/",
+            path="/opt/eff.org/certbot/",
+            present=False,
+        )
+
+        files.directory(
+            sudo=True,
+            name="Removes Let's Encrypt from /var/lib/",
+            path="/var/lib/letsencrypt/",
+            present=False,
+        )
+
+        files.directory(
+            sudo=True,
+            name="Removes Let's Encrypt from /var/log/",
+            path="/var/log/letsencrypt/",
+            present=False,
+        )
+
+        server.shell(
+            sudo=True,
+            name="Cleans everything using autoremove",
+            commands=["apt -y update && apt -y autoremove"],
+        )
+
+        server.shell(
+            sudo=True,
+            name="Restarts the Nginx service to apply changes",
+            commands=["systemctl restart nginx"],
+        )
 
         files.directory(
             sudo=True,
@@ -605,6 +591,7 @@ class LetsEncrypt(BaseSolution):
             raise CertbotAlreadyUpdatedException()
 
         apt.packages(
+            sudo=True,
             packages=["certbot"],
             latest=True,
             name="Updates Certbot via apt.",
