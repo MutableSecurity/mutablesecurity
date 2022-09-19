@@ -30,6 +30,7 @@ from mutablesecurity.solutions.common.facts.networking import (
 )
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 from mutablesecurity.solutions.common.facts.service import ActiveService
+from mutablesecurity.solutions.common.operations.apt import autoremove
 
 
 class CertbotAlreadyUpdatedException(BaseSolutionException):
@@ -392,7 +393,6 @@ class GenerateCertificate(BaseAction):
     @staticmethod
     @deploy
     def generate_certificate() -> None:
-
         server.shell(
             sudo=True,
             name=(
@@ -554,10 +554,11 @@ class LetsEncrypt(BaseSolution):
             present=False,
         )
 
-        server.shell(
-            sudo=True,
-            name="Cleans everything using autoremove",
-            commands=["apt -y update && apt -y autoremove"],
+        autoremove(
+            name=(
+                "Removes all residual data correlated to Let's Encrypt x"
+                " Certbot"
+            )
         )
 
         systemd.service(
