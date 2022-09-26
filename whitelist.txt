@@ -4,6 +4,7 @@ argv
 ast
 autodoc
 automations
+autoremove
 autouse
 baseaction
 baseinformation
@@ -19,6 +20,7 @@ booleans
 callee
 capsys
 capturefixture
+certbot
 choco
 clamav
 classdef
@@ -117,6 +119,7 @@ subnode
 sudo
 suricata
 syslog
+systemd
 teler
 testsuite
 traceback
