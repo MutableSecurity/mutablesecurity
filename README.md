@@ -68,7 +68,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Clam AntiVirus (ClamAV) is a free software, cross-platfom antimalware toolkit able to detect many types of malware, including viruses. ClamAV includes a command-line scanner, automatic database updater, and a scalable multi-threaded daemon running on an anti-virus engine from a shared library. FreshClam is a virus database update tool for ClamAV. ClamAV Daemon checks periodically for virus database definition updates, downloads, installs them, and notifies clamd to refresh it's in-memory virus database cache.</td>
             <td>
-                <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
+                <img alt="Maturity: Production" src="https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square">
             </td>
         </tr>        <tr>
             <td>
@@ -78,7 +78,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>teler is a real-time intrusion detection and threat alert based on web log. Targets only nginx installed on Ubuntu.</td>
             <td>
-                <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
+                <img alt="Maturity: Production" src="https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square">
             </td>
         </tr>        <tr>
             <td>
@@ -98,7 +98,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Let's Encrypt is a free, automated, and open certificate authority brought to you by the nonprofit Internet Security Research Group (ISRG). Certbot is a free, open source software tool for automatically using Let's Encrypt certificates on manually-administrated websites to enable HTTPS.</td>
             <td>
-                <img alt='Maturity: Under refactoring' src='https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square'>
+                <img alt="Maturity: Under refactoring" src="https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square">
             </td>
         </tr>        <tr>
             <td>
@@ -108,7 +108,7 @@ Come join the MutableSecurity journey!
             </td>
             <td>Suricata is the leading independent open source threat detection engine. By combining intrusion detection (IDS), intrusion prevention (IPS), network security monitoring (NSM) and PCAP processing, Suricata can quickly identify, stop, and assess even the most sophisticated attacks.</td>
             <td>
-                <img alt='Maturity: Under refactoring' src='https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square'>
+                <img alt="Maturity: Under refactoring" src="https://img.shields.io/badge/Maturity-Under%20refactoring-yellowgreen?style=flat-square">
             </td>
         </tr>
         <tr>
