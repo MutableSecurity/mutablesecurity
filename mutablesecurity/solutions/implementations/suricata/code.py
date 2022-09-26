@@ -6,7 +6,7 @@
 
 import os
 import typing
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from pyinfra.api.deploy import deploy
 from pyinfra.api.facts import FactBase
@@ -67,20 +67,21 @@ class Interface(BaseInformation):
         _save_current_configuration()
 
     class ProcessCommandFact(FactBase):
-        command =("ls -1 /sys/class/net")
+        command = "ls -1 /sys/class/net"
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return (output[0])
+            return output[0]
 
     IDENTIFIER = "interface"
     DESCRIPTION = "Interface on which Suricata listens"
     INFO_TYPE = StringDataType
     PROPERTIES = [
-        InformationProperties.WRITABLE,
-        InformationProperties.MANDATORY,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+       # InformationProperties.MANDATORY,
     ]
-    DEFAULT_VALUE = None
+    DEFAULT_VALUE = "eth0"
     GETTER = ProcessCommandFact
     SETTER = set_configuration
 
@@ -141,7 +142,7 @@ class DailyAlertsCount(BaseInformation):
         def process(output: typing.List[str]) -> int:
             return int(output[0])
 
-    IDENTIFIER = "total_alerts"
+    IDENTIFIER = "daily_alerts"
     DESCRIPTION = "Total number of alerts"
     INFO_TYPE = IntegerDataType
     PROPERTIES = [
@@ -155,16 +156,14 @@ class DailyAlertsCount(BaseInformation):
 
 class Uptime(BaseInformation):
     class UptimeFact(FactBase):
-        command = (
-            "suricatasc -c uptime | jq '.message'"
-        )
+        command = "suricatasc -c uptime | jq '.message'"
 
         @staticmethod
         def process(output: typing.List[str]) -> int:
-            return int(output[0])
+            return str(timedelta(seconds=int(output[0])))
 
     IDENTIFIER = "uptime"
-    DESCRIPTION = "uptime"
+    DESCRIPTION = "Time since Suricata was started HH:MM:SS"
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.METRIC,
@@ -189,7 +188,6 @@ class Version(BaseInformation):
     PROPERTIES = [
         InformationProperties.AUTO_GENERATED_AFTER_INSTALL,
         InformationProperties.READ_ONLY,
-
     ]
     DEFAULT_VALUE = None
     GETTER = VersionFact
@@ -207,6 +205,19 @@ class TextAlerts(BaseLog):
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
     FACT = TextAlertsFact
+
+
+class JsonAlerts(BaseLog):
+    class JsonAlertsFact(FactBase):
+        command = "cat /var/log/suricata/eve.json"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return "".join(output)
+
+    IDENTIFIER = "json_alerts"
+    DESCRIPTION = "Generated alerts in JSON format"
+    FACT = JsonAlertsFact
 
 
 class MaliciousURL(BaseTest):
@@ -227,13 +238,13 @@ class MaliciousURL(BaseTest):
             return int(output[0]) != 0
 
     IDENTIFIER = "malicious_url"
-    DESCRIPTION = " Requests a malicious-marked URL"
+    DESCRIPTION = " Requests a malicious-marked URL."
     TEST_TYPE = TestType.SECURITY
     FACT = MaliciousURLFact
 
 
-class ProcessUpAndRunning(BaseTest):
-    class ProcessRunning1(FactBase):
+class ActiveProcess(BaseTest):
+    class ActiveProcessFact(FactBase):
         """Fact for checking if a process is running."""
 
         def command(self, executable: str) -> str:
@@ -244,15 +255,16 @@ class ProcessUpAndRunning(BaseTest):
             output: typing.List[str],
         ) -> bool:
             return int(output[0]) != 0
+
     IDENTIFIER = "process_running"
     DESCRIPTION = "Checks if suricata's process is running."
     TEST_TYPE = TestType.OPERATIONAL
-    FACT = ProcessRunning1
+    FACT = ActiveProcessFact
     FACT_ARGS = ("suricata",)
 
 
 class ExistingSolution(BaseTest):
-    IDENTIFIER = "present_commnad"
+    IDENTIFIER = "present_command"
     DESCRIPTION = "Checks if suricata's command is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = PresentCommand
@@ -279,11 +291,12 @@ class Suricata(BaseSolution):
     TESTS = [
         MaliciousURL,  # type: ignore[list-item, var-annotated]
         InternetAccess,  # type: ignore[list-item, var-annotated]
-        ProcessUpAndRunning,  # type: ignore[list-item, var-annotated]
+        ActiveProcess,  # type: ignore[list-item, var-annotated]
         ExistingSolution,  # type: ignore[list-item, var-annotated]
     ]  # type: ignore[list-item, var-annotated]
     LOGS = [
         TextAlerts,  # type: ignore[list-item, var-annotated]
+        JsonAlerts,  # type: ignore[list-item, var-annotated]
     ]
     ACTIONS = [
         StartService,  # type: ignore[list-item, var-annotated]
@@ -293,9 +306,31 @@ class Suricata(BaseSolution):
     @staticmethod
     @deploy
     def _install() -> None:
+        # apt.dist_upgrade(
+        #     name="Upgrade all packages before install ",
+        # )
+
         apt.packages(
             packages=["software-properties-common", "jq", "tmux", "moreutils"],
             name="Installs the required packages",
+        )
+        default_config = os.path.join(
+            os.path.dirname(__file__), "files/suricata.yaml"
+        )
+        server.shell(
+            name="Create default configurtion for instalation",
+            commands=[
+                      f"cp {default_config} /etc/suricata/suricata.yaml"],
+        )
+
+        files.replace(
+            name=(
+                "Replaces the default interface in the Suricata's"
+                " configuration file"
+            ),
+            path="/etc/suricata/suricata.yaml",
+            match=r"interface: [\"a-zA-Z0-9]*$",
+            replace=f"interface: {Interface.get()}",
         )
 
         apt.packages(
@@ -352,7 +387,7 @@ def _save_current_configuration() -> None:
         os.path.dirname(__file__), "files/suricata.conf.j2"
     )
     j2_values = {
-        "interface": Interface().get(),
+        "interface": Interface.get(),
         "automatic_update": AutomaticUpdate.get(),
     }
     files.template(
@@ -361,3 +396,4 @@ def _save_current_configuration() -> None:
         configuration=j2_values,
         name="Copy the generated configuration into Suricata's folder.",
     )
+    
