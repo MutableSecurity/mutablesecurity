@@ -1,10 +1,16 @@
 # Changelog
 
+## `v0.4.0` | 2022-09-26
+
+### Added
+
+- Adds support for Let's Encrypt x Certbot and ClamAV.
+
 ## `v0.3.1` | 2022-09-13
 
 ### Added
 
-- Adds usage monitoring with custom serverless function and crash monitoring with Sentry
+- Adds usage monitoring with custom serverless function and crash monitoring with Sentry.
 
 ## `v0.3.0` | 2022-08-07
 
