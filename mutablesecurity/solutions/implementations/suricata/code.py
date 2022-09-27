@@ -79,7 +79,8 @@ class Interface(BaseInformation):
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
         InformationProperties.NON_DEDUCTIBLE,
-       # InformationProperties.MANDATORY,
+        InformationProperties.MANDATORY,
+        InformationProperties.WRITABLE,
     ]
     DEFAULT_VALUE = "eth0"
     GETTER = ProcessCommandFact
@@ -306,31 +307,9 @@ class Suricata(BaseSolution):
     @staticmethod
     @deploy
     def _install() -> None:
-        # apt.dist_upgrade(
-        #     name="Upgrade all packages before install ",
-        # )
-
-        apt.packages(
-            packages=["software-properties-common", "jq", "tmux", "moreutils"],
-            name="Installs the required packages",
-        )
-        default_config = os.path.join(
-            os.path.dirname(__file__), "files/suricata.yaml"
-        )
-        server.shell(
-            name="Create default configurtion for instalation",
-            commands=[
-                      f"cp {default_config} /etc/suricata/suricata.yaml"],
-        )
-
-        files.replace(
-            name=(
-                "Replaces the default interface in the Suricata's"
-                " configuration file"
-            ),
-            path="/etc/suricata/suricata.yaml",
-            match=r"interface: [\"a-zA-Z0-9]*$",
-            replace=f"interface: {Interface.get()}",
+        apt.update(
+            name="Update apt repositories before install",
+            cache_time=3600,
         )
 
         apt.packages(
@@ -396,4 +375,3 @@ def _save_current_configuration() -> None:
         configuration=j2_values,
         name="Copy the generated configuration into Suricata's folder.",
     )
-    
