@@ -63,7 +63,7 @@ class SolutionCategories(Enum):
     WEB_ENCRYPTION = "Encryption for Web Applications"
     HOST_IPS = "Host Intrusion Prevention System"
     NONE = "No Security"
-    BACKUP = "Copying files to a secondary location"
+    BACKUP = "Backup"
 
     def __str__(self) -> str:
         """Stringify a category.

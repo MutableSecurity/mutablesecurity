@@ -28,6 +28,9 @@ from mutablesecurity.solutions.base import (
     TestType,
 )
 from mutablesecurity.solutions.common.facts.bash import PresentCommand
+from mutablesecurity.solutions.common.facts.networking import (
+    InternetConnection,
+)
 
 
 class IncompatibleArchitectureException(BaseSolutionException):
@@ -137,7 +140,11 @@ class GoogleDriveBackup(BaseAction):
         )
 
     IDENTIFIER = "google_drive_backup"
-    DESCRIPTION = "Save files to Google Drive"
+    DESCRIPTION = (
+        "Save files to Google Drive \n Use this "
+        "link https://duplicati-oauth-handler.appspot.com/ "
+        "to genrate an access token"
+    )
     ACT = google_drive_backup
 
 
@@ -156,7 +163,11 @@ class RestoreGoogleDriveBackup(BaseAction):
         )
 
     IDENTIFIER = "restore_google_drive_backup"
-    DESCRIPTION = "Get backup file from Google Drive"
+    DESCRIPTION = (
+        "Get backup file from Google Drive \n Use this "
+        "link https://duplicati-oauth-handler.appspot.com/ "
+        "to genrate an access token"
+    )
     ACT = restore_google_drive_backup
 
 
@@ -172,20 +183,6 @@ class BinaryArchitectureFact(FactBase):
 
         if architecture in ["386", "amd64", "arm64", "armv6"]:
             return architecture
-
-
-class BinaryArchitecture(BaseInformation):
-    IDENTIFIER = "architecture"
-    DESCRIPTION = "Binary's architecture"
-    INFO_TYPE = StringDataType
-    PROPERTIES = [
-        InformationProperties.CONFIGURATION,
-        InformationProperties.READ_ONLY,
-        InformationProperties.AUTO_GENERATED_BEFORE_INSTALL,
-    ]
-    DEFAULT_VALUE = None
-    GETTER = BinaryArchitectureFact
-    SETTER = None
 
 
 class EncryptionModule(BaseInformation):
@@ -209,7 +206,9 @@ class EncryptionModule(BaseInformation):
             return int(output[0])
 
     IDENTIFIER = "encryption_module"
-    DESCRIPTION = "Algorithm used for encrytion"
+    DESCRIPTION = "Algorithm used for encrytion.\n"\
+        "Use 'aes' as value for encrypted backups or"\
+        "leave it blank for unencrypted backups."
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -244,7 +243,9 @@ class CompressionModule(BaseInformation):
             )
 
     IDENTIFIER = "compression_module"
-    DESCRIPTION = "Algorithm used from compression"
+    DESCRIPTION = "Algorithm used from compression.\n"\
+        "If you want compressed backups use 'zip'"\
+        " or leave it blank for uncompressed backups."
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -279,18 +280,17 @@ class SkipFilesLarger(BaseInformation):
             )
 
     IDENTIFIER = "skip_files_larger_than"
-    DESCRIPTION = (
-        "Don't backup files which heve size larger than corresponding value"
-    )
+    DESCRIPTION = "Don't backup files which heve size larger"\
+        "than corresponding value.\n Expected [No][Unit] Example: 100MB, 3GB."
+
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
         InformationProperties.OPTIONAL,
-        InformationProperties.WITH_DEFAULT_VALUE,
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
     ]
-    DEFAULT_VALUE = "2GB"
+    DEFAULT_VALUE = None
     GETTER = SkipLargerFilesValue
     SETTER = set_configuration
 
@@ -316,7 +316,10 @@ class ExcludeFilesAttributes(BaseInformation):
             )
 
     IDENTIFIER = "exclude_files_attributes"
-    DESCRIPTION = "Don't backup files which have this attribute"
+    DESCRIPTION = "Don't backup files which have this attribute.\n"\
+        "Possible values are: ReadOnly, Hidden, System, Directory, Archive,"\
+        "Device, Normal, Temporary, SparseFile, ReparsePoint, Compressed,"\
+        "Offline, NotContentIndexed, Encrypted, IntegrityStream, NoScrubData."
     INFO_TYPE = StringListDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -325,7 +328,7 @@ class ExcludeFilesAttributes(BaseInformation):
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
     ]
-    DEFAULT_VALUE = "Temporary"
+    DEFAULT_VALUE = ["Temporary"]
     GETTER = ExcludeFilesValue
     SETTER = set_configuration
 
@@ -351,11 +354,10 @@ class Passphrase(BaseInformation):
             return "asdsa"
 
     IDENTIFIER = "passphrase"
-    DESCRIPTION = "This value represents the value by encryption key"
+    DESCRIPTION = "This value represents the encryption key."
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
-        InformationProperties.MANDATORY,
         InformationProperties.WITH_DEFAULT_VALUE,
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
@@ -398,7 +400,7 @@ class SupportedArchitecture(BaseTest):
 
 class ClientCommandPresence(BaseTest):
     IDENTIFIER = "command"
-    DESCRIPTION = "Checks if the Duplicati cli is registered as a command."
+    DESCRIPTION = "Checks if the Duplicati CI is registered as a command."
     TEST_TYPE = TestType.PRESENCE
     FACT = PresentCommand
     FACT_ARGS = ("duplicati-cli --help",)
@@ -411,12 +413,11 @@ class ClientEncryption(BaseTest):
             backup_path = "/tmp/backup" + uuid.uuid4().hex
             file_test = "/tmp/file.txt"
             local_backup = _make_local_backup(file_test, backup_path)
-            execute_command = [
-                "echo 'Hi' >> f{file_test}",
-                local_backup,
-                f" && dir {backup_path} |grep '*.f{EncryptionModule.get()}'",
-                f"rm -r {backup_path}",
-            ]
+            execute_command = (
+                f"{local_backup} |"
+                "egrep -c 'Backup completed successfully!'"
+                f" && rm -r {backup_path}"
+            )
             return execute_command
 
         @staticmethod
@@ -424,9 +425,16 @@ class ClientEncryption(BaseTest):
             return int(output[0]) != 0
 
     IDENTIFIER = "local_encrypted_backup"
-    DESCRIPTION = "Checks if the Duplicati local encryption works"
+    DESCRIPTION = "Checks if the Duplicati local encryption works."
     TEST_TYPE = TestType.SECURITY
     FACT = LocalEncryptionTest
+
+
+class InternetAccess(BaseTest):
+    IDENTIFIER = "internet_access"
+    DESCRIPTION = "Checks if host has Internet access."
+    TEST_TYPE = TestType.REQUIREMENT
+    FACT = InternetConnection
 
 
 # Solution class definition
@@ -434,7 +442,6 @@ class ClientEncryption(BaseTest):
 
 class Duplicati(BaseSolution):
     INFORMATION = [
-        BinaryArchitecture,  # type: ignore[list-item]
         CompressionModule,  # type: ignore[list-item]
         EncryptionModule,
         ExcludeFilesAttributes,  # type: ignore[list-item]
@@ -445,6 +452,7 @@ class Duplicati(BaseSolution):
         ClientEncryption,  # type: ignore[list-item]
         SupportedArchitecture,  # type: ignore[list-item]
         ClientCommandPresence,  # type: ignore[list-item]
+        InternetAccess,  # type: ignore[list-item]
     ]
     LOGS = [
         DefaultLogs,  # type: ignore[list-item]
@@ -461,10 +469,7 @@ class Duplicati(BaseSolution):
     @staticmethod
     @deploy
     def _install() -> None:
-        architecture = BinaryArchitecture.get()
-        if not architecture:
-            raise IncompatibleArchitectureException()
-
+        apt.update(name="Update packets before install.")
         release_url = (
             "https://updates.duplicati.com/beta/duplicati_2.0.6.3-1_all.deb"
         )
@@ -517,9 +522,9 @@ def _load_default_param() -> dict:
         "logFile": " --log-file=/var/log/duplicati.log",
     }
 
-    if EncryptionModule.get() == "none":
+    if EncryptionModule.get() != "aes":
         command_params["encryptionModule"] = " "
-    if CompressionModule.get() == "none":
+    if CompressionModule.get() != "zip":
         command_params["compressionModule"] = " "
 
     return command_params
@@ -565,17 +570,16 @@ def _make_ssh_backup(
     operation = 'backup "'
 
     if reverse:
-        operation = "restore "
-        location = ' --restore-path="' + server_ip
-        server_ip = location
-
+        operation = 'restore "'
+        location = ' --restore-path="' + source_file + '" '
+        source_file = location
+    else:
+        source_file = '"' + source_file + '" '
     command = (
         "duplicati-cli "
         + operation
         + server_ip
-        + '"'
         + source_file
-        + '" '
         + username
         + password
         + " --passphrase="
@@ -594,23 +598,23 @@ def _make_googledrive_backup(
     oauth_token: str,
     reverse: bool = False,
 ) -> str:
-    backup_path = "googledrive://" + backup_location
-    authid = " --authid='" + oauth_token+"'"
+    backup_path = "googledrive://" + backup_location + '" '
+    authid = " --authid='" + oauth_token + "'"
     params = _load_default_param()
     operation = 'backup "'
 
     if reverse:
-        operation = 'restore '
-        restore_location = ' --restore-path="' + source_file
+        operation = 'restore "'
+        restore_location = ' --restore-path="' + source_file + '" '
         source_file = restore_location
+    else:
+        source_file = '"' + source_file + '" '
 
     command = (
         "duplicati-cli "
         + operation
-        + source_file
-        + '" "'
         + backup_path
-        + '" '
+        + source_file
         + authid
         + " --passphrase="
         + Passphrase.get()
