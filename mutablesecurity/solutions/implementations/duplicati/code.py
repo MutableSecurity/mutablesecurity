@@ -31,6 +31,9 @@ from mutablesecurity.solutions.common.facts.bash import PresentCommand
 from mutablesecurity.solutions.common.facts.networking import (
     InternetConnection,
 )
+from mutablesecurity.solutions.common.operations.crontab import (
+    remove_crontabs_by_part,
+)
 
 
 class IncompatibleArchitectureException(BaseSolutionException):
@@ -51,8 +54,20 @@ class LocalBackup(BaseAction):
         )
 
     IDENTIFIER = "local_backup"
-    DESCRIPTION = "Save files local"
+    DESCRIPTION = "Save files local."
     ACT = local_backup
+
+
+class CrontabLocalBackup(BaseAction):
+    @staticmethod
+    @deploy
+    def crontab_local_backup(source_file: str, backup_location: str) -> None:
+        command = _make_local_backup(source_file, backup_location)
+        _save_crontab("Add a crontab for local backups.", command)
+
+    IDENTIFIER = "crontab_local_backup"
+    DESCRIPTION = "Create a crontab for local backups."
+    ACT = crontab_local_backup
 
 
 class RestoreLocalBackup(BaseAction):
@@ -70,7 +85,7 @@ class RestoreLocalBackup(BaseAction):
         )
 
     IDENTIFIER = "restore_local_backup"
-    DESCRIPTION = "Restore backup files on localhost"
+    DESCRIPTION = "Restore backup files on localhost."
     ACT = restore_local_backup
 
 
@@ -93,8 +108,28 @@ class SshBackup(BaseAction):
         )
 
     IDENTIFIER = "ssh_backup"
-    DESCRIPTION = "Save files on remote computer via SSH"
+    DESCRIPTION = "Save files on remote computer via SSH."
     ACT = ssh_backup
+
+
+class CrontabSshBackup(BaseAction):
+    @staticmethod
+    @deploy
+    def crontab_ssh_backup(
+        source_file: str,
+        server_ip: str,
+        username: str,
+        password: str,
+        ssh_fingerprint: str,
+    ) -> None:
+        command = _make_ssh_backup(
+            source_file, server_ip, username, password, ssh_fingerprint
+        )
+        _save_crontab("Add a crontab for remote backups.", command)
+
+    IDENTIFIER = "crontab_ssh_backup"
+    DESCRIPTION = "Create a crontab for remote backups."
+    ACT = crontab_ssh_backup
 
 
 class RestoreSshBackup(BaseAction):
@@ -121,7 +156,7 @@ class RestoreSshBackup(BaseAction):
         )
 
     IDENTIFIER = "restore_ssh_backup"
-    DESCRIPTION = "Restore files on localhost from remote computer over SSH"
+    DESCRIPTION = "Restore files on localhost from remote computer over SSH."
     ACT = restore_ssh_backup
 
 
@@ -143,9 +178,25 @@ class GoogleDriveBackup(BaseAction):
     DESCRIPTION = (
         "Save files to Google Drive \n Use this "
         "link https://duplicati-oauth-handler.appspot.com/ "
-        "to genrate an access token"
+        "to genrate an access token."
     )
     ACT = google_drive_backup
+
+
+class CrontabGoogleDriveBackup(BaseAction):
+    @staticmethod
+    @deploy
+    def crontab_google_drive_backup(
+        source_file: str, backup_location: str, oauth_token: str
+    ) -> None:
+        command = _make_googledrive_backup(
+            source_file, backup_location, oauth_token
+        )
+        _save_crontab("Add a crontab for Google Drive backups.", command)
+
+    IDENTIFIER = "crontab_google_drive_backup"
+    DESCRIPTION = "Create a crontab for backups on Google Drive."
+    ACT = crontab_google_drive_backup
 
 
 class RestoreGoogleDriveBackup(BaseAction):
@@ -166,7 +217,7 @@ class RestoreGoogleDriveBackup(BaseAction):
     DESCRIPTION = (
         "Get backup file from Google Drive \n Use this "
         "link https://duplicati-oauth-handler.appspot.com/ "
-        "to genrate an access token"
+        "to genrate an access token."
     )
     ACT = restore_google_drive_backup
 
@@ -206,9 +257,11 @@ class EncryptionModule(BaseInformation):
             return int(output[0])
 
     IDENTIFIER = "encryption_module"
-    DESCRIPTION = "Algorithm used for encrytion.\n"\
-        "Use 'aes' as value for encrypted backups or"\
+    DESCRIPTION = (
+        "Algorithm used for encrytion.\n"
+        "Use 'aes' as value for encrypted backups or"
         "leave it blank for unencrypted backups."
+    )
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -243,9 +296,11 @@ class CompressionModule(BaseInformation):
             )
 
     IDENTIFIER = "compression_module"
-    DESCRIPTION = "Algorithm used from compression.\n"\
-        "If you want compressed backups use 'zip'"\
+    DESCRIPTION = (
+        "Algorithm used from compression.\n"
+        "If you want compressed backups use 'zip'"
         " or leave it blank for uncompressed backups."
+    )
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -280,8 +335,10 @@ class SkipFilesLarger(BaseInformation):
             )
 
     IDENTIFIER = "skip_files_larger_than"
-    DESCRIPTION = "Don't backup files which heve size larger"\
+    DESCRIPTION = (
+        "Don't backup files which heve size larger"
         "than corresponding value.\n Expected [No][Unit] Example: 100MB, 3GB."
+    )
 
     INFO_TYPE = StringDataType
     PROPERTIES = [
@@ -290,7 +347,7 @@ class SkipFilesLarger(BaseInformation):
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
     ]
-    DEFAULT_VALUE = None
+    DEFAULT_VALUE = "2GB"
     GETTER = SkipLargerFilesValue
     SETTER = set_configuration
 
@@ -316,10 +373,12 @@ class ExcludeFilesAttributes(BaseInformation):
             )
 
     IDENTIFIER = "exclude_files_attributes"
-    DESCRIPTION = "Don't backup files which have this attribute.\n"\
-        "Possible values are: ReadOnly, Hidden, System, Directory, Archive,"\
-        "Device, Normal, Temporary, SparseFile, ReparsePoint, Compressed,"\
+    DESCRIPTION = (
+        "Don't backup files which have this attribute.\n"
+        "Possible values are: ReadOnly, Hidden, System, Directory, Archive,"
+        "Device, Normal, Temporary, SparseFile, ReparsePoint, Compressed,"
         "Offline, NotContentIndexed, Encrypted, IntegrityStream, NoScrubData."
+    )
     INFO_TYPE = StringListDataType
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
@@ -365,6 +424,194 @@ class Passphrase(BaseInformation):
     DEFAULT_VALUE = None
     GETTER = PassphraseValue
     SETTER = set_configuration
+
+
+class BackupMinute(BaseInformation):
+    @staticmethod
+    @deploy
+    def set_configuration(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        _save_current_configuration()
+
+    @staticmethod
+    @deploy
+    class BackupMinuteValue(FactBase):
+        command = (
+            "cat /opt/mutablesecurity/duplicati/duplicati.conf |              "
+            "       grep 'backup_minute' | cut -d : -f 2"
+        )
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[1]
+
+    IDENTIFIER = "backup_minute"
+    DESCRIPTION = (
+        "The minute (0-59, or * for any) when the crontab scan will take place"
+    )
+    INFO_TYPE = StringDataType
+    PROPERTIES = [
+        InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = "0"
+    GETTER = BackupMinuteValue
+    SETTER = set_configuration
+
+
+class BackupHour(BaseInformation):
+    @staticmethod
+    @deploy
+    def set_configuration(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        _save_current_configuration()
+
+    @staticmethod
+    @deploy
+    class BackupHourValue(FactBase):
+        command = (
+            "cat /opt/mutablesecurity/duplicati/duplicati.conf |              "
+            "       grep 'backup_hour' | cut -d : -f 2"
+        )
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[1]
+
+    IDENTIFIER = "scan_hour"
+    DESCRIPTION = (
+        "The hour (0-23, or * for any) when the crontab scan will take place"
+    )
+    INFO_TYPE = StringDataType
+    PROPERTIES = [
+        InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = "0"
+    GETTER = BackupHourValue
+    SETTER = set_configuration
+
+
+class BackupMonth(BaseInformation):
+    @staticmethod
+    @deploy
+    def set_configuration(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        _save_current_configuration()
+
+    @staticmethod
+    @deploy
+    class BackupMonthValue(FactBase):
+        command = (
+            "cat /opt/mutablesecurity/duplicati/duplicati.conf |              "
+            "       grep 'backup_month' | cut -d : -f 2"
+        )
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[1]
+
+    IDENTIFIER = "backup_month"
+    DESCRIPTION = (
+        "The month (1-12, JAN-DEC, or * for any) when the crontab scan will"
+        " take place"
+    )
+    INFO_TYPE = StringDataType
+    PROPERTIES = [
+        InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = "*"
+    GETTER = BackupMonthValue
+    SETTER = set_configuration
+
+
+class BackupDayOfTheWeek(BaseInformation):
+    @staticmethod
+    @deploy
+    def set_configuration(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        _save_current_configuration()
+
+    @staticmethod
+    @deploy
+    class BackupDayOfTheWeekValue(FactBase):
+        command = (
+            "cat /opt/mutablesecurity/duplicati/duplicati.conf |              "
+            "       grep 'backup_day_of_week' | cut -d : -f 2"
+        )
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[1]
+
+    IDENTIFIER = "backup_day_of_week"
+    DESCRIPTION = (
+        "The day (0-6, SUN-SAT, 7 for Sunday or * for any) of the week when"
+        " the crontab scan will take place"
+    )
+    INFO_TYPE = StringDataType
+    PROPERTIES = [
+        InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = "MON"
+    GETTER = BackupDayOfTheWeekValue
+    SETTER = set_configuration
+
+
+class BackupDayOfTheMonth(BaseInformation):
+    @staticmethod
+    @deploy
+    def set_configuration(
+        old_value: typing.Any, new_value: typing.Any
+    ) -> None:
+        _save_current_configuration()
+
+    @staticmethod
+    @deploy
+    class BackupDayOfTheWeekValue(FactBase):
+        command = (
+            "cat /opt/mutablesecurity/duplicati/duplicati.conf |              "
+            "       grep 'backup_day_of_month' | cut -d : -f 2"
+        )
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return output[1]
+
+    IDENTIFIER = "backup_day_of_month"
+    DESCRIPTION = (
+        "The day (1-31, or * for any) of the month when the crontab scan will"
+        " take place"
+    )
+    INFO_TYPE = StringDataType
+    PROPERTIES = [
+        InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
+        InformationProperties.CONFIGURATION,
+        InformationProperties.NON_DEDUCTIBLE,
+        InformationProperties.WRITABLE,
+    ]
+    DEFAULT_VALUE = "*"
+    GETTER = set_configuration
+    SETTER = BackupDayOfTheWeekValue
 
 
 # Logs classes definitions
@@ -446,6 +693,11 @@ class Duplicati(BaseSolution):
         EncryptionModule,
         ExcludeFilesAttributes,  # type: ignore[list-item]
         SkipFilesLarger,  # type: ignore[list-item]
+        BackupMinute,  # type: ignore[list-item]
+        BackupHour,  # type: ignore[list-item]
+        BackupDayOfTheWeek,  # type: ignore[list-item]
+        BackupDayOfTheMonth,  # type: ignore[list-item]
+        BackupMonth,  # type: ignore[list-item]
         Passphrase,  # type: ignore[list-item]
     ]
     TESTS = [
@@ -459,17 +711,19 @@ class Duplicati(BaseSolution):
     ]
     ACTIONS = [
         LocalBackup,  # type: ignore[list-item]
+        CrontabLocalBackup,  # type: ignore[list-item]
         RestoreLocalBackup,  # type: ignore[list-item]
         SshBackup,  # type: ignore[list-item]
+        CrontabSshBackup,  # type: ignore[list-item]
         RestoreSshBackup,  # type: ignore[list-item]
         GoogleDriveBackup,  # type: ignore[list-item]
+        CrontabGoogleDriveBackup,  # type: ignore[list-item]
         RestoreGoogleDriveBackup,  # type: ignore[list-item]
     ]
 
     @staticmethod
     @deploy
     def _install() -> None:
-        apt.update(name="Update packets before install.")
         release_url = (
             "https://updates.duplicati.com/beta/duplicati_2.0.6.3-1_all.deb"
         )
@@ -518,7 +772,7 @@ def _load_default_param() -> dict:
         + CompressionModule.get(),
         "skipFilesLrger": " --skip-files-larger-than=" + SkipFilesLarger.get(),
         "excludeFilesAtt": " --exclude-files-attributes="
-        + ExcludeFilesAttributes.get(),
+        + '"' + ExcludeFilesAttributes.get()+'"',
         "logFile": " --log-file=/var/log/duplicati.log",
     }
 
@@ -552,6 +806,7 @@ def _make_local_backup(
         + Passphrase.get()
         + " ".join(params.values())
     )
+    print(command)
     return command
 
 
@@ -633,10 +888,62 @@ def _save_current_configuration() -> None:
         "skip_files_larger_than": SkipFilesLarger.get(),
         "exclude_files_attributes": ExcludeFilesAttributes.get(),
         "passphrase": Passphrase.get(),
+        "backup_minute": BackupMinute.get(),
+        "scan_hour": BackupHour.get(),
+        "backup_month": BackupMonth.get(),
+        "backup_day_of_week": BackupDayOfTheWeek.get(),
+        "backup_day_of_month": BackupDayOfTheMonth.get(),
     }
     files.template(
         src=template_path,
         dest="/opt/mutablesecurity/duplicati/duplicati.conf",
         configuration=j2_values,
         name="Copy the generated configuration into Duplicati's folder.",
+    )
+
+
+def _save_crontab(name: str, backup_command: str) -> None:
+    server.crontab(
+        sudo=True,
+        name=name,
+        command=backup_command,
+        present=True,
+        minute=f"{BackupMinute.get()}",
+        hour=f"{BackupHour.get()}",
+        month=f"{BackupDayOfTheMonth.get()}",
+        day_of_week=f"{BackupDayOfTheWeek.get()}",
+        day_of_month=f"{BackupDayOfTheMonth.get()}",
+    )
+
+
+def change_local_backup_crontab(name: str, backup_command: str) -> None:
+    remove_crontabs_by_part(
+        unique_part="duplicati-cli backup",
+        name="Removes the crontab containing the old scan location/crontab",
+    )
+    _save_crontab(
+        "Adds a crontab to automatically backup files to localhost",
+        backup_command,
+    )
+
+
+def change_ssh_backup_crontab(name: str, backup_command: str) -> None:
+    remove_crontabs_by_part(
+        unique_part='duplicati-cli backup "ssh://',
+        name="Removes the crontab containing the old scan location/crontab",
+    )
+    _save_crontab(
+        "Adds a crontab to automatically backup files to server",
+        backup_command,
+    )
+
+
+def change_google_drive_backup_crontab(name: str, backup_command: str) -> None:
+    remove_crontabs_by_part(
+        unique_part='duplicati-cli backup "googledrive://',
+        name="Removes the crontab containing the old scan location/crontab",
+    )
+    _save_crontab(
+        "Adds a crontab to automatically backup files toGogole Drive",
+        backup_command,
     )
