@@ -164,7 +164,7 @@ class Uptime(BaseInformation):
             return str(timedelta(seconds=int(output[0])))
 
     IDENTIFIER = "uptime"
-    DESCRIPTION = "Time since Suricata was started HH:MM:SS"
+    DESCRIPTION = "Time since Suricata was started"
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.METRIC,
@@ -258,7 +258,7 @@ class ActiveProcess(BaseTest):
             return int(output[0]) != 0
 
     IDENTIFIER = "process_running"
-    DESCRIPTION = "Checks if suricata's process is running."
+    DESCRIPTION = "Checks if Suricata's process is running."
     TEST_TYPE = TestType.OPERATIONAL
     FACT = ActiveProcessFact
     FACT_ARGS = ("suricata",)
@@ -266,7 +266,7 @@ class ActiveProcess(BaseTest):
 
 class ExistingSolution(BaseTest):
     IDENTIFIER = "present_command"
-    DESCRIPTION = "Checks if suricata's command is present."
+    DESCRIPTION = "Checks if Suricata's command is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = PresentCommand
     FACT_ARGS = ("suricata -V",)
