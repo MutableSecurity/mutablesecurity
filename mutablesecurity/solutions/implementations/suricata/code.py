@@ -208,8 +208,8 @@ class TextAlerts(BaseLog):
     FACT = TextAlertsFact
 
 
-class JsonAlerts(BaseLog):
-    class JsonAlertsFact(FactBase):
+class JsonLogs(BaseLog):
+    class JsonLogsFact(FactBase):
         command = "cat /var/log/suricata/eve.json"
 
         @staticmethod
@@ -217,8 +217,21 @@ class JsonAlerts(BaseLog):
             return "".join(output)
 
     IDENTIFIER = "json_alerts"
-    DESCRIPTION = "Generated alerts in JSON format"
-    FACT = JsonAlertsFact
+    DESCRIPTION = "Regular log messages and alerts in JSON format"
+    FACT = JsonLogsFact
+
+
+class StartLogs(BaseLog):
+    class TextAlertsFact(FactBase):
+        command = "cat /var/log/suricata/suricata-start.log"
+
+        @staticmethod
+        def process(output: typing.List[str]) -> str:
+            return "".join(output)
+
+    IDENTIFIER = "start_logs"
+    DESCRIPTION = "Log messages generated during Suricata's start"
+    FACT = TextAlertsFact
 
 
 class MaliciousURL(BaseTest):
@@ -287,22 +300,22 @@ class Suricata(BaseSolution):
         DailyAlertsCount,  # type: ignore[list-item]
         Uptime,  # type: ignore[list-item]
         Version,  # type: ignore[list-item]
-    ]  # type: ignore[list-item, var-annotated]
-
+    ]
     TESTS = [
         MaliciousURL,  # type: ignore[list-item, var-annotated]
         InternetAccess,  # type: ignore[list-item, var-annotated]
         ActiveProcess,  # type: ignore[list-item, var-annotated]
         ExistingSolution,  # type: ignore[list-item, var-annotated]
-    ]  # type: ignore[list-item, var-annotated]
+    ]
     LOGS = [
         TextAlerts,  # type: ignore[list-item, var-annotated]
-        JsonAlerts,  # type: ignore[list-item, var-annotated]
+        JsonLogs,  # type: ignore[list-item, var-annotated]
+        StartLogs,  # type: ignore[list-item, var-annotated]
     ]
     ACTIONS = [
         StartService,  # type: ignore[list-item, var-annotated]
         StopService,  # type: ignore[list-item, var-annotated]
-    ]  # type: ignore[list-item, var-annotated]
+    ]
 
     @staticmethod
     @deploy
