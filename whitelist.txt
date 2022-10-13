@@ -131,6 +131,7 @@ uninstallation
 unsets
 uppercased
 uppercases
+uptime
 w6004
 wazuh
 wget

@@ -203,7 +203,9 @@ outputs:
             # custom allows additional HTTP fields to be included in eve-log.
             # the example below adds three additional fields when uncommented
             #custom: [Accept-Encoding, Accept-Language, Authorization]
+            {% raw %}
             # set this value to one and only one from {both, request, response}
+            {% endraw %}
             # to dump all HTTP headers for every HTTP request and/or response
             # dump-all-headers: none
         - dns:
@@ -310,7 +312,9 @@ outputs:
       append: yes
       #extended: yes     # enable this for extended logging information
       #custom: yes       # enable the custom logging format (defined by customformat)
+      {% raw %}
       #customformat: "%{%D-%H:%M:%S}t.%z %{X-Forwarded-For}i %H %m %h %u %s %B %a:%p -> %A:%P"
+      {% endraw %}
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
 
   # a line based log of TLS handshake parameters (no alerts)
@@ -320,7 +324,9 @@ outputs:
       append: yes
       #extended: yes     # Log extended information like fingerprint
       #custom: yes       # enabled the custom logging format (defined by customformat)
+      {% raw %}
       #customformat: "%{%D-%H:%M:%S}t.%z %a:%p -> %A:%P %v %n %d %D"
+      {% endraw %}
       #filetype: regular # 'regular', 'unix_stream' or 'unix_dgram'
       # output TLS transaction where the session is resumed using a
       # session id
@@ -586,7 +592,7 @@ logging:
 
 # Linux high speed capture support
 af-packet:
-  - interface: eth0
+  - interface: {{ configuration["interface" ]}}
     # Number of receive threads. "auto" uses the number of cores
     #threads: auto
     # Default clusterid. AF_PACKET will load balance packets based on flow.
@@ -666,7 +672,7 @@ af-packet:
 
 # Cross platform libpcap capture support
 pcap:
-  - interface: eth0
+  - interface: {{ configuration["interface" ]}}
     # On Linux, pcap will try to use mmap'ed capture and will use "buffer-size"
     # as total memory used by the ring. So set this to something bigger
     # than 1% of your bandwidth.
@@ -1725,7 +1731,7 @@ netmap:
 # PF_RING configuration: for use with native PF_RING support
 # for more info see http://www.ntop.org/products/pf_ring/
 pfring:
-  - interface: eth0
+  - interface: {{ configuration["interface" ]}}
     # Number of receive threads. If set to 'auto' Suricata will first try
     # to use CPU (core) count and otherwise RSS queue count.
     threads: auto

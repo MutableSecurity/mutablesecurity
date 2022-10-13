@@ -6,7 +6,7 @@
 
 import os
 import typing
-from datetime import datetime, timedelta
+from datetime import datetime
 
 from pyinfra.api.deploy import deploy
 from pyinfra.api.facts import FactBase
@@ -30,6 +30,48 @@ from mutablesecurity.solutions.common.facts.bash import PresentCommand
 from mutablesecurity.solutions.common.facts.networking import (
     InternetConnection,
 )
+from mutablesecurity.solutions.common.operations.crontab import (
+    remove_crontabs_by_part,
+)
+
+
+@deploy
+def save_current_suricata_configuration(before_install: bool) -> None:
+    if not before_install:
+        StopService.execute()
+
+    template_path = os.path.join(
+        os.path.dirname(__file__), "files/suricata.yaml.j2"
+    )
+    j2_values = {
+        "interface": Interface.get(),
+    }
+    files.template(
+        src=template_path,
+        dest="/etc/suricata/suricata.yaml",
+        configuration=j2_values,
+        name="Copy the generated configuration into Suricata's folder.",
+    )
+
+    if not before_install:
+        StartService.execute()
+
+
+@deploy
+def change_automatic_updates(present: bool) -> None:
+    if present:
+        server.crontab(
+            name="Adds a crontab to automatically update the Suricata's rules",
+            command="suricata-update",
+            present=True,
+            hour=0,
+            minute=0,
+        )
+    else:
+        remove_crontabs_by_part(
+            unique_part="suricata-update",
+            name="Removes the crontab containing the update command",
+        )
 
 
 class StartService(BaseAction):
@@ -64,14 +106,7 @@ class Interface(BaseInformation):
     def set_configuration(
         old_value: typing.Any, new_value: typing.Any
     ) -> None:
-        _save_current_configuration()
-
-    class ProcessCommandFact(FactBase):
-        command = "ls -1 /sys/class/net"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return output[0]
+        save_current_suricata_configuration(False)
 
     IDENTIFIER = "interface"
     DESCRIPTION = "Interface on which Suricata listens"
@@ -83,17 +118,17 @@ class Interface(BaseInformation):
         InformationProperties.WRITABLE,
     ]
     DEFAULT_VALUE = None
-    GETTER = ProcessCommandFact
+    GETTER = None
     SETTER = set_configuration
 
 
 class AutomaticUpdate(BaseInformation):
     @staticmethod
     @deploy
-    def set_configuration(
+    def set_automatic_updates(
         old_value: typing.Any, new_value: typing.Any
     ) -> None:
-        _save_current_configuration()
+        change_automatic_updates(new_value)
 
     IDENTIFIER = "automatic_update"
     DESCRIPTION = "State of the automatic daily updates"
@@ -107,7 +142,7 @@ class AutomaticUpdate(BaseInformation):
     ]
     DEFAULT_VALUE = False
     GETTER = None
-    SETTER = set_configuration
+    SETTER = set_automatic_updates
 
 
 class AlertsCount(BaseInformation):
@@ -157,11 +192,14 @@ class DailyAlertsCount(BaseInformation):
 
 class Uptime(BaseInformation):
     class UptimeFact(FactBase):
-        command = "suricatasc -c uptime | jq '.message'"
+        command = (
+            "tac /var/log/suricata/stats.log | grep -m 1 uptime | egrep -o"
+            " '[0-9]{1,2}d,.*s'"
+        )
 
         @staticmethod
-        def process(output: typing.List[str]) -> int:
-            return str(timedelta(seconds=int(output[0])))
+        def process(output: typing.List[str]) -> str:
+            return output[0]
 
     IDENTIFIER = "uptime"
     DESCRIPTION = "Time since Suricata was started"
@@ -201,7 +239,7 @@ class TextAlerts(BaseLog):
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return "".join(output)
+            return "\n".join(output)
 
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
@@ -214,7 +252,7 @@ class JsonLogs(BaseLog):
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return "".join(output)
+            return "\n".join(output)
 
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Regular log messages and alerts in JSON format"
@@ -227,7 +265,7 @@ class StartLogs(BaseLog):
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
-            return "".join(output)
+            return "\n".join(output)
 
     IDENTIFIER = "start_logs"
     DESCRIPTION = "Log messages generated during Suricata's start"
@@ -330,28 +368,20 @@ class Suricata(BaseSolution):
             packages=["suricata"],
         )
 
-        _save_current_configuration()
-
-        files.replace(
-            name=(
-                "Replaces the default rules location in the Suricata's"
-                " configuration file"
-            ),
-            path="/etc/suricata/suricata.yaml",
-            match=r"^default-rule-path: /etc/suricata/rules$",
-            replace="default-rule-path: /var/lib/suricata/rules",
-        )
-
         server.shell(
             name="Updates the Suricata's rules",
             commands=["suricata-update"],
         )
 
-        # Restart the Suricata service as it starts at install but fails if the
-        # default interface is not eth0.
-        server.shell(
-            name="Restart the Suricata service",
-            commands=["service suricata restart"],
+        save_current_suricata_configuration(True)
+
+        if AutomaticUpdate.get():
+            change_automatic_updates(True)
+
+        # Restart the Suricata service as it starts at install, but fails if
+        # the default interface is not the correct one.
+        server.service(
+            "suricata", restarted=True, name="Restart the Suricata service."
         )
 
     @staticmethod
@@ -364,6 +394,8 @@ class Suricata(BaseSolution):
             name="Uninstalls Suricata via apt.",
         )
 
+        change_automatic_updates(False)
+
     @staticmethod
     @deploy
     def _update() -> None:
@@ -372,19 +404,3 @@ class Suricata(BaseSolution):
             latest=True,
             name="Updates Suricata",
         )
-
-
-def _save_current_configuration() -> None:
-    template_path = os.path.join(
-        os.path.dirname(__file__), "files/suricata.conf.j2"
-    )
-    j2_values = {
-        "interface": Interface.get(),
-        "automatic_update": AutomaticUpdate.get(),
-    }
-    files.template(
-        src=template_path,
-        dest="/opt/mutablesecurity/suricata/suricata.conf",
-        configuration=j2_values,
-        name="Copy the generated configuration into Suricata's folder.",
-    )
