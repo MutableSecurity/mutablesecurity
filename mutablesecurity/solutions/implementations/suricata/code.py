@@ -82,7 +82,7 @@ class Interface(BaseInformation):
         InformationProperties.MANDATORY,
         InformationProperties.WRITABLE,
     ]
-    DEFAULT_VALUE = "eth0"
+    DEFAULT_VALUE = None
     GETTER = ProcessCommandFact
     SETTER = set_configuration
 
