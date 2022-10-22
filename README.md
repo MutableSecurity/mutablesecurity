@@ -79,11 +79,11 @@
             </td>
         </tr>        <tr>
             <td>
-                <a href="https://www.clamav.net/">
-                    <img src="others/readme_images/solutions/clamav.webp">
+                <a href="https://www.fail2ban.org">
+                    <img src="others/readme_images/solutions/fail2ban.webp">
                 </a>
             </td>
-            <td>Clam AntiVirus (ClamAV) is a free software, cross-platfom antimalware toolkit able to detect many types of malware, including viruses. ClamAV includes a command-line scanner, automatic database updater, and a scalable multi-threaded daemon running on an anti-virus engine from a shared library. FreshClam is a virus database update tool for ClamAV. ClamAV Daemon checks periodically for virus database definition updates, downloads, installs them, and notifies clamd to refresh it's in-memory virus database cache.</td>
+            <td>Fail2ban is an intrusion prevention software framework that protects Unix-like servers from brute-force attacks. It scans log files and bans IP addresses conducting too many failed operations (for example, login attempts). This module targets Debian-based operating systems and has already set a SSH jail.</td>
             <td>
                 <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
             </td>
@@ -99,11 +99,11 @@
             </td>
         </tr>        <tr>
             <td>
-                <a href="https://www.fail2ban.org">
-                    <img src="others/readme_images/solutions/fail2ban.webp">
+                <a href="https://www.clamav.net/">
+                    <img src="others/readme_images/solutions/clamav.webp">
                 </a>
             </td>
-            <td>Fail2ban is an intrusion prevention software framework that protects Unix-like servers from brute-force attacks. It scans log files and bans IP addresses conducting too many failed operations (for example, login attempts). This module targets Debian-based operating systems and has already set a SSH jail.</td>
+            <td>Clam AntiVirus (ClamAV) is a free software, cross-platfom antimalware toolkit able to detect many types of malware, including viruses. ClamAV includes a command-line scanner, automatic database updater, and a scalable multi-threaded daemon running on an anti-virus engine from a shared library. FreshClam is a virus database update tool for ClamAV. ClamAV Daemon checks periodically for virus database definition updates, downloads, installs them, and notifies clamd to refresh it's in-memory virus database cache.</td>
             <td>
                 <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
             </td>
