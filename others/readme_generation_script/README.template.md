@@ -23,8 +23,12 @@
 - [Description](#description)
   - [Functionalities](#functionalities)
   - [Supported Cybersecurity Solutions](#supported-cybersecurity-solutions)
+- [Requirements](#requirements)
 - [Installation](#installation)
-  - [Requirements](#requirements)
+  - [Via Debian Repository](#via-debian-repository)
+  - [Via PyPi](#via-pypi)
+  - [Debian Package](#debian-package)
+  - [Executable](#executable)
 - [Demo](#demo)
 - [Support](#support)
 - [Contributing](#contributing)
@@ -33,35 +37,65 @@
 
 # Description
 
-**MutableSecurity** is a software product for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
-
-Despite the current lack of complex functionalities, we have a vision in mind that we hope to achieve in the near future. As we must begin somewhere, the first step in our progress is this command line interface for automatic management of cybersecurity solutions.
-
-Come join the MutableSecurity journey!
+**MutableSecurity** is a CLI program for making cybersecurity solution management easier and more accessible, from deployment and configuration to monitoring.
 
 ## Functionalities
 
-- Multiple solution supported so far (and more under development)
-- Multiple authentication methods
-    - Password-based for the host on which the tool is installed
+- [**Multiple solution** supported](#supported-cybersecurity-solutions) so far (and more under development)
+- **Operations** managing the solution lifecycle
+    - Initially configuring the solution via YAML files
+    - Installing the solution
+    - Retrieving and changing the solution configuration
+    - Retrieving metrics about the solution functioning
+    - Updating the solution to its newest version
+    - Uninstalling the solution
+- **Multiple authentication methods**
+    - Password-based when deploying to the local host
     - Password-based or key-based SSH for remote hosts
-- Deployments to multiple hosts with the same command
-- Intuitive command line interface
-- Extensive [usage](https://mutablesecurity.io/docs/users) and [contribution](https://mutablesecurity.io/docs/developers) documentations
+- **Deployments to multiple hosts** with the same command
+- **Intuitive CLI**
+- **Extensive [usage](https://mutablesecurity.io/docs/users) and [contribution](https://mutablesecurity.io/docs/developers) documentations**
 
 ## Supported Cybersecurity Solutions
 
 {solutions_status_table}
 
+# Requirements
+
+MutableSecurity requires only [Python 3.9 or above](https://www.python.org/downloads/).
+
 # Installation
 
-The easiest way to install MutableSecurity is from PyPI. Just run `pip install mutablesecurity` and you'll have everything set!
+## Via Debian Repository
 
-## Requirements
+```bash
+# 1. Add the GPG keyring
+wget -O- https://debian.mutablesecurity.io/pubkey.gpg | \
+    gpg --dearmor | \
+    sudo tee /usr/share/keyrings/mutablesecurity.gpg > /dev/null
 
-The only requirements are [Python 3.9](https://www.python.org/downloads/) and [pip](https://pip.pypa.io/en/stable/installation/).
+# 2. Add the Debian repository
+echo "deb [signed-by=/usr/share/keyrings/mutablesecurity.gpg] https://debian.mutablesecurity.io bullseye main" |\
+    sudo tee /etc/apt/sources.list.d/mutablesecurity.list
 
-To avoid warnings when using pip to install Python scripts, add `/home/<username>/.local/bin` (where `<username>` identifies the current user) to your `$PATH` variable.
+# 3. Fetch the details by apt-updating
+sudo apt update
+
+# 4. Install the package
+sudo apt install mutablesecurity
+```
+
+## Via PyPi
+
+Just run `pip install mutablesecurity`. Ensure that `/home/<username>/.local/bin` is added into your `$PATH` variable.
+
+## Debian Package
+
+From the [Releases](https://github.com/MutableSecurity/mutablesecurity/releases) section in this repository, download the latest Debian package. After that, install it using `dpkg -i mutablesecurity.deb`.
+
+## Executable
+
+In the same [Releases](https://github.com/MutableSecurity/mutablesecurity/releases) section, you can find executables that wrap up the whole project. Only download the latest version and place it into a convenient location (for example, `/usr/bin` or `/home/<username>/.local/bin`).
 
 # Demo
 
