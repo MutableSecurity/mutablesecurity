@@ -1,5 +1,6 @@
 """Module initializing Sentry for crash reporting and sending usage data."""
 import typing
+from threading import Thread
 
 import requests
 import sentry_sdk
@@ -21,6 +22,7 @@ class Monitor:
     """Class wrapping Sentry and our custom Google Cloud Function."""
 
     enabled: bool
+    thread: Thread
 
     def __init__(self) -> None:
         """Initialize the instance."""
@@ -39,6 +41,16 @@ class Monitor:
             dsn=SENTRY_DSN,
             traces_sample_rate=1.0,
         )
+
+    @staticmethod
+    def __threaded_post_data(data: dict, headers: dict) -> None:
+        try:
+            requests.post(
+                CLOUD_FUNCTION_URL, json=data, headers=headers, timeout=0.5
+            )
+        # pylint: disable=bare-except
+        except:  # noqa: E722, S110
+            pass
 
     def report(
         self,
@@ -59,11 +71,10 @@ class Monitor:
             "Content-Type": "application/json",
         }
 
-        requests.post(
-            CLOUD_FUNCTION_URL,
-            json=data,
-            headers=headers,
+        self.thread = Thread(
+            target=self.__threaded_post_data, args=(data, headers)
         )
+        self.thread.start()
 
     @staticmethod
     def __get_enhanced_data(
