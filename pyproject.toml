@@ -1,3 +1,7 @@
+[project]
+name = "mutablesecurity"
+version = "0.4.0"
+
 [tool.poetry]
 name = "mutablesecurity"
 version = "0.4.0"
@@ -35,21 +39,18 @@ humanfriendly = "^10.0"
 packaging = "^21.3"
 pyinfra = "^2.2"
 pypattyrn = "^1.2"
-python = "^3.9"
+python = ">=3.9,<3.12"
 PyYAML = "6.0"
 requests = "^2.27.1"
 rich = "12.6.0"
 sentry-sdk = "^1.9.8"
-
-[tool.poetry.scripts]
-mutablesecurity = "mutablesecurity.cli:main"
 
 [tool.poetry.dev-dependencies]
 black = "^22.1.0"
 coverage = {extras = ["toml"], version = "^6.4.2"}
 coveralls = "^3.3.1"
 darglint = "^1.8.1"
-flake8 = "^5.0.4"
+flake8 = "^4.0.1"
 flake8-annotations = "^2.9.0"
 flake8-bandit = "^3.0.0"
 flake8-docstrings = "^1.6.0"
@@ -61,6 +62,7 @@ graphviz = "^0.20"
 isort = "^5.10.1"
 mypy = "^0.982"
 pep8-naming = "^0.13.0"
+pex = "^2.1.110"
 poethepoet = "^0.16.0"
 pyenchant = "^3.2.2"
 pylint = "^2.13.5"
@@ -68,6 +70,9 @@ pyproject-flake8 = "^4.0.1"
 pytest = "^7.1.2"
 types-PyYAML = "^6.0.9"
 types-requests = "^2.27.30"
+
+[tool.poetry.scripts]
+mutablesecurity = "mutablesecurity.cli:main"
 
 [tool.black]
 line-length = 79
@@ -210,3 +215,6 @@ omit = [
     [tool.poe.tasks.generate_readme]
     help = "Generate README.md."
     cmd = ".others/readme_generation_script/generate.py"
+
+[tool.setuptools]
+py_modules = ["mutablesecurity"]

@@ -5,6 +5,7 @@
 import os
 import pathlib
 import sys
+import threading
 import typing
 
 import click
@@ -14,12 +15,17 @@ from rich.traceback import install
 
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
-from mutablesecurity.cli.solutions_manager_adapter import \
-    SolutionsManagerAdapter
+from mutablesecurity.cli.solutions_manager_adapter import (
+    SolutionsManagerAdapter,
+)
 from mutablesecurity.helpers.exceptions import (
-    BadArgumentException, BadValueException, MutableSecurityException,
-    StoppedMutableSecurityException, UnexpectedBehaviorException,
-    UnsupportedPythonVersionException)
+    BadArgumentException,
+    BadValueException,
+    MutableSecurityException,
+    StoppedMutableSecurityException,
+    UnexpectedBehaviorException,
+    UnsupportedPythonVersionException,
+)
 from mutablesecurity.leader import ConnectionFactory
 from mutablesecurity.main import Main
 from mutablesecurity.monitoring import Monitor
@@ -243,6 +249,11 @@ def __patch_gevent() -> None:
     gevent.hub.Hub.NOT_ERROR = (Exception, KeyboardInterrupt)
 
 
+def __wait_for_all_threads() -> None:
+    for child in threading.enumerate():
+        child.join()
+
+
 def main() -> None:
     """Run the program."""
     __setup_pretty_traceback()
@@ -263,6 +274,8 @@ def main() -> None:
         Printer(console=console).print_exception(BadArgumentException())
     else:
         return
+
+    __wait_for_all_threads()
 
     try:
         sys.exit(1)
