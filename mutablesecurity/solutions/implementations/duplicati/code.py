@@ -483,7 +483,7 @@ class BackupHour(BaseInformation):
         def process(output: typing.List[str]) -> str:
             return output[1]
 
-    IDENTIFIER = "scan_hour"
+    IDENTIFIER = "backup_hour"
     DESCRIPTION = (
         "The hour (0-23, or * for any) when the crontab scan will take place"
     )
@@ -690,7 +690,7 @@ class InternetAccess(BaseTest):
 class Duplicati(BaseSolution):
     INFORMATION = [
         CompressionModule,  # type: ignore[list-item]
-        EncryptionModule,
+        EncryptionModule,  # type: ignore[list-item]
         ExcludeFilesAttributes,  # type: ignore[list-item]
         SkipFilesLarger,  # type: ignore[list-item]
         BackupMinute,  # type: ignore[list-item]
@@ -754,6 +754,10 @@ class Duplicati(BaseSolution):
             present=False,
             force=True,
         )
+        remove_crontabs_by_part(
+            unique_part="duplicati-cli",
+            name="Removes the crontab from the system.",
+        )
 
     @staticmethod
     @deploy
@@ -772,7 +776,9 @@ def _load_default_param() -> dict:
         + CompressionModule.get(),
         "skipFilesLrger": " --skip-files-larger-than=" + SkipFilesLarger.get(),
         "excludeFilesAtt": " --exclude-files-attributes="
-        + '"' + ExcludeFilesAttributes.get()+'"',
+        + '"'
+        + ExcludeFilesAttributes.get()
+        + '"',
         "logFile": " --log-file=/var/log/duplicati.log",
     }
 
