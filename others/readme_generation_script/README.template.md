@@ -62,7 +62,9 @@
 
 # Requirements
 
-MutableSecurity requires only [Python 3.9 or above](https://www.python.org/downloads/).
+MutableSecurity depends on packages that have unique builds for each Python version (for instance, `pyinfra`'s `gevent`).
+
+Thus, [Python 3.9](https://www.python.org/downloads/) is required for the executable and installation via Debian package or repository. Any version greater than or equal to 3.9 can be used when installing via PyPi.
 
 # Installation
 
