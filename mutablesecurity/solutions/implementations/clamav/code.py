@@ -14,16 +14,24 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server
 
 from mutablesecurity.helpers.data_type import IntegerDataType, StringDataType
-from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
-                                            BaseLog, BaseSolution,
-                                            BaseSolutionException, BaseTest,
-                                            InformationProperties, TestType)
-from mutablesecurity.solutions.common.facts.networking import \
-    InternetConnection
+from mutablesecurity.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseSolution,
+    BaseSolutionException,
+    BaseTest,
+    InformationProperties,
+    TestType,
+)
+from mutablesecurity.solutions.common.facts.networking import (
+    InternetConnection,
+)
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 from mutablesecurity.solutions.common.facts.service import ActiveService
-from mutablesecurity.solutions.common.operations.crontab import \
-    remove_crontabs_by_part
+from mutablesecurity.solutions.common.operations.crontab import (
+    remove_crontabs_by_part,
+)
 
 
 class ClamAVAlreadyUpdatedException(BaseSolutionException):
@@ -544,7 +552,7 @@ class Clamav(BaseSolution):
     def _install() -> None:
         apt.update(
             sudo=True,
-            name="Updates the apt reporisoties",
+            name="Updates the apt repositories",
             env={"LC_TIME": "en_US.UTF-8"},
             cache_time=3600,
             success_exit_codes=[0, 100],

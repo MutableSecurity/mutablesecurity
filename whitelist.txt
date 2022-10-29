@@ -1,3 +1,4 @@
+antimalware
 appendleft
 args
 argv
@@ -102,6 +103,7 @@ reraising
 safeload
 sdk
 securitydeploymentresult
+siem
 skipcq
 solutionsgenerator
 solutionspecsheet

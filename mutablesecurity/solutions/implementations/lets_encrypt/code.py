@@ -14,13 +14,20 @@ from pyinfra.api.deploy import deploy
 from pyinfra.operations import apt, files, server, systemd
 
 from mutablesecurity.helpers.data_type import IntegerDataType, StringDataType
-from mutablesecurity.solutions.base import (BaseAction, BaseInformation,
-                                            BaseLog, BaseSolution,
-                                            BaseSolutionException, BaseTest,
-                                            InformationProperties, TestType)
+from mutablesecurity.solutions.base import (
+    BaseAction,
+    BaseInformation,
+    BaseLog,
+    BaseSolution,
+    BaseSolutionException,
+    BaseTest,
+    InformationProperties,
+    TestType,
+)
 from mutablesecurity.solutions.common.facts.files import FilePresenceTest
-from mutablesecurity.solutions.common.facts.networking import \
-    InternetConnection
+from mutablesecurity.solutions.common.facts.networking import (
+    InternetConnection,
+)
 from mutablesecurity.solutions.common.facts.os import CheckIfUbuntu
 from mutablesecurity.solutions.common.facts.service import ActiveService
 from mutablesecurity.solutions.common.operations.apt import autoremove
@@ -134,8 +141,7 @@ def revoke_old_and_generate_new_certificate_when_email_changed(
 class UserEmail(BaseInformation):
     IDENTIFIER = "email"
     DESCRIPTION = (
-        "The email of the user whom installs Let's Encrypt on the given"
-        " domain"
+        "The email of the user whom installs Let's Encrypt on the given domain"
     )
     INFO_TYPE = StringDataType
     PROPERTIES = [
@@ -485,7 +491,7 @@ class LetsEncrypt(BaseSolution):
 
         apt.update(
             sudo=True,
-            name="Updates the apt reporisoties",
+            name="Updates the apt repositories",
             env={"LC_TIME": "en_US.UTF-8"},
             cache_time=3600,
             success_exit_codes=[0, 100],

@@ -64,6 +64,8 @@ class SolutionCategories(Enum):
     HOST_IPS = "Host Intrusion Prevention System"
     HOST_PROTECTION = "Host Protection"
     ANTIMALWARE = "Antimalware"
+    XDR = "Extended Detection and Response"
+    SIEM = "Security Information and Event Management"
     NONE = "No Security"
 
     def __str__(self) -> str:

@@ -1,0 +1,9 @@
+full_name: Wazuh Agent
+description: Wazuh is an unified XDR and SIEM protection for endpoint and cloud workloads. The Wazuh agent run on the monitored endpoints and continuously sends events to the Wazuh server for analysis and threat detection.
+references:
+  - https://wazuh.com
+  - https://github.com/wazuh/wazuh
+maturity: REFACTORING
+categories:
+  - XDR
+  - SIEM
