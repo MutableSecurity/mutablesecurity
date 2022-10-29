@@ -3,7 +3,7 @@
 ## Metadata
 
 - **Identifier**: `suricata`
-- **Maturity**: Under refactoring
+- **Maturity**: Production
 
 ### Categories
 
@@ -25,7 +25,14 @@ Suricata is the leading independent open source threat detection engine. By comb
     </thead>
     <tbody>
         <tr>
-            <td colspan="3"><center>No entry yet</center></td>
+            <td><code>start_service</code></td>
+            <td>Starts the Suricata service.</td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>stop_service</code></td>
+            <td>Stops the Suricata service.</td>
+            <td></td>
         </tr>
     </tbody>
 </table>
@@ -44,7 +51,46 @@ Suricata is the leading independent open source threat detection engine. By comb
     </thead>
     <tbody>
         <tr>
-            <td colspan="5"><center>No entry yet</center></td>
+            <td><code>automatic_update</code></td>
+            <td>State of the automatic daily updates</td>
+            <td><code>BOOLEAN</code></td>
+            <td><code>CONFIGURATION</code>, <code>OPTIONAL</code>, <code>WITH_DEFAULT_VALUE</code>, <code>NON_DEDUCTIBLE</code>, <code>WRITABLE</code></td>
+            <td><code>False</code></td>
+        </tr>
+        <tr>
+            <td><code>daily_alerts</code></td>
+            <td>Total number of alerts</td>
+            <td><code>INTEGER</code></td>
+            <td><code>METRIC</code>, <code>READ_ONLY</code></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>interface</code></td>
+            <td>Interface on which Suricata listens</td>
+            <td><code>STRING</code></td>
+            <td><code>CONFIGURATION</code>, <code>NON_DEDUCTIBLE</code>, <code>MANDATORY</code>, <code>WRITABLE</code></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>total_alerts</code></td>
+            <td>Total number of alerts</td>
+            <td><code>INTEGER</code></td>
+            <td><code>METRIC</code>, <code>READ_ONLY</code></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>uptime</code></td>
+            <td>Time since Suricata was started</td>
+            <td><code>STRING</code></td>
+            <td><code>METRIC</code>, <code>READ_ONLY</code></td>
+            <td></td>
+        </tr>
+        <tr>
+            <td><code>version</code></td>
+            <td>Current installed version</td>
+            <td><code>STRING</code></td>
+            <td><code>AUTO_GENERATED_AFTER_INSTALL</code>, <code>READ_ONLY</code></td>
+            <td></td>
         </tr>
     </tbody>
 </table>
@@ -60,7 +106,16 @@ Suricata is the leading independent open source threat detection engine. By comb
     </thead>
     <tbody>
         <tr>
-            <td colspan="2"><center>No entry yet</center></td>
+            <td><code>json_alerts</code></td>
+            <td>Regular log messages and alerts in JSON format</td>
+        </tr>
+        <tr>
+            <td><code>operational_logs</code></td>
+            <td>Log messages describing Suricata's functioning</td>
+        </tr>
+        <tr>
+            <td><code>text_alerts</code></td>
+            <td>Generated alerts in plaintext format</td>
         </tr>
     </tbody>
 </table>
@@ -77,7 +132,24 @@ Suricata is the leading independent open source threat detection engine. By comb
     </thead>
     <tbody>
         <tr>
-            <td colspan="3"><center>No entry yet</center></td>
+            <td><code>internet_access</code></td>
+            <td>Checks if host has Internet access.</td>
+            <td><code>REQUIREMENT</code></td>
+        </tr>
+        <tr>
+            <td><code>malicious_url</code></td>
+            <td> Requests a malicious-marked URL.</td>
+            <td><code>SECURITY</code></td>
+        </tr>
+        <tr>
+            <td><code>present_command</code></td>
+            <td>Checks if Suricata's command is present.</td>
+            <td><code>PRESENCE</code></td>
+        </tr>
+        <tr>
+            <td><code>process_running</code></td>
+            <td>Checks if Suricata's process is running.</td>
+            <td><code>OPERATIONAL</code></td>
         </tr>
     </tbody>
 </table>
