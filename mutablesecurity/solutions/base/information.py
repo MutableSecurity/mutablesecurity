@@ -276,9 +276,13 @@ class InformationManager(BaseManager):
         old_value = info.get()
         new_value = value
 
-        if not info.validate_value(new_value):
+        if not info.validate_value(
+            new_value
+        ) or not info.INFO_TYPE.validate_data(new_value):
             new_value = info.INFO_TYPE.convert_string(value)
-            if not info.validate_value(new_value):
+            if not info.validate_value(
+                new_value
+            ) or not info.INFO_TYPE.validate_data(new_value):
                 raise InvalidInformationValueException()
 
         info.set_actual_value(new_value)
