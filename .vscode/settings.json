@@ -1,12 +1,17 @@
 {
-    "editor.codeActionsOnSave": {
-        "source.organizeImports": true
-    },
+    /* Editor's aspect */
+    "editor.wordWrap": "on",
     "editor.rulers": [
         80
     ],
+
+    /* Editor's auto-actions */
+    "editor.codeActionsOnSave": {
+        "source.organizeImports": true
+    },
     "editor.formatOnSave": true,
-    "editor.wordWrap": "on",
+
+    /* Hidden files in file explorer */
     "files.exclude": {
         ".coverage": true,
         ".dccache": true,
@@ -19,19 +24,33 @@
         "poetry.lock": true,
         "pyinfra-sudo-askpass": true,
     },
+
+    /* Black formatting */
     "python.formatting.provider": "black",
-    "python.linting.enabled": true,
-    "python.linting.flake8Enabled": true,
-    "python.linting.flake8Path": ".venv/bin/pflake8",
+    "python.formatting.blackPath": "${workspaceFolder}/.venv/bin/black",
     "python.formatting.blackArgs": [
         "--preview"
     ],
+
+    /* General linting */
+    "python.linting.enabled": true,
+    "python.linting.lintOnSave": true,
+
+    /* Pylint linting */
+    "python.linting.pylintEnabled": true,
+    "python.linting.pylintPath": "${workspaceFolder}/.venv/bin/pylint",
+
+    /* Flake8 linting */
+    "python.linting.flake8Enabled": true,
+    "python.linting.flake8Path": "${workspaceFolder}/.venv/bin/pflake8",
+
+    /* Mypy linting */
+    "python.linting.mypyEnabled": true,
+    "python.linting.mypyPath": "${workspaceFolder}/.venv/bin/mypy",
+
+    /* isort automatic import sorting */
     "python.sortImports.path": "${workspaceFolder}/.venv/bin/isort",
     "python.sortImports.args": [
         "--src=${workspaceFolder}"
-    ],
-    "python.linting.lintOnSave": true,
-    "python.linting.mypyEnabled": true,
-    "python.linting.pylintEnabled": true,
-    "python.pythonPath": ".venv/bin/python"
+    ]
 }
