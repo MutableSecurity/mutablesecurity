@@ -259,17 +259,17 @@ class JsonLogs(BaseLog):
     FACT = JsonLogsFact
 
 
-class StartLogs(BaseLog):
-    class TextAlertsFact(FactBase):
-        command = "cat /var/log/suricata/suricata-start.log"
+class OperationalLogs(BaseLog):
+    class OperationalLogsFact(FactBase):
+        command = "cat /var/log/suricata/suricata.log"
 
         @staticmethod
         def process(output: typing.List[str]) -> str:
             return "\n".join(output)
 
-    IDENTIFIER = "start_logs"
-    DESCRIPTION = "Log messages generated during Suricata's start"
-    FACT = TextAlertsFact
+    IDENTIFIER = "operational_logs"
+    DESCRIPTION = "Log messages describing Suricata's functioning"
+    FACT = OperationalLogsFact
 
 
 class MaliciousURL(BaseTest):
@@ -348,7 +348,7 @@ class Suricata(BaseSolution):
     LOGS = [
         TextAlerts,  # type: ignore[list-item, var-annotated]
         JsonLogs,  # type: ignore[list-item, var-annotated]
-        StartLogs,  # type: ignore[list-item, var-annotated]
+        OperationalLogs,  # type: ignore[list-item, var-annotated]
     ]
     ACTIONS = [
         StartService,  # type: ignore[list-item, var-annotated]
