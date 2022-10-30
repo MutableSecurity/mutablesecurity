@@ -344,6 +344,7 @@ class SkipFilesLarger(BaseInformation):
     PROPERTIES = [
         InformationProperties.CONFIGURATION,
         InformationProperties.OPTIONAL,
+        InformationProperties.WITH_DEFAULT_VALUE,
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
     ]
@@ -387,7 +388,7 @@ class ExcludeFilesAttributes(BaseInformation):
         InformationProperties.NON_DEDUCTIBLE,
         InformationProperties.WRITABLE,
     ]
-    DEFAULT_VALUE = ["Temporary"]
+    DEFAULT_VALUE = ["Temporary", "Hidden"]
     GETTER = ExcludeFilesValue
     SETTER = set_configuration
 
@@ -777,12 +778,12 @@ def _load_default_param() -> dict:
         "skipFilesLrger": " --skip-files-larger-than=" + SkipFilesLarger.get(),
         "excludeFilesAtt": " --exclude-files-attributes="
         + '"'
-        + ExcludeFilesAttributes.get()
+        + ",".join(ExcludeFilesAttributes.get())
         + '"',
         "logFile": " --log-file=/var/log/duplicati.log",
     }
 
-    if EncryptionModule.get() != "aes":
+    if Passphrase.get() is None or EncryptionModule.get() != "aes":
         command_params["encryptionModule"] = " "
     if CompressionModule.get() != "zip":
         command_params["compressionModule"] = " "
@@ -812,7 +813,6 @@ def _make_local_backup(
         + Passphrase.get()
         + " ".join(params.values())
     )
-    print(command)
     return command
 
 
@@ -900,6 +900,7 @@ def _save_current_configuration() -> None:
         "backup_day_of_week": BackupDayOfTheWeek.get(),
         "backup_day_of_month": BackupDayOfTheMonth.get(),
     }
+
     files.template(
         src=template_path,
         dest="/opt/mutablesecurity/duplicati/duplicati.conf",
