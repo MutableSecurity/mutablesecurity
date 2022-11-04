@@ -33,6 +33,7 @@ from mutablesecurity.solutions.base import (
     BaseSolutionException,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.files import FilePresenceTest
@@ -496,6 +497,7 @@ class JsonAlerts(BaseLog):
 
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Generated alerts in JSON format"
+    FORMAT = LogFormat.JSON
     FACT = JsonAlertsFact
 
 
@@ -509,6 +511,7 @@ class TextAlerts(BaseLog):
 
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
+    FORMAT = LogFormat.TEXT
     FACT = TextAlertsFact
 
 

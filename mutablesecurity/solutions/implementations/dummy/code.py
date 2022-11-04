@@ -19,6 +19,7 @@ from mutablesecurity.solutions.base import (
     BaseTest,
     InformationProperties,
     IntegerDataType,
+    LogFormat,
     StringDataType,
     TestType,
 )
@@ -120,6 +121,7 @@ class ContentLogs(BaseLog):
 
     IDENTIFIER = "file_content"
     DESCRIPTION = "Gets the file content."
+    FORMAT = LogFormat.TEXT
     FACT = GetContent
 
 

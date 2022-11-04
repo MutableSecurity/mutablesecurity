@@ -64,6 +64,7 @@ class SolutionCategories(Enum):
     HOST_IPS = "Host Intrusion Prevention System"
     HOST_PROTECTION = "Host Protection"
     ANTIMALWARE = "Antimalware"
+    LOG_SHIPPER = "Log Shipper"
     NONE = "No Security"
 
     def __str__(self) -> str:

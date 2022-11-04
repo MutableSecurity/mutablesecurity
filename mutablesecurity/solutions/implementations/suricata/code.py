@@ -24,6 +24,7 @@ from mutablesecurity.solutions.base import (
     BaseSolution,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.bash import PresentCommand
@@ -243,6 +244,7 @@ class TextAlerts(BaseLog):
 
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
+    FORMAT = LogFormat.TEXT
     FACT = TextAlertsFact
 
 
@@ -256,6 +258,7 @@ class JsonLogs(BaseLog):
 
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Regular log messages and alerts in JSON format"
+    FORMAT = LogFormat.JSON
     FACT = JsonLogsFact
 
 
@@ -269,6 +272,7 @@ class OperationalLogs(BaseLog):
 
     IDENTIFIER = "operational_logs"
     DESCRIPTION = "Log messages describing Suricata's functioning"
+    FORMAT = LogFormat.TEXT
     FACT = OperationalLogsFact
 
 

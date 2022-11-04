@@ -23,6 +23,7 @@ from mutablesecurity.solutions.base import (
     BaseSolution,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.bash import PresentCommand
@@ -326,6 +327,7 @@ class DefaultLogs(BaseLog):
 
     IDENTIFIER = "logs"
     DESCRIPTION = "Default log location"
+    FORMAT = LogFormat.TEXT
     FACT = DefaultLogsFact
 
 
