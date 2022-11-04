@@ -248,6 +248,10 @@ class SolutionTestNotFoundException(SolutionException):
     """The selected test does not exist in solution's context."""
 
 
+class InvalidSolutionLocationTypeException(SolutionException):
+    """The type of the defined log is invalid."""
+
+
 class SolutionLogNotFoundException(SolutionException):
     """The selected log source does not exist in solution's context."""
 

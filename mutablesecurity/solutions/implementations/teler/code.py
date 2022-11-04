@@ -488,31 +488,17 @@ class BinaryPresenceTest(BaseTest):
 
 
 class JsonAlerts(BaseLog):
-    class JsonAlertsFact(FactBase):
-        command = "cat /var/log/teler.json.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Generated alerts in JSON format"
+    LOCATION = "/var/log/teler.json.log"
     FORMAT = LogFormat.JSON
-    FACT = JsonAlertsFact
 
 
 class TextAlerts(BaseLog):
-    class TextAlertsFact(FactBase):
-        command = "cat /var/log/teler.text.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
+    LOCATION = "/var/log/teler.text.log"
     FORMAT = LogFormat.TEXT
-    FACT = TextAlertsFact
 
 
 class Teler(BaseSolution):

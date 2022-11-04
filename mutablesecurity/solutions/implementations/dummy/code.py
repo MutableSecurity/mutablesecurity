@@ -112,17 +112,10 @@ class CurrentUserInformation(BaseInformation):
 
 
 class ContentLogs(BaseLog):
-    class GetContent(FactBase):
-        command = "cat /tmp/dummy"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "file_content"
     DESCRIPTION = "Gets the file content."
+    LOCATION = "/tmp/dummy"  # noqa: S108
     FORMAT = LogFormat.TEXT
-    FACT = GetContent
 
 
 # Tests classes definitions

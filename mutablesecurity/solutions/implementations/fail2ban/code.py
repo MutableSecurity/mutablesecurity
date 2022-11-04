@@ -318,17 +318,10 @@ class Unban(BaseAction):
 
 
 class DefaultLogs(BaseLog):
-    class DefaultLogsFact(FactBase):
-        command = "cat /var/log/fail2ban.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
     IDENTIFIER = "logs"
     DESCRIPTION = "Default log location"
+    LOCATION = "/var/log/fail2ban.log"
     FORMAT = LogFormat.TEXT
-    FACT = DefaultLogsFact
 
 
 class Fail2ban(BaseSolution):
