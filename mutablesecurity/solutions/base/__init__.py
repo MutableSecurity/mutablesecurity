@@ -15,7 +15,7 @@ from mutablesecurity.solutions.base.information import (
     InformationManager,
     InformationProperties,
 )
-from mutablesecurity.solutions.base.log import BaseLog, LogsManager
+from mutablesecurity.solutions.base.log import BaseLog, LogFormat, LogsManager
 from mutablesecurity.solutions.base.result import (
     BaseConcreteResultObjects,
     BaseGenericObjectsDescriptions,

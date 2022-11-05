@@ -23,6 +23,7 @@ from mutablesecurity.solutions.base import (
     BaseSolution,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.bash import PresentCommand
@@ -317,16 +318,10 @@ class Unban(BaseAction):
 
 
 class DefaultLogs(BaseLog):
-    class DefaultLogsFact(FactBase):
-        command = "cat /var/log/fail2ban.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
     IDENTIFIER = "logs"
     DESCRIPTION = "Default log location"
-    FACT = DefaultLogsFact
+    LOCATION = "/var/log/fail2ban.log"
+    FORMAT = LogFormat.TEXT
 
 
 class Fail2ban(BaseSolution):
@@ -412,5 +407,5 @@ class Fail2ban(BaseSolution):
         apt.packages(
             packages=["fail2ban"],
             latest=True,
-            name="Uninstalls Fail2ban via apt.",
+            name="Updates Fail2ban via apt.",
         )

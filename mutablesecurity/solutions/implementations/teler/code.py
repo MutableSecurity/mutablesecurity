@@ -33,6 +33,7 @@ from mutablesecurity.solutions.base import (
     BaseSolutionException,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.files import FilePresenceTest
@@ -189,6 +190,7 @@ class Version(BaseInformation):
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.METRIC,
+        InformationProperties.READ_ONLY,
     ]
     DEFAULT_VALUE = None
     GETTER = VersionFact
@@ -483,33 +485,21 @@ class BinaryPresenceTest(BaseTest):
     DESCRIPTION = "Checks if a file is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = FilePresenceTest
-    FACT_ARGS = ("/opt/mutablesecurity/teler/teler",)
+    FACT_ARGS = ("/opt/mutablesecurity/teler/teler", True)
 
 
 class JsonAlerts(BaseLog):
-    class JsonAlertsFact(FactBase):
-        command = "cat /var/log/teler.json.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Generated alerts in JSON format"
-    FACT = JsonAlertsFact
+    LOCATION = "/var/log/teler.json.log"
+    FORMAT = LogFormat.JSON
 
 
 class TextAlerts(BaseLog):
-    class TextAlertsFact(FactBase):
-        command = "cat /var/log/teler.text.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
-    FACT = TextAlertsFact
+    LOCATION = "/var/log/teler.text.log"
+    FORMAT = LogFormat.TEXT
 
 
 class Teler(BaseSolution):

@@ -19,6 +19,7 @@ from mutablesecurity.solutions.base import (
     BaseTest,
     InformationProperties,
     IntegerDataType,
+    LogFormat,
     StringDataType,
     TestType,
 )
@@ -111,16 +112,10 @@ class CurrentUserInformation(BaseInformation):
 
 
 class ContentLogs(BaseLog):
-    class GetContent(FactBase):
-        command = "cat /tmp/dummy"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "".join(output)
-
     IDENTIFIER = "file_content"
     DESCRIPTION = "Gets the file content."
-    FACT = GetContent
+    LOCATION = "/tmp/dummy"  # noqa: S108
+    FORMAT = LogFormat.TEXT
 
 
 # Tests classes definitions

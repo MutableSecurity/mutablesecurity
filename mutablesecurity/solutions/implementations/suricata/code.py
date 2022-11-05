@@ -24,6 +24,7 @@ from mutablesecurity.solutions.base import (
     BaseSolution,
     BaseTest,
     InformationProperties,
+    LogFormat,
     TestType,
 )
 from mutablesecurity.solutions.common.facts.bash import PresentCommand
@@ -234,42 +235,24 @@ class Version(BaseInformation):
 
 
 class TextAlerts(BaseLog):
-    class TextAlertsFact(FactBase):
-        command = "cat /var/log/suricata/fast.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
     IDENTIFIER = "text_alerts"
     DESCRIPTION = "Generated alerts in plaintext format"
-    FACT = TextAlertsFact
+    LOCATION = "/var/log/suricata/fast.log"
+    FORMAT = LogFormat.TEXT
 
 
 class JsonLogs(BaseLog):
-    class JsonLogsFact(FactBase):
-        command = "cat /var/log/suricata/eve.json"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
     IDENTIFIER = "json_alerts"
     DESCRIPTION = "Regular log messages and alerts in JSON format"
-    FACT = JsonLogsFact
+    LOCATION = "/var/log/suricata/eve.json"
+    FORMAT = LogFormat.JSON
 
 
 class OperationalLogs(BaseLog):
-    class OperationalLogsFact(FactBase):
-        command = "cat /var/log/suricata/suricata.log"
-
-        @staticmethod
-        def process(output: typing.List[str]) -> str:
-            return "\n".join(output)
-
     IDENTIFIER = "operational_logs"
     DESCRIPTION = "Log messages describing Suricata's functioning"
-    FACT = OperationalLogsFact
+    LOCATION = "/var/log/suricata/suricata.log"
+    FORMAT = LogFormat.TEXT
 
 
 class MaliciousURL(BaseTest):

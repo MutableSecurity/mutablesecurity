@@ -6,6 +6,8 @@ convert a provided string to a proper Python class.
 import typing
 from enum import Enum
 
+from typeguard import check_type
+
 from mutablesecurity.helpers.exceptions import (
     EnumTypeNotSetException,
     InvalidBooleanValueException,
@@ -27,12 +29,14 @@ def str_to_bool(string: str) -> bool:
         bool: Boolean
     """
     string = string.lower()
+
     if string == "true":
         return True
-    elif string == "false":
+
+    if string == "false":
         return False
-    else:
-        raise InvalidBooleanValueException()
+
+    raise InvalidBooleanValueException()
 
 
 class InnerDataType(Enum):
@@ -124,21 +128,27 @@ class DataType:
         try:
             if cls.INNER_TYPE == InnerDataType.BOOLEAN:
                 return str_to_bool(string)
+
             if cls.INNER_TYPE == InnerDataType.INTEGER:
                 return int(string)
-            elif cls.INNER_TYPE == InnerDataType.ENUM:
+
+            if cls.INNER_TYPE == InnerDataType.ENUM:
                 return cls.BASE_ENUM(string)
-            elif cls.INNER_TYPE == InnerDataType.LIST_OF_BOOLEANS:
+
+            if cls.INNER_TYPE == InnerDataType.LIST_OF_BOOLEANS:
                 bool_list = string.split(",")
 
                 return [str_to_bool(elem) for elem in bool_list]
-            elif cls.INNER_TYPE == InnerDataType.LIST_OF_INTEGERS:
+
+            if cls.INNER_TYPE == InnerDataType.LIST_OF_INTEGERS:
                 int_list = string.split(",")
 
                 return [int(elem) for elem in int_list]
-            elif cls.INNER_TYPE == InnerDataType.LIST_OF_STRINGS:
+
+            if cls.INNER_TYPE == InnerDataType.LIST_OF_STRINGS:
                 return string.split(",")
-            elif cls.INNER_TYPE == InnerDataType.LIST_OF_ENUMS:
+
+            if cls.INNER_TYPE == InnerDataType.LIST_OF_ENUMS:
                 enum_list = string.split(",")
 
                 return [cls.BASE_ENUM(elem) for elem in enum_list]
@@ -162,7 +172,12 @@ class DataType:
         Returns:
             bool: Boolean indicating if the data corresponds to the set type
         """
-        return isinstance(data, cls.PYTHON_ANNOTATION)
+        try:
+            check_type("value", data, cls.PYTHON_ANNOTATION)
+
+            return True
+        except TypeError:
+            return False
 
     def __str__(self) -> str:
         """Stringify the object.

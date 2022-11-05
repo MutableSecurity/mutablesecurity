@@ -251,7 +251,10 @@ def __patch_gevent() -> None:
 
 def __wait_for_all_threads() -> None:
     for child in threading.enumerate():
-        child.join()
+        try:
+            child.join()
+        except RuntimeError:
+            pass
 
 
 def main() -> None:
