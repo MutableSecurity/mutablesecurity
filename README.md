@@ -69,6 +69,16 @@
     <tbody>
         <tr>
             <td>
+                <a href="https://vector.dev/">
+                    <img src="others/readme_images/solutions/vector.webp">
+                </a>
+            </td>
+            <td>Vector is a lightweight tool for building observability pipelines. As soon as solutions are enabled in the configuration, Vector starts to send their logs to the configured Loki instance. The latter can be either on-premise or in the cloud, the only condition being to permit authentication via username and API token.</td>
+            <td>
+                <img alt='Maturity: Production' src='https://img.shields.io/badge/Maturity-Production-blightgreen?style=flat-square'>
+            </td>
+        </tr>        <tr>
+            <td>
                 <a href="https://teler.app">
                     <img src="others/readme_images/solutions/teler.webp">
                 </a>
