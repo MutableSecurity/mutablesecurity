@@ -70,17 +70,16 @@ class BaseLog(BaseObject):
         """
         if isinstance(cls.LOCATION, str):
             return cls.LOCATION
-        elif issubclass(
-            cls.LOCATION, BaseInformation  # type: ignore[arg-type]
-        ):
+
+        if issubclass(cls.LOCATION, BaseInformation):  # type: ignore[arg-type]
             return (
                 f"{cls.LOCATION.__name__}"  # type: ignore[attr-defined]
                 "-dependent"  # type: ignore[attr-defined]
                 if abstract
                 else cls.LOCATION.get()
             )
-        else:
-            raise InvalidSolutionLocationTypeException()
+
+        raise InvalidSolutionLocationTypeException()
 
 
 class LogsManager(BaseManager):
