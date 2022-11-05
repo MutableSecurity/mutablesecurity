@@ -212,7 +212,7 @@ def __mark_cells_from_column_as_code(
     def __replace_with_code(match: re.Match) -> str:
         return generate_code_block(match.group())
 
-    pattern = re.compile("([A-Za-z0-9_.]+)")
+    pattern = re.compile("([A-Za-z0-9_./]+)")
 
     row_count = len(matrix)
     for row_id in range(1, row_count):
