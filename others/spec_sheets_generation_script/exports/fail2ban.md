@@ -124,12 +124,16 @@ Fail2ban is an intrusion prevention software framework that protects Unix-like s
         <tr>
             <th>Identifier</th>
             <th>Description</th>
+            <th>Location</th>
+            <th>Format</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td><code>logs</code></td>
             <td>Default log location</td>
+            <td>/<code>var</code>/<code>log</code>/<code>fail2ban.log</code></td>
+            <td><code>TEXT</code></td>
         </tr>
     </tbody>
 </table>
