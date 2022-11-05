@@ -102,20 +102,28 @@ Suricata is the leading independent open source threat detection engine. By comb
         <tr>
             <th>Identifier</th>
             <th>Description</th>
+            <th>Location</th>
+            <th>Format</th>
         </tr>
     </thead>
     <tbody>
         <tr>
             <td><code>json_alerts</code></td>
             <td>Regular log messages and alerts in JSON format</td>
+            <td>/<code>var</code>/<code>log</code>/<code>suricata</code>/<code>eve.json</code></td>
+            <td><code>JSON</code></td>
         </tr>
         <tr>
             <td><code>operational_logs</code></td>
             <td>Log messages describing Suricata's functioning</td>
+            <td>/<code>var</code>/<code>log</code>/<code>suricata</code>/<code>suricata.log</code></td>
+            <td><code>TEXT</code></td>
         </tr>
         <tr>
             <td><code>text_alerts</code></td>
             <td>Generated alerts in plaintext format</td>
+            <td>/<code>var</code>/<code>log</code>/<code>suricata</code>/<code>fast.log</code></td>
+            <td><code>TEXT</code></td>
         </tr>
     </tbody>
 </table>
