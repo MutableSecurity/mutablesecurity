@@ -190,6 +190,7 @@ class Version(BaseInformation):
     INFO_TYPE = StringDataType
     PROPERTIES = [
         InformationProperties.METRIC,
+        InformationProperties.READ_ONLY,
     ]
     DEFAULT_VALUE = None
     GETTER = VersionFact
@@ -484,7 +485,7 @@ class BinaryPresenceTest(BaseTest):
     DESCRIPTION = "Checks if a file is present."
     TEST_TYPE = TestType.PRESENCE
     FACT = FilePresenceTest
-    FACT_ARGS = ("/opt/mutablesecurity/teler/teler",)
+    FACT_ARGS = ("/opt/mutablesecurity/teler/teler", True)
 
 
 class JsonAlerts(BaseLog):

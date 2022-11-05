@@ -6,6 +6,8 @@ convert a provided string to a proper Python class.
 import typing
 from enum import Enum
 
+from typeguard import check_type
+
 from mutablesecurity.helpers.exceptions import (
     EnumTypeNotSetException,
     InvalidBooleanValueException,
@@ -162,7 +164,12 @@ class DataType:
         Returns:
             bool: Boolean indicating if the data corresponds to the set type
         """
-        return isinstance(data, cls.PYTHON_ANNOTATION)
+        try:
+            check_type("value", data, cls.PYTHON_ANNOTATION)
+
+            return True
+        except TypeError:
+            return False
 
     def __str__(self) -> str:
         """Stringify the object.

@@ -23,8 +23,8 @@ from mutablesecurity.solutions.base.result import (
 class LogFormat(Enum):
     """Enumeration defining possible format for log locations."""
 
-    TEXT = 0
-    JSON = 1
+    TEXT = "text"
+    JSON = "json"
 
     def __str__(self) -> str:
         """Stringify the object.

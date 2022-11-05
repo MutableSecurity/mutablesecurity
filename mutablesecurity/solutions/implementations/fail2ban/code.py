@@ -407,5 +407,5 @@ class Fail2ban(BaseSolution):
         apt.packages(
             packages=["fail2ban"],
             latest=True,
-            name="Uninstalls Fail2ban via apt.",
+            name="Updates Fail2ban via apt.",
         )

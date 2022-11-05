@@ -1,0 +1,8 @@
+full_name: Vector
+description: Vector is a lightweight, ultra-fast tool for building observability pipelines
+references:
+  - https://vector.dev/
+  - https://github.com/vectordotdev/vector
+maturity: PRODUCTION
+categories:
+  - LOG_SHIPPER

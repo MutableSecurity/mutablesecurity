@@ -69,6 +69,7 @@ isfile
 isfunction
 issubset
 j2
+jinja
 kwargs
 lifecycle
 logrecord

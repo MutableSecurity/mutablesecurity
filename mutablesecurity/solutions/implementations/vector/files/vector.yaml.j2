@@ -1,0 +1,39 @@
+---
+
+sources:
+  vector_logs:
+    type: internal_logs
+  {% for source_key in configuration.sources -%}
+  source_{{ source_key }}:
+    type: file
+    include:
+      - {{ configuration.sources[source_key].location }}
+    ignore_not_found: true
+  {% endfor %}
+sinks:
+  file_vector_logs:
+    type: file
+    inputs:
+      - vector_logs
+    encoding:
+      codec: json
+    path: /var/log/vector.log
+  {% for source_key in configuration.sources -%}
+  loki_{{ source_key }}:
+    type: loki
+    inputs:
+      - source_{{ source_key }}
+    endpoint: {{ configuration.loki.endpoint }}
+    auth:
+      user: "{{ configuration.loki.user|string }}"
+      password: {{ configuration.loki.token }}
+      strategy: basic
+    labels:
+      forwarder: vector
+      source: {{ source_key }}
+    encoding:
+      codec: {{ configuration.sources[source_key].format|lower }}
+  {% endfor %}
+api:
+  enabled: true
+  playground: false
