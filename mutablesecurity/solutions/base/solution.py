@@ -66,6 +66,7 @@ class SolutionCategories(Enum):
     ANTIMALWARE = "Antimalware"
     LOG_SHIPPER = "Log Shipper"
     NONE = "No Security"
+    BACKUP = "Backup"
 
     def __str__(self) -> str:
         """Stringify a category.
