@@ -8,11 +8,13 @@ import sys
 import threading
 import typing
 
+import traceback
 import click
 import gevent.hub
 from rich.console import Console
 from rich.traceback import install
 
+from mutablesecurity import config
 from mutablesecurity.cli.feedback_form import FeedbackForm
 from mutablesecurity.cli.printer import Printer
 from mutablesecurity.cli.solutions_manager_adapter import (
@@ -268,13 +270,22 @@ def main() -> None:
             standalone_mode=False
         )
     except MutableSecurityException as exception:
-        Printer(console=console).print_exception(exception)
+        if config.developer_mode:
+            traceback.print_exc()
+        else:
+            Printer(console=console).print_exception(exception)
     except click.Abort:
-        Printer(console=console).print_exception(
+        if config.developer_mode:
+            traceback.print_exc()
+        else:
+            Printer(console=console).print_exception(
             StoppedMutableSecurityException()
         )
     except click.BadParameter:
-        Printer(console=console).print_exception(BadArgumentException())
+        if config.developer_mode:
+            traceback.print_exc()
+        else:
+            Printer(console=console).print_exception(BadArgumentException())
     else:
         return
 
