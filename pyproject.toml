@@ -36,7 +36,7 @@ include = [
 [tool.poetry.dependencies]
 Click = "^8.0"
 humanfriendly = "^10.0"
-packaging = "^21.3"
+packaging = ">=21.3,<24.0"
 pyinfra = "^2.2"
 pypattyrn = "^1.2"
 python = ">=3.9,<3.12"
