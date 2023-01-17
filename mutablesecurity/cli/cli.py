@@ -278,7 +278,8 @@ def main() -> None:
         if config.developer_mode:
             traceback.print_exc()
         else:
-            Printer(console=console).print_exception(StoppedMutableSecurityException())
+            ex = StoppedMutableSecurityException()
+            Printer(console=console).print_exception(ex)
     except click.BadParameter:
         if config.developer_mode:
             traceback.print_exc()
