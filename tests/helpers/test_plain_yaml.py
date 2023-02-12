@@ -9,7 +9,7 @@ from mutablesecurity.helpers.exceptions import (
     YAMLFileNotExistsException,
     YAMLKeyMissingException,
 )
-from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
+from mutablesecurity.helpers.yaml_parser import dump_to_file, load_from_file
 
 
 def test_valid_load_dump() -> None:

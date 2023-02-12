@@ -14,7 +14,7 @@ from mutablesecurity.helpers.exceptions import (
     NotPlainDictionaryException,
     YAMLFileNotExistsException,
 )
-from mutablesecurity.helpers.plain_yaml import load_from_file
+from mutablesecurity.helpers.yaml_parser import load_from_file
 
 
 class ConfigurationKey:
@@ -64,8 +64,14 @@ class ConfigurationManager(metaclass=Singleton):
             default_value=True,
         )
 
-    def __init__(self) -> None:
+    def __init__(self, filename: str = None, config_class: object = None) -> None:
         """Initialize the configuration manager instance.
+
+        Args:
+            filename (str): Filename of the configuration. Defaults to None,
+                case in which the hard-coded one is used.
+            config_class (object): Configuration class to be used. Defaults to
+                None for cases in which the current class is required.
 
         Raises:
             InvalidStructureOfLocalConfigException: The local configuration
@@ -73,9 +79,12 @@ class ConfigurationManager(metaclass=Singleton):
             InvalidValueInLocalConfigException: An invalid value was specified
                 in the configuration file.
         """
+        if not filename:
+            filename = ConfigurationManager.CONFIGURATION_FILENAME
+            config_class = ConfigurationManager
         try:
             loaded_config = load_from_file(
-                ConfigurationManager.CONFIGURATION_FILENAME
+                filename
             )
         except NotPlainDictionaryException as exception:
             raise InvalidStructureOfLocalConfigException() from exception
@@ -83,7 +92,7 @@ class ConfigurationManager(metaclass=Singleton):
             loaded_config = {}
 
         self.configuration = {}
-        for key in ConfigurationManager.ConfigurationKeys:
+        for key in config_class.ConfigurationKeys:
             config_key: ConfigurationKey = key.value
             effective_key = config_key.key
             key_type = config_key.data_type

@@ -32,7 +32,7 @@ from mutablesecurity.helpers.exceptions import (
     YAMLFileNotExistsException,
     YAMLKeyMissingException,
 )
-from mutablesecurity.helpers.plain_yaml import dump_to_file, load_from_file
+from mutablesecurity.helpers.yaml_parser import dump_to_file, load_from_file
 from mutablesecurity.leader import get_connection_for_host
 from mutablesecurity.solutions.base.action import ActionsManager, BaseAction
 from mutablesecurity.solutions.base.information import (

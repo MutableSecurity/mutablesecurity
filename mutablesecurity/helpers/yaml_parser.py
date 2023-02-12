@@ -1,4 +1,4 @@
-"""Module for dealing with plain (single level) YAML files."""
+"""Module for dealing with YAML files."""
 import os
 import typing
 from enum import Enum
@@ -40,7 +40,9 @@ def __is_plain_dict(dictionary: dict) -> bool:
 
 
 def load_from_file(
-    filename: str, mandatory_keys: typing.Optional[typing.List[str]] = None
+    filename: str,
+    mandatory_keys: typing.Optional[typing.List[str]] = None,
+    is_plain: bool = True
 ) -> dict:
     """Load a plain dictionary from a YAML file.
 
@@ -48,6 +50,7 @@ def load_from_file(
         filename (str): YAML filename
         mandatory_keys (typing.List[str]): List of mandatory keys present in
             the loaded content. Defaults to None.
+        is_plain (bool): Boolean indicating if multi-leveled YAMLs are accepted.
 
     Raises:
         YAMLFileNotExistsException: The file does not exists.
@@ -63,7 +66,7 @@ def load_from_file(
     with open(filename, mode="r", encoding="utf-8") as yaml_file:
         raw_content = yaml_file.read()
         content = yaml.safe_load(raw_content)
-        if not __is_plain_dict(content):
+        if is_plain and not __is_plain_dict(content):
             raise NotPlainDictionaryException()
 
         if mandatory_keys:
@@ -74,17 +77,18 @@ def load_from_file(
         return content
 
 
-def dump_to_file(content: dict, filename: str) -> None:
+def dump_to_file(content: dict, filename: str, is_plain: bool = True) -> None:
     """Dump a plain dictionary to a YAML file.
 
     Args:
         content (dict): Plain dictionary
         filename (str): YAML filename
+        is_plain (bool): Boolean indicating if multi-leveled YAMLs are accepted.
 
     Raises:
         NotPlainDictionaryException: The dictionary is not plain.
     """
-    if not __is_plain_dict(content):
+    if is_plain and not __is_plain_dict(content):
         raise NotPlainDictionaryException()
 
     raw_content = yaml.dump(content, Dumper=yaml.SafeDumper)
